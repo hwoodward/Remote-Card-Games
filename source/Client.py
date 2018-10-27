@@ -1,29 +1,58 @@
-from PodSixNet.Connection import connection
+import sys
+from time import sleep
 
-# connect to the server - optionally pass hostname and port like: ("mccormick.cx", 31425)
-connection.Connect()
+from PodSixNet.Connection import connection, ConnectionListener
 
-# to disconnect call connection.close()
-# TODO: add a listener for the server to send back a 'game in progress' action, and close if its recieved
+class GameClient(ConnectionListener):
+    """ This client connects to a GameServer which will host a cardgame
 
-# eventually I should look into separating this out
-# possibly into a set of smaller classes
-from PodSixNet.Connection import ConnectionListener
+    Currently the client is incomplete
 
-class PlayerListener(ConnectionListener):
+    The client displays the game state it recieves from the server
+    It validates and submits player actions to the server during the player's turn
+    It submits its score on round or game end
+    """
 
-    def Network(self, data):
-        """Fallback method to recieve data from the server"""
-        print('network data:', data)
+    def __init__(self, host, port):
+        self.Connect((host, port))
+        print("GameClient started")
 
+    def Loop(self):
+        connection.Pump()
+        self.Pump()
+
+    #######################################
+    ### Network event/message callbacks ###
+    #######################################
+    # built in stuff
+    
     def Network_connected(self, data):
-        print("connected to the server")
-
+        print("Connected to the server")
+    
     def Network_error(self, data):
-        print("network error:", data['error'][1])
-
+        print('error:', data['error'])
+        connection.Close()
+    
     def Network_disconnected(self, data):
-        print("disconnected from the server")
+        print('Server disconnected')
+        exit()
 
-    def Network_myaction(data):
-        print("myaction:", data)
+    # server specific stuff
+    def Network_connectionDenied(self, data):
+        """Server denied the connection, likely due to a game already in progress"""
+        print('Server denied connection request')
+        connection.Close()
+
+    ### Player Actions ###
+    # here is where to put any actions triggered by the player that should be sent to the server
+
+
+if len(sys.argv) != 2:
+    print("Usage:", sys.argv[0], "host:port")
+    print("e.g.", sys.argv[0], "localhost:31425")
+else:
+    host, port = sys.argv[1].split(":")
+    c = GameClient(host, int(port))
+    while 1:
+        c.Loop()
+        sleep(0.001)
