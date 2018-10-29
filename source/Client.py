@@ -13,13 +13,10 @@ class GameClient(ConnectionListener):
     It submits its score on round or game end
     """
 
-    def __init__(self, host, port):
-        self.Connect((host, port))
-        print("GameClient started")
-
-    def Loop(self):
-        connection.Pump()
-        self.Pump()
+    def __init__(self):
+        self.name = input("Select a display name: ")
+        interactive = False #wait for the server say its this player's turn
+        connection.Send({"action": "displayName", "name": self.name})
 
     #######################################
     ### Network event/message callbacks ###
@@ -43,6 +40,10 @@ class GameClient(ConnectionListener):
         print('Server denied connection request')
         connection.Close()
 
+    def Network_turnOrder(self, data):
+        """Turn order changed"""
+        print('Turn order is', data['players'])
+
     ### Player Actions ###
     # here is where to put any actions triggered by the player that should be sent to the server
 
@@ -52,7 +53,9 @@ if len(sys.argv) != 2:
     print("e.g.", sys.argv[0], "localhost:31425")
 else:
     host, port = sys.argv[1].split(":")
-    c = GameClient(host, int(port))
+    connection.DoConnect((host, int(port)))
+    gameClient = GameClient()
     while 1:
-        c.Loop()
+        connection.Pump()
+        gameClient.Pump()
         sleep(0.001)
