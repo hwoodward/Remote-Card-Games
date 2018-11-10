@@ -17,12 +17,13 @@ class GameServer(Server):
 
     def Connected(self, channel, addr):
         """Called when a client connects and establishes a channel"""
-        if (self.active_game):
+        if self.active_game:
+            print(channel, 'Client tried to connect during active game')
             channel.Send({"action": "connectionDenied"})
         else:
             self.players.append(channel)
             self.Send_turnOrder()
-            print(channel, "Channel connected")
+            print(channel, "Client connected")
 
     def DelPlayer(self, player):
         """Remove a player from the turn order"""
