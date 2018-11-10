@@ -1,6 +1,6 @@
 from PodSixNet.Connection import connection, ConnectionListener
 
-class GameClient(ConnectionListener):
+class BaseListener(ConnectionListener):
     """ This client connects to a GameServer which will host a cardgame
 
     Currently the client is incomplete
@@ -10,10 +10,21 @@ class GameClient(ConnectionListener):
     It submits its score on round or game end
     """
 
-    def __init__(self):
-        self.name = input("Select a display name: ")
-        interactive = False #wait for the server say its this player's turn
-        connection.Send({"action": "displayName", "name": self.name})
+    def __init__(self, clientState):
+        self._state = clientState
+        self.setName()
+
+    ### Player Actions ###
+    def setName(self):
+        """Set up a display name and send it to the server"""
+        displayName = input("Select a display name: ")
+        self._state.name = displayName
+        connection.Send({"action": "displayName", "name": displayName})
+
+    def discard(self, discardList):
+        """Send discard to server"""
+        self._state.interactive = False #turn is over
+        connection.Send({"action": "discard", "cards": discardList})
 
     #######################################
     ### Network event/message callbacks ###
@@ -31,7 +42,7 @@ class GameClient(ConnectionListener):
         print('Server disconnected')
         exit()
 
-    # server specific stuff
+    ### Setup messages ###
     def Network_connectionDenied(self, data):
         """Server denied the connection, likely due to a game already in progress"""
         print('Server denied connection request')
@@ -41,5 +52,7 @@ class GameClient(ConnectionListener):
         """Turn order changed"""
         print('Turn order is', data['players'])
 
-    ### Player Actions ###
-    # here is where to put any actions triggered by the player that should be sent to the server
+    ### Gameplay messages ###
+    def Network_startTurn(self, data):
+        self._state.interactive = True
+        print("Turn started")

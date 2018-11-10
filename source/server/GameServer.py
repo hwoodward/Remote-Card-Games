@@ -12,6 +12,7 @@ class GameServer(Server):
         Server.__init__(self, *args, **kwargs)
         self.players = []
         self.active_game = False
+        self.turn_index = 0
         print('Server launched')
 
     def Connected(self, channel, addr):
@@ -20,18 +21,34 @@ class GameServer(Server):
             channel.Send({"action": "connectionDenied"})
         else:
             self.players.append(channel)
-            self.SendTurnOrder()
+            self.Send_turnOrder()
             print(channel, "Channel connected")
-
-    def SendTurnOrder(self):
-        """Adds a player to the end of the turn order"""
-        self.SendToAll({"action": "turnOrder", "players": [p.name for p in self.players]})
 
     def DelPlayer(self, player):
         """Remove a player from the turn order"""
         self.players.remove(player)
-        self.SendTurnOrder();
+        self.Send_turnOrder();
 
+    def NextTurn(self):
+        """Advance to the next trun"""
+        newIndex  = (self.turn_index + 1) % len(players)
+        self.turn_index = newIndex
+        self.SendToActive({"action": "startTurn"})
+        
     def SendToAll(self, data):
         """Send data to every connected player"""
         [p.Send(data) for p in self.players]
+
+    def SendToActive(self, data):
+        """Send data to the player whose turn it is"""
+        self.players[turn_index].Send(data)
+
+    def Send_turnOrder(self):
+        """Adds a player to the end of the turn order"""
+        self.SendToAll({"action": "turnOrder", "players": [p.name for p in self.players]})
+
+    ### Sends for during a game ###
+
+    def Send_draw(self, cardList):
+        """ Send the player their drawn card(s)"""
+        self.SendToActive({"action": "newCards", "cards": cardList})

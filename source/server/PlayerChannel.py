@@ -18,7 +18,7 @@ class PlayerChannel(Channel):
         print(self, 'Client disconnected')    
 
     ##################################
-    ### Network specific callbacks ###
+    ### Network callbacks ###
     ##################################
 
     def Network(self, data):
@@ -30,5 +30,9 @@ class PlayerChannel(Channel):
     def Network_displayName(self, data):
         """Player submitted their displayName"""
         self.name = data['name']
-        self._server.SendTurnOrder()
-        
+        self._server.Send_turnOrder()
+
+    ### Player Game Actions ###
+
+    def Network_discard(self, data):
+        self._server.NextTurn()
