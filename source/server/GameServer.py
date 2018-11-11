@@ -25,6 +25,11 @@ class GameServer(Server):
             self.Send_turnOrder()
             print(channel, "Client connected")
 
+    def StartGame(self):
+        self.active_game = True
+        #TODO: need to call 'start round' here when we add dealing and rounds
+        self.NextTurn()
+
     def DelPlayer(self, player):
         """Remove a player from the turn order"""
         self.players.remove(player)
@@ -32,7 +37,7 @@ class GameServer(Server):
 
     def NextTurn(self):
         """Advance to the next trun"""
-        newIndex  = (self.turn_index + 1) % len(players)
+        newIndex = (self.turn_index + 1) % len(self.players)
         self.turn_index = newIndex
         self.SendToActive({"action": "startTurn"})
         
@@ -42,7 +47,7 @@ class GameServer(Server):
 
     def SendToActive(self, data):
         """Send data to the player whose turn it is"""
-        self.players[turn_index].Send(data)
+        self.players[self.turn_index].Send(data)
 
     def Send_turnOrder(self):
         """Adds a player to the end of the turn order"""

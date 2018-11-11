@@ -29,7 +29,7 @@ def runServer():
         server.Pump()
         sleep(0.0001)
     #set game to true and run loop until game is over
-    server.active_game = True
+    server.StartGame()
     while Waiting_For_End:
         server.Pump()
         sleep(0.0001)
