@@ -1,0 +1,28 @@
+This is the basic naming conventions and other guidleines to keep code in the repository looking consistent and liegibl
+e. If something isn't clear it should be in more detail in the wiki, if not ask Helen for clarification.
+
+Using idle for spacing - 4 space indents, no tab characters
+No spaces after """ in docstrings
+1 line doc strings have ending quotes in line, mult line docstrings have first line in-line with opening quotes, and cl
+osing quotes on their own line
+
+Naming conventions:
+folder names: lowercase (preferably one word)
+file names: CapWords format
+class names: CapWords (remember that import statements look like "from folder.path.FileName import ClassName" when naming)
+method names (functions in classes): Prefix_mixCase or Upper_Case depending on if there is a prefix.
+    note: Prefix is usually either Send or Network, adn then the mixCase is the actionName being sent/recieved
+
+instance variables (variable stored in an instance of a class): lower_case
+
+functions outside of a class: Upper_Case
+variables outside of a class  - theoretically Upper_Case, but the ones in the RunServer/RunClient are mixedCase right n
+ow b/c I'm treating those as mostly one giant function, they should be refactored to have a 'main' method which would m
+ake this all consistent again
+
+methodArguments (what you pass in to a method): mixedCase
+    remember the 1st argument to an instance method is self, and the first argument to a class method is cls 
+
+internal variables (stuff that is only in scope for a specific method or clause's duration): mixedCase
+
+actionNames for network communications should all by mixedCase to help fit with the methodNames.
