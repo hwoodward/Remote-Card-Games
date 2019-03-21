@@ -21,18 +21,16 @@ class BaseListener(ConnectionListener):
         self.state.name = displayName
         connection.Send({"action": "displayName", "name": displayName})
 
-    def Discard(self, discardList):
+    def Send_discard(self, discardList):
         """Send discard to server"""
-        self.state.DiscardCards(discardList)
-        self.state.interactive = False #turn is over
         connection.Send({"action": "discard", "cards": discardList})
 
-    def Draw(self):
+    def Send_draw(self):
         """Request a draw from the server"""
         #TODO need to check API doc to see if there is any data
         connection.Send({"action": "draw"})
 
-    def SendVisible(self):
+    def Send_visibleCards(self):
         """Send the server the current set of visible cards"""
         #TODO implement me
 
@@ -43,8 +41,9 @@ class BaseListener(ConnectionListener):
         print("Turn Started")
         input("Press enter to draw a card.")
         self.Draw()
-        #TODO now i have to worry about waiting.
-        self.Discard("fakeCards")
+        #TODO now need to wait for new cards
+        input("Press enter to discard the card you drew")
+        self.Discard()
 
     #######################################
     ### Network event/message callbacks ###

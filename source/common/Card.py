@@ -89,4 +89,4 @@ Standard_Deck = [Card(1, 'Spades'),
                  Card(13, 'Clubs')]
 
 #Defining a deck with jokers based on the standard deck
-Joker_Deck = Standard_Deck.append([Card(0, None), Card(0, None)])
+Joker_Deck = Standard_Deck + [Card(0, None), Card(0, None)]
