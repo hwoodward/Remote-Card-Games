@@ -1,4 +1,4 @@
-import common.Card
+from common import Card
 import random
 
 class ServerState():
@@ -11,7 +11,7 @@ class ServerState():
     """
 
     def __init__(self):
-        self.draw_pile = random.shuffle(Card.JokerDeck)
+        self.draw_pile = random.shuffle(Card.Joker_Deck)
         self.discard_pile = []
 
     def drawCards(self, numCards):
