@@ -1,7 +1,7 @@
 from PodSixNet.Channel import Channel
 
 class PlayerChannel(Channel):
-    """ This is the server's representation of a single client"""
+    """This is the server's representation of a single client"""
 
     def __init__(self, *args, **kwargs):
         """This overrides the lower lvl channel init
@@ -21,7 +21,7 @@ class PlayerChannel(Channel):
             print(self, 'Client disconnected during active game')
 
     ##################################
-    ### Network callbacks ###
+    ### Network callbacks          ###
     ##################################
 
     def Network_displayName(self, data):
@@ -32,4 +32,10 @@ class PlayerChannel(Channel):
     ### Player Game Actions ###
 
     def Network_discard(self, data):
+        self._server.shared_state.discard(data["cards"])
         self._server.NextTurn()
+
+    def Network_draw(self):
+        #TODO: adjust where draw number comes from
+        cards = self._server.shared_state.draw(1)
+        self._server.SendToActive({"action": "newCards", "cards": cardList})

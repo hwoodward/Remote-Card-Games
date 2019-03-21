@@ -11,20 +11,40 @@ class BaseListener(ConnectionListener):
     """
 
     def __init__(self, clientState):
-        self._state = clientState
-        self.setName()
+        self.state = clientState
+        self.SetName()
 
     ### Player Actions ###
-    def setName(self):
+    def SetName(self):
         """Set up a display name and send it to the server"""
         displayName = input("Select a display name: ")
-        self._state.name = displayName
+        self.state.name = displayName
         connection.Send({"action": "displayName", "name": displayName})
 
-    def discard(self, discardList):
+    def Discard(self, discardList):
         """Send discard to server"""
-        self._state.interactive = False #turn is over
+        self.state.DiscardCards(discardList)
+        self.state.interactive = False #turn is over
         connection.Send({"action": "discard", "cards": discardList})
+
+    def Draw(self):
+        """Request a draw from the server"""
+        #TODO need to check API doc to see if there is any data
+        connection.Send({"action": "draw"})
+
+    def SendVisible(self):
+        """Send the server the current set of visible cards"""
+        #TODO implement me
+
+    #TODO: this needs to take place in another class to manage waiting and interactivity
+    def TakeTurn(self):
+        """goes through the steps of a turn"""
+        self.state.interactive = True
+        print("Turn Started")
+        input("Press enter to draw a card.")
+        self.Draw()
+        #TODO now i have to worry about waiting.
+        self.Discard("fakeCards")
 
     #######################################
     ### Network event/message callbacks ###
@@ -54,5 +74,8 @@ class BaseListener(ConnectionListener):
 
     ### Gameplay messages ###
     def Network_startTurn(self, data):
-        self._state.interactive = True
-        print("Turn started")
+        self.TakeTurn()
+
+    def Network_newCards(self, data):
+        self.state.NewCards(data['cards'])
+        
