@@ -11,6 +11,7 @@ class GameServer(Server):
         """
         Server.__init__(self, *args, **kwargs)
         self.players = []
+        self.shared_state = ServerState()
         self.active_game = False
         self.turn_index = 0
         print('Server launched')
@@ -52,9 +53,3 @@ class GameServer(Server):
     def Send_turnOrder(self):
         """Adds a player to the end of the turn order"""
         self.SendToAll({"action": "turnOrder", "players": [p.name for p in self.players]})
-
-    ### Sends for during a game ###
-
-    def Send_draw(self, cardList):
-        """ Send the player their drawn card(s)"""
-        self.SendToActive({"action": "newCards", "cards": cardList})
