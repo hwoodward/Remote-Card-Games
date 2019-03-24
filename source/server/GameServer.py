@@ -3,7 +3,7 @@ from server.ServerState import ServerState
 
 from PodSixNet.Server import Server
 
-class GameServer(Server):
+class GameServer(Server, ServerState):
     channelClass = PlayerChannel
 
     def __init__(self, *args, **kwargs):
@@ -11,10 +11,8 @@ class GameServer(Server):
         It's a place to do any 'on launch' actions for the server
         """
         Server.__init__(self, *args, **kwargs)
+        ServerState.__init__(self)
         self.players = []
-        self.shared_state = ServerState()
-        self.active_game = False
-        self.turn_index = 0
         print('Server launched')
 
     def Connected(self, channel, addr):
@@ -54,3 +52,7 @@ class GameServer(Server):
     def Send_turnOrder(self):
         """Adds a player to the end of the turn order"""
         self.SendToAll({"action": "turnOrder", "players": [p.name for p in self.players]})
+
+    def Send_visibleCards(self):
+        """Send the update to the discard pile"""
+        self.SendToAll({"action": "visibleCards", "discardPile": self.DiscardInfo(), "meld": [(p.name, p.visible_cards) for p in self.players]}) 

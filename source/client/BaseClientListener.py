@@ -1,6 +1,6 @@
 from PodSixNet.Connection import connection, ConnectionListener
 
-class BaseListener(ConnectionListener):
+class PersonalListener(ConnectionListener):
     """ This client connects to a GameServer which will host a cardgame
 
     Currently the client is incomplete
@@ -21,30 +21,25 @@ class BaseListener(ConnectionListener):
         self.state.name = displayName
         connection.Send({"action": "displayName", "name": displayName})
 
-    def Send_discard(self, discardList):
+    def Discard(self, discardList):
         """Send discard to server"""
+        self.state.DiscardCards(discardList)
+        self.state.interactive = False #turn is over
         connection.Send({"action": "discard", "cards": discardList})
 
-    def Send_draw(self):
+    def Draw(self):
         """Request a draw from the server"""
-        #TODO need to check API doc to see if there is any data
         connection.Send({"action": "draw"})
 
-    def Send_visibleCards(self):
+    def Play(self, cardSet):
         """Send the server the current set of visible cards"""
-        #TODO implement me
+        self.state.PlayCards(cardSet)
+        connection.Send({"visibleCards": self.state.visible_cards})
 
-    #TODO: this needs to take place in another class to manage waiting and interactivity
-    def TakeTurn(self):
-        """goes through the steps of a turn"""
-        self.state.interactive = True
-        print("Turn Started")
-        input("Press enter to draw a card.")
-        self.Draw()
-        #TODO now need to wait for new cards
-        input("Press enter to discard the card you drew")
-        self.Discard()
-
+    def GetHand(self):
+        """sends state to UI"""
+        return self.state.hand_cards
+    
     #######################################
     ### Network event/message callbacks ###
     #######################################
@@ -73,7 +68,7 @@ class BaseListener(ConnectionListener):
 
     ### Gameplay messages ###
     def Network_startTurn(self, data):
-        self.TakeTurn()
+        self.state.interactive=True
 
     def Network_newCards(self, data):
         self.state.NewCards(data['cards'])

@@ -8,6 +8,7 @@ class PlayerChannel(Channel):
         It's a place to set any client information thats provided from the server
         """
         self.name = "guest"
+        self.visible_cards = []
         Channel.__init__(self, *args, **kwargs)
 
     def Close(self):
@@ -32,10 +33,10 @@ class PlayerChannel(Channel):
     ### Player Game Actions ###
 
     def Network_discard(self, data):
-        self._server.shared_state.discard(data["cards"])
+        self._server.DiscardCards(data["cards"])
+        self._server.Send_visibleCards()
         self._server.NextTurn()
 
     def Network_draw(self):
-        #TODO: adjust where draw number comes from
-        cards = self._server.shared_state.draw(1)
+        cards = self._server.DrawCards(1)
         self._server.SendToActive({"action": "newCards", "cards": cardList})

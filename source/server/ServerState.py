@@ -13,15 +13,20 @@ class ServerState():
     def __init__(self):
         self.draw_pile = random.shuffle(Card.Joker_Deck)
         self.discard_pile = []
+        self.active_game = False
+        self.turn_index = 0
 
-    def drawCards(self, numCards):
+    def DrawCards(self, numCards):
         """Return the next numCards from the draw pile"""
         result = []
         for _ in range(numCards):
             result.append(self.draw_pile.pop())
         return result
 
-    def discardCards(self, discardList):
+    def DiscardCards(self, discardList):
         """This adds the discarded card(s) to the discard pile in order"""
-        #TODO: we should probably check the discarded items are really cards
         self.discard_pile.append(discardList)
+
+    def DiscardInfo(self):
+        """Provides the top card and size of the discard pile as a tuple"""
+        return (self.discard_pile[-1], len(self.discard_pile))

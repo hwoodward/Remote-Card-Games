@@ -12,16 +12,19 @@ class ClientState():
         self.hand_cards = []
         self.visible_cards = []
 
-    def NewCards(cardList):
+    def NewCards(self, cardList):
         """Update the cards in hand"""
         self.hand_cards.append(cardList)
 
-    def PlayCards(cardList):
+    def PlayCards(self, cardList):
         """Move cards from hand to visible"""
+        #TODO: verify this is a legal move
         for card in cardList:
             self.hand_cards.remove(card)
             self.visible_cards.append(card)
 
-    def DiscardCards(cardList):
+    def DiscardCards(self, cardList):
+        """Discard cards from hand"""
+        #Note: remove errors if you don't have that card
         for card in cardList:
             self.hand_cards.remove(card)
