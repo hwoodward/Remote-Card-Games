@@ -23,13 +23,13 @@ class PersonalListener(ConnectionListener):
         self.state.name = displayName
         connection.Send({"action": "displayName", "name": displayName})
 
-    def Discard(self, discardList):
+    def Send_discard(self, discardList):
         """Send discard to server"""
         self.state.DiscardCards(discardList)
         self.state.interactive = False #turn is over
         connection.Send({"action": "discard", "cards": [c.Serialize() for c in discardList]})
 
-    def Draw(self):
+    def Send_draw(self):
         """Request a draw from the server"""
         connection.Send({"action": "draw"})
 
