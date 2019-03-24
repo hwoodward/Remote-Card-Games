@@ -42,6 +42,12 @@ class Card():
     def __repr__(self):
         return "({0}, {1})".format(self._number, self._suit)
 
+    def __eq__(self, other):
+        return (self._number == other._number) and (self._suit == other._suit)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def GetStandardDeck():
         """Provides a standard 52 card deck"""
         return [Card(1, 'Spades'),
