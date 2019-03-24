@@ -1,4 +1,4 @@
-from common import Card
+from common.Card import Card
 import random
 
 class ServerState():
@@ -11,7 +11,9 @@ class ServerState():
     """
 
     def __init__(self):
-        self.draw_pile = random.shuffle(Card.Joker_Deck)
+        self.draw_pile = Card.GetJokerDeck()
+        random.shuffle(self.draw_pile)
+        print(self.draw_pile)
         self.discard_pile = []
         self.active_game = False
         self.turn_index = 0
@@ -21,6 +23,8 @@ class ServerState():
         result = []
         for _ in range(numCards):
             result.append(self.draw_pile.pop())
+        print("drew cards")
+        print(result)
         return result
 
     def DiscardCards(self, discardList):

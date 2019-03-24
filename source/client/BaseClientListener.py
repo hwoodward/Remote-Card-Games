@@ -1,3 +1,5 @@
+from common.Card import Card
+
 from PodSixNet.Connection import connection, ConnectionListener
 
 class PersonalListener(ConnectionListener):
@@ -25,7 +27,7 @@ class PersonalListener(ConnectionListener):
         """Send discard to server"""
         self.state.DiscardCards(discardList)
         self.state.interactive = False #turn is over
-        connection.Send({"action": "discard", "cards": discardList})
+        connection.Send({"action": "discard", "cards": [c.Serialize() for c in discardList]})
 
     def Draw(self):
         """Request a draw from the server"""
@@ -34,11 +36,15 @@ class PersonalListener(ConnectionListener):
     def Play(self, cardSet):
         """Send the server the current set of visible cards"""
         self.state.PlayCards(cardSet)
-        connection.Send({"visibleCards": self.state.visible_cards})
+        serialized = [c.Serialize() for c in self.state.visible_card]
+        connection.Send({"visibleCards": serialized})
 
     def GetHand(self):
         """sends state to UI"""
         return self.state.hand_cards
+
+    def IsTurn(self):
+        return self.state.interactive
     
     #######################################
     ### Network event/message callbacks ###
@@ -71,5 +77,6 @@ class PersonalListener(ConnectionListener):
         self.state.interactive=True
 
     def Network_newCards(self, data):
-        self.state.NewCards(data['cards'])
+        cardList = [Card.Deserialize(c) for c in data["cards"]]
+        self.state.NewCards(cardList)
         

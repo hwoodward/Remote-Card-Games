@@ -26,6 +26,8 @@ class GameServer(Server, ServerState):
             print(channel, "Client connected")
 
     def StartGame(self):
+        if len(self.players) == 0:
+            raise Exception("Can't start a game with no players")
         self.active_game = True
         #TODO: need to call 'start round' here when we add dealing and rounds
         self.NextTurn()
@@ -54,5 +56,10 @@ class GameServer(Server, ServerState):
         self.SendToAll({"action": "turnOrder", "players": [p.name for p in self.players]})
 
     def Send_visibleCards(self):
+        """Send the update to the melded cards on the table"""
+        self.SendToAll({"action": "visibleCards", "meld": dict([(p.name, p.visible_cards) for p in self.players])})
+
+    def Send_discardInfo(self):
         """Send the update to the discard pile"""
-        self.SendToAll({"action": "visibleCards", "discardPile": self.DiscardInfo(), "meld": [(p.name, p.visible_cards) for p in self.players]}) 
+        info = self.DiscardInfo()
+        self.SendToAll({"action": "discardInfo", "topCard": info[0].Serialize(), "size": info[2]})
