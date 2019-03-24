@@ -1,3 +1,4 @@
+from common.Card import Card
 from PodSixNet.Channel import Channel
 
 class PlayerChannel(Channel):
@@ -35,7 +36,7 @@ class PlayerChannel(Channel):
     def Network_discard(self, data):
         cardList = [Card.Deserialize(c) for c in data["cards"]]
         self._server.DiscardCards(cardList)
-        self._server.Send_visibleCards()
+        self._server.Send_discardInfo()
         self._server.NextTurn()
 
     def Network_draw(self, data):

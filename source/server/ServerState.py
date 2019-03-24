@@ -26,7 +26,8 @@ class ServerState():
 
     def DiscardCards(self, discardList):
         """This adds the discarded card(s) to the discard pile in order"""
-        self.discard_pile.append(discardList)
+        for card in discardList:
+            self.discard_pile.append(card)
 
     def DiscardInfo(self):
         """Provides the top card and size of the discard pile as a tuple"""
