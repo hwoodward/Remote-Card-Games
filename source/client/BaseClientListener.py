@@ -41,11 +41,11 @@ class PersonalListener(ConnectionListener):
 
     def GetHand(self):
         """sends state to UI"""
-        return self.state.hand_cards
+        return self.state.hand_cards.copy()
 
     def IsTurn(self):
         return self.state.interactive
-    
+
     #######################################
     ### Network event/message callbacks ###
     #######################################

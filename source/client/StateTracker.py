@@ -14,7 +14,8 @@ class ClientState():
 
     def NewCards(self, cardList):
         """Update the cards in hand"""
-        self.hand_cards.append(cardList)
+        for card in cardList:
+            self.hand_cards.append(card)
 
     def PlayCards(self, cardList):
         """Move cards from hand to visible"""
