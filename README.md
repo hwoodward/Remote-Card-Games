@@ -8,3 +8,11 @@ We also used a few python libraries that must be installed. I recommend using pi
 
 Python libraries required:
 * podsixnet (for server/client communication)
+
+
+## Unit Testing
+We have tried to include unit tests for classes/methods that aren't making network calls. 
+
+When running those test be sure to run them from the source folder so the imports work from the expected baes path of source (if you get import errors check this).
+
+The command to run the tests is ```python3 -m unittest path.to.test.class```

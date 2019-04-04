@@ -5,10 +5,17 @@ class Card():
     A card can tell you its color for rule checking
     """
     def __init__(self, number, suit):
-        self._number = number
         if suit not in [None, 'Spades', 'Hearts', 'Diamonds', 'Clubs']:
-            raise Exception("Invalid Suit")
+            raise ValueError("Invalid Suit")
         self._suit = suit
+
+        if suit is None:
+            self._number = 0 #Jokers are always 0
+        elif number not in range(1,14): #range includes start but not stop number
+            raise ValueError("Invalid card number")
+        else:
+            self._number = number
+
 
     def GetColor(self):
         if self._suit in ['Spades', 'Clubs']:
