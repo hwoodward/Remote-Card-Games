@@ -1,6 +1,8 @@
+from common.Card import Card
+
 from PodSixNet.Connection import connection, ConnectionListener
 
-class BaseListener(ConnectionListener):
+class PersonalListener(ConnectionListener):
     """ This client connects to a GameServer which will host a cardgame
 
     Currently the client is incomplete
@@ -11,20 +13,38 @@ class BaseListener(ConnectionListener):
     """
 
     def __init__(self, clientState):
-        self._state = clientState
-        self.setName()
+        self.state = clientState
+        self.SetName()
 
     ### Player Actions ###
-    def setName(self):
+    def SetName(self):
         """Set up a display name and send it to the server"""
         displayName = input("Select a display name: ")
-        self._state.name = displayName
+        self.state.name = displayName
         connection.Send({"action": "displayName", "name": displayName})
 
-    def discard(self, discardList):
+    def Discard(self, discardList):
         """Send discard to server"""
-        self._state.interactive = False #turn is over
-        connection.Send({"action": "discard", "cards": discardList})
+        self.state.DiscardCards(discardList)
+        self.state.interactive = False #turn is over
+        connection.Send({"action": "discard", "cards": [c.Serialize() for c in discardList]})
+
+    def Draw(self):
+        """Request a draw from the server"""
+        connection.Send({"action": "draw"})
+
+    def Play(self, cardSet):
+        """Send the server the current set of visible cards"""
+        self.state.PlayCards(cardSet)
+        serialized = [c.Serialize() for c in self.state.visible_card]
+        connection.Send({"visibleCards": serialized})
+
+    def GetHand(self):
+        """sends state to UI"""
+        return self.state.hand_cards.copy()
+
+    def IsTurn(self):
+        return self.state.interactive
 
     #######################################
     ### Network event/message callbacks ###
@@ -54,5 +74,9 @@ class BaseListener(ConnectionListener):
 
     ### Gameplay messages ###
     def Network_startTurn(self, data):
-        self._state.interactive = True
-        print("Turn started")
+        self.state.interactive=True
+
+    def Network_newCards(self, data):
+        cardList = [Card.Deserialize(c) for c in data["cards"]]
+        self.state.NewCards(cardList)
+        

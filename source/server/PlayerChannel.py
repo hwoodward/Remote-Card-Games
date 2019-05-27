@@ -1,13 +1,15 @@
+from common.Card import Card
 from PodSixNet.Channel import Channel
 
 class PlayerChannel(Channel):
-    """ This is the server's representation of a single client"""
+    """This is the server's representation of a single client"""
 
     def __init__(self, *args, **kwargs):
         """This overrides the lower lvl channel init
         It's a place to set any client information thats provided from the server
         """
         self.name = "guest"
+        self.visible_cards = []
         Channel.__init__(self, *args, **kwargs)
 
     def Close(self):
@@ -21,7 +23,7 @@ class PlayerChannel(Channel):
             print(self, 'Client disconnected during active game')
 
     ##################################
-    ### Network callbacks ###
+    ### Network callbacks          ###
     ##################################
 
     def Network_displayName(self, data):
@@ -32,4 +34,12 @@ class PlayerChannel(Channel):
     ### Player Game Actions ###
 
     def Network_discard(self, data):
+        cardList = [Card.Deserialize(c) for c in data["cards"]]
+        self._server.DiscardCards(cardList)
+        self._server.Send_discardInfo()
         self._server.NextTurn()
+
+    def Network_draw(self, data):
+        cards = self._server.DrawCards(1)
+        serialized = [c.Serialize() for c in cards]
+        self._server.SendToActive({"action": "newCards", "cards": serialized})

@@ -9,3 +9,23 @@ class ClientState():
         """ initialize a state tracker for a given client """
         self.interactive = False #Wait for server to start turn
         self.name = "guest"
+        self.hand_cards = []
+        self.visible_cards = []
+
+    def NewCards(self, cardList):
+        """Update the cards in hand"""
+        for card in cardList:
+            self.hand_cards.append(card)
+
+    def PlayCards(self, cardList):
+        """Move cards from hand to visible"""
+        #TODO: verify this is a legal move
+        for card in cardList:
+            self.hand_cards.remove(card)
+            self.visible_cards.append(card)
+
+    def DiscardCards(self, cardList):
+        """Discard cards from hand"""
+        #Note: remove errors if you don't have that card
+        for card in cardList:
+            self.hand_cards.remove(card)
