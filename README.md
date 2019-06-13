@@ -16,3 +16,8 @@ We have tried to include unit tests for classes/methods that aren't making netwo
 When running those test be sure to run them from the source folder so the imports work from the expected baes path of source (if you get import errors check this).
 
 The command to run the tests is ```python3 -m unittest path.to.test.class```
+
+Tests are located in folder called test in the appropriate package. For example, the tests for the Card class code are in common/test/TestCard.py.
+
+
+In the future we may make a script to run all the test classes in one go, but for now they need to be run individually.
