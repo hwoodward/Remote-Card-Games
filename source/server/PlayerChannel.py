@@ -42,4 +42,6 @@ class PlayerChannel(Channel):
     def Network_draw(self, data):
         cards = self._server.DrawCards(1)
         serialized = [c.Serialize() for c in cards]
+        #TODO: Why am I calling sendToActive instead of just self.send?
+        #As it is now I think a draw coming from the non-active player sends the active player cards.
         self._server.SendToActive({"action": "newCards", "cards": serialized})
