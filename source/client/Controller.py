@@ -2,7 +2,7 @@ from common.Card import Card
 
 from PodSixNet.Connection import connection, ConnectionListener
 
-class PersonalListener(ConnectionListener):
+class Controller(ConnectionListener):
     """ This client connects to a GameServer which will host a cardgame
 
     Currently the client is incomplete

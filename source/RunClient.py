@@ -2,9 +2,9 @@ import sys
 from time import sleep
 
 from PodSixNet.Connection import connection
-from client.BaseClientListener import PersonalListener
-from client.PlayerInput import BroadcastListener
-from client.StateTracker import ClientState
+from client.Controller import Controller
+from client.TableView import TableView
+from client.ClientState import ClientState
 
 if len(sys.argv) != 2:
     print("Usage:", sys.argv[0], "host:port")
@@ -13,13 +13,14 @@ else:
     host, port = sys.argv[1].split(":")
     connection.DoConnect((host, int(port)))
     clientState = ClientState()
-    gameClient = PersonalListener(clientState)
-    playerInterface = BroadcastListener(gameClient)
+    gameControl = Controller(clientState)
+    #TODO: add playerInterface
+    tableView = TableView()
     while 1:
-        playerInterface.Events()
+        #TODO: get next player event
         connection.Pump()
-        gameClient.Pump()
-        playerInterface.Pump()
-        playerInterface.Render()
+        gameControl.Pump()
+        tableView.Pump()
+        #TODO: reRender the playerInterface with updated information
         sleep(0.001)
 
