@@ -6,12 +6,12 @@ from PodSixNet.Server import Server
 class GameServer(Server, ServerState):
     channelClass = PlayerChannel
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, localaddr, ruleset):
         """This overrides the library server init
         It's a place to do any 'on launch' actions for the server
         """
-        Server.__init__(self, *args, **kwargs)
-        ServerState.__init__(self)
+        Server.__init__(self, localaddr=localaddr)
+        ServerState.__init__(self, ruleset)
         self.players = []
         print('Server launched')
 
