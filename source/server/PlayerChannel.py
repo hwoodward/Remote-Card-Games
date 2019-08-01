@@ -10,6 +10,7 @@ class PlayerChannel(Channel):
         """
         self.name = "guest"
         self.visible_cards = []
+        self.hand_status = []
         Channel.__init__(self, *args, **kwargs)
 
     def Close(self):
@@ -42,6 +43,10 @@ class PlayerChannel(Channel):
     def Network_draw(self, data):
         cards = self._server.DrawCards(1)
         serialized = [c.Serialize() for c in cards]
-        #TODO: Why am I calling sendToActive instead of just self.send?
-        #As it is now I think a draw coming from the non-active player sends the active player cards.
-        self._server.SendToActive({"action": "newCards", "cards": serialized})
+        self.Send({"action": "newCards", "cards": serialized})
+
+    ### Visible card updates ###
+    def Network_updatePublicInfo(self, data):
+        """This is refreshed public information data from the client"""
+        self.visible_cards = data["visible_cards"]
+        self.hand_status = data["hand_status"]
