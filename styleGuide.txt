@@ -26,3 +26,4 @@ methodArguments (what you pass in to a method): mixedCase
 internal variables (stuff that is only in scope for a specific method or clause's duration): mixedCase
 
 actionNames for network communications should all by mixedCase to help fit with the methodNames.
+names for properties/keys in the json objects passed in the actions/API calls shoud be lower_case and matching the variables that will store that info is acceptable/encouraged
