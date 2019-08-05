@@ -57,6 +57,8 @@ class GameServer(Server, ServerState):
 
     def Send_visibleCards(self):
         """Send the update to the melded cards on the table"""
+        #NOTE: Visible cards need to be serialized.
+        #Current plan: never deserialize them, the client sends them in serialized and we leave them that way as they go out
         self.SendToAll({"action": "visibleCards", "meld": dict([(p.name, p.visible_cards) for p in self.players])})
 
     def Send_discardInfo(self):
