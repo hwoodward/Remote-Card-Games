@@ -9,6 +9,7 @@ class TableView(ConnectionListener):
     """
 
     def __init__(self):
+        """This currently does nothing"""
         #TODO: set up any member variables here
 
     def Render(self):
