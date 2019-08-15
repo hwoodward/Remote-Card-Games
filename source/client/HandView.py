@@ -36,13 +36,13 @@ class HandView():
             if event.type == pygame.QUIT:
                 #The window crashed, we should handle this
                 print("pygame crash, AAAHHH")
-            else:
-                input("Press enter to draw")
-                self.controller.Draw()
-
-        # Switch on event
-        # in each case call correct method
-        print("performing user actions")
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_9:
+                    print("Drawing card")
+                    self.controller.Draw()
+                if event.key == pygame.K_8:
+                    print("Ending turn")
+                    self.controller.Discard(self.controller.Get_Hand())
 
     def Print_Text(self, textString, boxCenter):
         """pring the textString in a text box centered at boxCenter in the display"""

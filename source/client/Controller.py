@@ -81,6 +81,7 @@ class Controller(ConnectionListener):
         self.state.interactive=True
 
     def Network_newCards(self, data):
+        print("Got new cards")
         cardList = [Card.Deserialize(c) for c in data["cards"]]
         self.state.NewCards(cardList)
         
