@@ -23,13 +23,13 @@ class Controller(ConnectionListener):
         self.state.name = displayName
         connection.Send({"action": "displayName", "name": displayName})
 
-    def Send_discard(self, discardList):
+    def Discard(self, discardList):
         """Send discard to server"""
         self.state.DiscardCards(discardList)
         self.state.interactive = False #turn is over
         connection.Send({"action": "discard", "cards": [c.Serialize() for c in discardList]})
 
-    def Send_draw(self):
+    def Draw(self):
         """Request a draw from the server"""
         connection.Send({"action": "draw"})
 
@@ -39,11 +39,15 @@ class Controller(ConnectionListener):
         serialized = [c.Serialize() for c in self.state.visible_card]
         connection.Send({"visibleCards": serialized})
 
-    def GetHand(self):
+    def Get_Name(self):
+        """return player name for labeling"""
+        return self.state.name
+
+    def Get_Hand(self):
         """sends state to UI"""
         return self.state.hand_cards.copy()
 
-    def IsTurn(self):
+    def Is_Turn(self):
         return self.state.interactive
 
     #######################################
@@ -77,6 +81,7 @@ class Controller(ConnectionListener):
         self.state.interactive=True
 
     def Network_newCards(self, data):
+        print("Got new cards")
         cardList = [Card.Deserialize(c) for c in data["cards"]]
         self.state.NewCards(cardList)
         
