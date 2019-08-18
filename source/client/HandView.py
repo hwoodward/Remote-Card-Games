@@ -64,8 +64,10 @@ class HandView():
         for element in word_list:
             # print(element)
             textSurface = UIC.bigText.render(element, True, UIC.Black)
-            # triedd this -- but it didn't work: boxCenter = (boxCenter[0],boxCenter[1]+30)
+            # triedd this -- but it didn't work:
+            boxCenter = (boxCenter[0],boxCenter[1]+30)
             textSurface.get_rect().center = boxCenter
+            # print(boxCenter)  << boxcenter was changing.  BUT letters not moving.
             self.display.blit(textSurface, textSurface.get_rect())
         # tried this A: pygame.draw.rect(self.display, UIC.Red, bkGrdRect)
         
