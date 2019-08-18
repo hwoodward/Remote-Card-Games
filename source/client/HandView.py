@@ -1,5 +1,5 @@
 import pygame
-
+import textwrap
 from common.Card import Card
 import client.UIConstants as UIC
 
@@ -42,10 +42,30 @@ class HandView():
                     self.controller.Draw()
                 if event.key == pygame.K_8:
                     print("Ending turn")
-                    self.controller.Discard(self.controller.Get_Hand())
+                    # self.controller.Discard(self.controller.Get_Hand())
+                    bogusDiscards = self.controller.Get_Hand()
+                    # while creating UI we want to simplify discards
+                    # but discarding entire list of cards too simple.
+                    if(len(bogusDiscards)>0):
+                        bogusDiscards = [bogusDiscards[0]]
+                    else:
+                        bogusDiscards = []
+                    self.controller.Discard(bogusDiscards)
 
     def Print_Text(self, textString, boxCenter):
         """pring the textString in a text box centered at boxCenter in the display"""
-        textSurface = UIC.bigText.render(textString, True, UIC.Black)
-        textSurface.get_rect().center = boxCenter
-        self.display.blit(textSurface, textSurface.get_rect())
+        self.display.fill(UIC.White)
+        # tried this A: bkGrdRect = (0,0,200,50)
+        # tried this A: pygame.draw.rect(self.display, UIC.Red, bkGrdRect)
+        # Wrap this text.
+        wrapper = textwrap.TextWrapper(width=50)
+        word_list = textwrap.wrap(text=textString)
+        # have hardcoded 50 for this test, will need to scale that later.
+        for element in word_list:
+            # print(element)
+            textSurface = UIC.bigText.render(element, True, UIC.Black)
+            # triedd this -- but it didn't work: boxCenter = (boxCenter[0],boxCenter[1]+30)
+            textSurface.get_rect().center = boxCenter
+            self.display.blit(textSurface, textSurface.get_rect())
+        # tried this A: pygame.draw.rect(self.display, UIC.Red, bkGrdRect)
+        

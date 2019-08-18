@@ -18,10 +18,16 @@ Bright_Blue = (0,0,255)
 
 # Set dislays size
 # (below good for my laptop, screen resolution: 3840x2160, display set to 300%)
-displayWidth=1200
-displayHeight=600
+# displayWidth = 300  # temporary value for use while we're only running handview,
+displayWidth = 1200
+displayHeight = 600
+# temporary value for use while we're only running handview,
+displayHeight = 200
 
 # fonts
 pygame.font.init()
 smallText = pygame.font.Font("freesansbold.ttf",14)
 bigText = pygame.font.Font("freesansbold.ttf",20)
+# temporary value for until we get text to wrap. :)
+bigText = pygame.font.Font("freesansbold.ttf",10)
+
