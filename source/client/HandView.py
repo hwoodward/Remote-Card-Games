@@ -26,7 +26,8 @@ class HandView():
         """This should render the actual UI, for now it just prints the hand"""
         #TODO render the table view showing the visible cards
         currentHand = self.controller.Get_Hand()
-        self.Print_Text("{0}".format(currentHand), (UIC.displayWidth/2, UIC.displayHeight/3))
+        self.Print_Text("{0}".format(currentHand), (0,0))
+
         pygame.display.update()
 
     def Next_Event(self):
@@ -52,22 +53,19 @@ class HandView():
                         bogusDiscards = []
                     self.controller.Discard(bogusDiscards)
 
-    def Print_Text(self, textString, boxCenter):
-        """pring the textString in a text box centered at boxCenter in the display"""
+    def Print_Text(self, textString, textStartXY):
+        """print the textString in a text box starting on the top left."""
         self.display.fill(UIC.White)
-        # tried this A: bkGrdRect = (0,0,200,50)
-        # tried this A: pygame.draw.rect(self.display, UIC.Red, bkGrdRect)
-        # Wrap this text.
+        # Wrap the textString
+        # have hardcoded 50 for this test, will need to scale that later.
         wrapper = textwrap.TextWrapper(width=50)
         word_list = textwrap.wrap(text=textString)
-        # have hardcoded 50 for this test, will need to scale that later.
+        textStartXY_wfeed = textStartXY
         for element in word_list:
-            # print(element)
-            textSurface = UIC.bigText.render(element, True, UIC.Black)
-            # triedd this -- but it didn't work:
-            boxCenter = (boxCenter[0],boxCenter[1]+30)
-            textSurface.get_rect().center = boxCenter
-            # print(boxCenter)  << boxcenter was changing.  BUT letters not moving.
-            self.display.blit(textSurface, textSurface.get_rect())
-        # tried this A: pygame.draw.rect(self.display, UIC.Red, bkGrdRect)
+            text = UIC.bigText.render(element, True, UIC.Blue, UIC.White)
+            textRect = text.get_rect()
+            textRect.topleft = textStartXY_wfeed
+            self.display.blit(text, textRect)
+            textStartXY_wfeed = (textStartXY_wfeed[0],textStartXY_wfeed[1]+UIC.text_feed)
+
         

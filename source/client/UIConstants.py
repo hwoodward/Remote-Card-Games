@@ -28,6 +28,6 @@ displayHeight = 200
 pygame.font.init()
 smallText = pygame.font.Font("freesansbold.ttf",14)
 bigText = pygame.font.Font("freesansbold.ttf",20)
-# temporary value for until we get text to wrap. :)
-bigText = pygame.font.Font("freesansbold.ttf",10)
-
+bigFontSz = 20
+bigText = pygame.font.Font("freesansbold.ttf",bigFontSz)
+text_feed = int(bigFontSz * 1.5)
