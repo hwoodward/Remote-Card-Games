@@ -2,6 +2,7 @@ import pygame
 import textwrap
 from common.Card import Card
 import client.UIConstants as UIC
+import client.TableView as TV
 
 from PodSixNet.Connection import connection, ConnectionListener
 
@@ -15,9 +16,11 @@ class HandView():
         self.controller = controller
         # initialize pygame modules
         pygame.init()
-        # create window
+        # create window for game - left side is table=PUBLIC, right side is users
+        handDisplayWidth = UIC.displayWidth * UIC.handColumnFraction
+        gameDisplay=pygame.display.set_mode((UIC.displayWidth,UIC.displayHeight))
         self.display = pygame.display.set_mode((UIC.displayWidth, UIC.displayHeight))
-        pygame.display.set_caption(self.controller.Get_Name() + " Hand View")
+        pygame.display.set_caption(self.controller.Get_Name() + " View")
         self.display.fill(UIC.White)
         # render starting window
         self.Render()
@@ -25,8 +28,9 @@ class HandView():
     def Render(self):
         """This should render the actual UI, for now it just prints the hand"""
         #TODO render the table view showing the visible cards
+        # 
         currentHand = self.controller.Get_Hand()
-        self.Print_Text("{0}".format(currentHand), (0,0))
+        self.Print_Text("{0}".format(currentHand), (UIC.publicPrivateBoundary,0))
 
         pygame.display.update()
 
@@ -57,9 +61,7 @@ class HandView():
         """print the textString in a text box starting on the top left."""
         self.display.fill(UIC.White)
         # Wrap the textString
-        # have hardcoded 50 for this test, will need to scale that later.
-        wrapper = textwrap.TextWrapper(width=50)
-        word_list = textwrap.wrap(text=textString)
+        word_list = textwrap.wrap(text=textString,width=UIC.Wrap_Width)
         textStartXY_wfeed = textStartXY
         for element in word_list:
             text = UIC.bigText.render(element, True, UIC.Blue, UIC.White)

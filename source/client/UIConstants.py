@@ -21,8 +21,9 @@ Bright_Blue = (0,0,255)
 # displayWidth = 300  # temporary value for use while we're only running handview,
 displayWidth = 1200
 displayHeight = 600
-# temporary value for use while we're only running handview,
-displayHeight = 200
+handColumnFraction = 0.3
+publicPrivateBoundary = displayWidth * (1-handColumnFraction)
+
 
 # fonts
 pygame.font.init()
@@ -31,3 +32,5 @@ bigText = pygame.font.Font("freesansbold.ttf",20)
 bigFontSz = 20
 bigText = pygame.font.Font("freesansbold.ttf",bigFontSz)
 text_feed = int(bigFontSz * 1.5)
+Wrap_Width = int(handColumnFraction * displayWidth / (bigFontSz * 0.5))
+
