@@ -57,7 +57,11 @@ class HandView():
         #TODO render the table view showing the visible cards
         # TO DO change screen split so top=table and bottom = hand (instead of side-by-side)
         currentHand = self.controller.Get_Hand()
-        card_XY = (10,10)
+        ''' maybe put in comparison between length of currentHand and length
+        of hand that's been wrapped, and only run for loop when they disagree.
+        '''
+        '''
+card_XY = (10,10)
         icard = 0
         # if (len(currentHand) > 0):
         for element in currentHand:
@@ -71,13 +75,16 @@ class HandView():
             element_wrapped = UICardWrapper(element,card_XY,img)
             print(element_wrapped._card)
             print(element_wrapped._xy)
-            heldCards[icard]=element_wrapped
-            print(heldCards[icard]._card)
+            # need to debug next 2 lines. "heldCards is not defined"
+            # heldCards[icard]=element_wrapped
+            # print(heldCards[icard]._card)
+            print(element_wrapped._card)
             icard = icard+1
-        self.Print_Text("{0}".format(currentHand), (UIC.publicPrivateBoundary,0))
         # self.Show_Selected(holdingCards)
         # self.Show_Holding(self.heldCards)
+        '''
         self.display.blit(UIC.backImg,(UIC.displayWidth/2,UIC.displayHeight/2))
+        self.Print_Text("{0}".format(currentHand), (UIC.publicPrivateBoundary,0))
         '''
         if(len(currentHand) > 1):
            self.display.blit(card4gui._img,card4gui._xy)
@@ -117,8 +124,9 @@ class HandView():
                         print(element_wrapped._card)
                         print(element_wrapped._xy)
                         # self.heldCards.append(element_wrapped)
-                        heldCards[icard]=element_wrapped
-                        print(heldCards[icard]._card)
+                        # heldCards[icard]=element_wrapped
+                        # print(heldCards[icard]._card)
+                        print(element_wrapped._card)
                         icard = icard+1
                         '''
                         card4gui[tmp_indx] = UICardWrapper(newCard,card_XY,img)
