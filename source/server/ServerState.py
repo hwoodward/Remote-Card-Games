@@ -21,10 +21,10 @@ class ServerState():
         self.active_game = False
         self.turn_index = 0
 
-    def DrawCards(self, numCards):
+    def DrawCards(self):
         """Return the next numCards from the draw pile"""
         result = []
-        for _ in range(numCards):
+        for _ in range(self.Rules.Draw_Size):
             result.append(self.draw_pile.pop())
         return result
 
