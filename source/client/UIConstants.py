@@ -5,7 +5,6 @@ Has methods for importing and fetching images.
 """
 import pygame
 from common.Card import Card
-from client.HandView import cardAndImage
 
 #TODO: finalized choices are in Upper_Case, unfinalized may be lowercase
 
@@ -44,8 +43,10 @@ backImg = pygame.image.load('client\card_images\cardBack.png')
 # Need card for testing.
 # for simplicity make it 3C (0 points), then change image to
 # backImg
+'''
 facedown=Card(3,'Clubs')
 card4guiTests = cardAndImage(facedown,(10,10),UIC.backImg)
 card4guiTests._img = UIC.backImg
+'''
 
 

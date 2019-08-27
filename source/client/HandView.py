@@ -6,14 +6,19 @@ from client.TableView import TableView
 
 from PodSixNet.Connection import connection, ConnectionListener
 
-class cardAndImage():     
+class UICardWrapper():     
         """GUI needs image and position of card"""
-        def __init__(self, card, xy, img):
+        ''' Realized that whether cards are selected or not
+        can be an attribute of UICardWrapper, rather than trying 
+        to separate hand into two arrays.  However, have not begun
+        doing that yet.
+        This will enable me to get rid of "selectedCards baggage'''
+        def __init__(self, thiscard, loc_xy, img):
                 # should we check that card is in deck?
-                self._card = card
-                self._img = cardAndImage.get_image(self._card)
+                self._card = thiscard
+                self._img = UICardWrapper.get_image(self._card)
                 print('do NOT want get_image in render loop.')
-                self._xy = xy      
+                self._xy = loc_xy      
         def get_image(onecard):
                 temp = onecard._suit
                 if(temp is not None):
@@ -42,6 +47,8 @@ class HandView():
         self.display = pygame.display.set_mode((UIC.displayWidth, UIC.displayHeight))
         pygame.display.set_caption(self.controller.Get_Name() + " View")
         self.display.fill(UIC.White)
+        selectedCards = []
+        heldCards = []
         # render starting window, 
         self.Render()
 
@@ -50,13 +57,26 @@ class HandView():
         #TODO render the table view showing the visible cards
         # TO DO change screen split so top=table and bottom = hand (instead of side-by-side)
         currentHand = self.controller.Get_Hand()
+        card_XY = (10,10)
+        icard = 0
+        # if (len(currentHand) > 0):
+        for element in currentHand:
+            # print(currentHand)
+            # tmp_indx=len(currentHand)-1
+            # newCard = currentHand[tmp_indx]
+            print(element._number)
+            print(element._suit)
+            card_XY = (card_XY[0]+30,card_XY[1]+30)
+            img = UIC.backImg
+            element_wrapped = UICardWrapper(element,card_XY,img)
+            print(element_wrapped._card)
+            print(element_wrapped._xy)
+            heldCards[icard]=element_wrapped
+            print(heldCards[icard]._card)
+            icard = icard+1
         self.Print_Text("{0}".format(currentHand), (UIC.publicPrivateBoundary,0))
-        ''' temp values while creating Show_ - will eventually make next 2 variables lists of cardsandimages.....'''
-        selectedCards_Images = UIC.card4guiTests
-        heldCards_Images = UIC.card4guiTests
-        heldCards_Images._xy=(10,UIC.displayHeight*0.9)
-        self.Show_Selected(selectedCards_Images)
-        self.Show_Holding(heldCards_Images)
+        # self.Show_Selected(holdingCards)
+        # self.Show_Holding(self.heldCards)
         self.display.blit(UIC.backImg,(UIC.displayWidth/2,UIC.displayHeight/2))
         '''
         if(len(currentHand) > 1):
@@ -83,20 +103,25 @@ class HandView():
                     # NEED TO FIGURE THIS OUT.
                     currentHand = self.controller.Get_Hand()
                     card_XY = (10,10)
-                    if (len(currentHand) > 0):
-                        print(currentHand)
-                        tmp_indx=len(currentHand)-1
-                        newCard = currentHand[tmp_indx]
-                        print(newCard._number)
-                        print(newCard._suit)
-                        # card_XY = (card_XY[0]+30,card_XY[1]+30)
+                    icard=0
+                    # if (len(currentHand) > 0):
+                    for element in currentHand:
+                        # print(currentHand)
+                        # tmp_indx=len(currentHand)-1
+                        # newCard = currentHand[tmp_indx]
+                        print(element._number)
+                        print(element._suit)
+                        card_XY = (card_XY[0]+30,card_XY[1]+30)
                         img = UIC.backImg
-                        card4gui = cardAndImage(newCard,card_XY,img)
-                        print(card4gui._card)
-                        print(card4gui._xy)
-                        
+                        element_wrapped = UICardWrapper(element,card_XY,img)
+                        print(element_wrapped._card)
+                        print(element_wrapped._xy)
+                        # self.heldCards.append(element_wrapped)
+                        heldCards[icard]=element_wrapped
+                        print(heldCards[icard]._card)
+                        icard = icard+1
                         '''
-                        card4gui[tmp_indx] = cardAndImage(newCard,card_XY,img)
+                        card4gui[tmp_indx] = UICardWrapper(newCard,card_XY,img)
                         print(card4gui[tmp_indx]._card)
                         print(card4gui[tmp_indx]._xy)
                         '''
@@ -113,11 +138,22 @@ class HandView():
                         bogusDiscards = []
                     self.controller.Discard(bogusDiscards)
 
-    def Show_Holding(self,card4gui):
-        self.display.blit(card4gui._img,card4gui._xy)
+    def Show_Holding(self,wrappedCards):
+        for wrappedElement in wrappedCards:
+            junk = 'In Show_Holding ' + str(wrappedElement.thiscard)
+            print(junk)
+            self.display.blit(wrappedElement._img,wrappedElement._xy)
 
     def Show_Selected(self,card4gui):
-        self.display.blit(card4gui._img,card4gui._xy)
+        ''' temp values while creating Show_ - will eventually make next 2 variables lists of cardsandimages.....'''
+        facedown=Card(3,'Clubs')
+        card4guiTests = UICardWrapper(facedown,(10,10),UIC.backImg)
+        # card4guiTests._img = backImg
+        selectedCards[0] = card4guiTests
+        for cardElement in selectedCards:
+            junk = 'In Show_Selected' + str(selectedCards[0].thiscard)
+            print(junk)
+            self.display.blit(cardElement._img,cardElement._xy)        
 
     def Print_Text(self, textString, textStartXY):
         """print the textString in a text box starting on the top left."""
