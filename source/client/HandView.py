@@ -4,16 +4,18 @@ from common.Card import Card
 import client.UIConstants as UIC
 from client.TableView import TableView
 from time import sleep 
-
 from PodSixNet.Connection import connection, ConnectionListener
 
 class UICardWrapper():     
-        """GUI needs image and position of card"""
+        """GUI needs image and position of card.  Do this when card is drawn.
+        Do NOT re-wrap card in render loop -- that will reset "selected" status
+        and reload image file.
+        """
+
         def __init__(self, thiscard, loc_xy, img):
                 # should we check that card is in deck?
                 self._card = thiscard
                 self._img = UICardWrapper.get_image(self._card)
-                print('do NOT want get_image in render loop.')
                 self._xy = loc_xy
                 self._selected = False
         def get_image(onecard):
@@ -38,15 +40,15 @@ class HandView():
         self.controller = controller
         # initialize pygame modules
         pygame.init()
-        # initialize handInfo (getting error handInfo is not defined)
+        # initialize handInfo (handInfo =UICardWrapped elements of currentHand).
         self.handInfo = []                  
         # create window for game - left side is table=PUBLIC, right side is users
+        # TO DO - change this so bottom is current hand and top is table.
         handDisplayWidth = UIC.displayWidth * UIC.handColumnFraction
         gameDisplay=pygame.display.set_mode((UIC.displayWidth,UIC.displayHeight))
         self.display = pygame.display.set_mode((UIC.displayWidth, UIC.displayHeight))
         pygame.display.set_caption(self.controller.Get_Name() + " View")
         self.display.fill(UIC.White)
-        heldCards = []
         # render starting window, 
         self.Render()
 
@@ -68,44 +70,31 @@ class HandView():
             if event.type == pygame.QUIT:
                 #The window crashed, we should handle this
                 print("pygame crash, AAAHHH")
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_1:
-                    print("Refreshing view of table")
+
+            if event.type == pygame.KEYUP:
+                if (event.key == pygame.K_9 or event.key == pygame.K_8) :
+                    print("Refreshing view of hand -- seem to need to do this after drawing card.")
+                    print(" TO DO -- preserve selection status (this currently resets selections)")
                     # TableView.Network_visibleCards()
-                    # ?? was Network_visibleCards() renamed ??            
+                    # ?? was Network_visibleCards() renamed ??
+                    currentHand = self.controller.Get_Hand()
+                    card_XY = (100,100)
+                    img = UIC.backImg
+                    self.handInfo = []                   
+                    for element in currentHand:
+                        print(currentHand)
+                        card_XY = (card_XY[0]+30,card_XY[1]+30)
+                        element_wrapped = UICardWrapper(element,card_XY,img)
+                        self.handInfo.append(element_wrapped)                    
+                    
+            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_9:
-                    '''
-                    seem to need to pause while waiting for drawn card
-                    to be returned.  Otherwise when wrap "currentHand"
-                    card just drawn is omitted.
-                    Handle this by monitoring length of currentHand before
-                    and after draw.
-                    '''
                     currentHand = self.controller.Get_Hand()
                     len_BeforeDraw = len(currentHand)
                     print(len_BeforeDraw)
                     print("Drawing card")
                     self.controller.Draw()
-                    '''
-                    sleep(1)
-                    currentHand = self.controller.Get_Hand()
-                    len_AfterDraw = len(currentHand)
-                    print(len_AfterDraw)
-                    icard = 0 
-                    # NEED TO DEBUG WHY DON'T SEE FINAL CARD IN HAND.
-                    # SECTION BELOW WAS AN ATTEMPT, BUT LEFT ME CONFUSED...
-                    while(len_AfterDraw <= len_BeforeDraw and icard < 2):
-                        currentHand = self.controller.Get_Hand()
-                        len_AfterDraw = len(currentHand)
-                        print('waiting for server to provide new card')
-                        print(icard)
-                        print(len_AfterDraw)
-                        print(len_BeforeDraw)
-                        print(currentHand)
-                        sleep(1)
-                        icard = icard + 1
-                    '''
-                    # will need to scale card_XY later.
+                    # will need to scale card_XY and img size later.
                     card_XY = (100,100)
                     img = UIC.backImg
                     self.handInfo = []                   
@@ -114,23 +103,22 @@ class HandView():
                         card_XY = (card_XY[0]+30,card_XY[1]+30)
                         element_wrapped = UICardWrapper(element,card_XY,img)
                         self.handInfo.append(element_wrapped)
-                    print('Next loop for debugging')
-                    for element in self.handInfo:
-                        print(element._card)
-                        print(element_wrapped._xy)
-                        print(element_wrapped._selected)
-
+                    
+                        
                 if event.key == pygame.K_8:
                     print("Ending turn")
-                    # self.controller.Discard(self.controller.Get_Hand())
-                    bogusDiscards = self.controller.Get_Hand()
+                    bogusDiscards = []
                     # while creating UI we want to simplify discards
                     # but discarding entire list of cards too simple.
-                    if(len(bogusDiscards)>0):
-                        bogusDiscards = [bogusDiscards[0]]
+                    if(len(self.handInfo)>0):
+                        WrappedDiscardCard = self.handInfo[0]
+                        bogusDiscards = [WrappedDiscardCard._card]
                     else:
-                        bogusDiscards = []
+                        # bogusDiscards = []
+                        bogusDiscards = []                    
                     self.controller.Discard(bogusDiscards)
+                    
+                    
 
     def Show_Holding(self,wrappedCards):
         for wrappedElement in wrappedCards:
