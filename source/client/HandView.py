@@ -22,7 +22,6 @@ class HandView():
         # create window for game - left side is table=PUBLIC, right side is users
         # TO DO - change this so bottom is current hand and top is table.
         handDisplayWidth = UIC.displayWidth * UIC.handColumnFraction
-        gameDisplay= pygame.display.set_mode((UIC.displayWidth,UIC.displayHeight))
         self.display = pygame.display.set_mode((UIC.displayWidth, UIC.displayHeight))
         pygame.display.set_caption(self.controller.Get_Name() + " View")
         self.display.fill(UIC.White)
@@ -51,22 +50,8 @@ class HandView():
                               
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_9:
-                    currentHand = self.controller.Get_Hand()
-                    len_BeforeDraw = len(currentHand)
-                    print(len_BeforeDraw)
-                    print("Drawing card")
                     self.controller.Draw()
-                    # will need to scale card_XY and img size later.
-                    card_XY = (100,100)
-                    img = UIC.backImg
-                    self.handInfo = []                   
-                    for element in currentHand:
-                        print(currentHand)
-                        card_XY = (card_XY[0]+30,card_XY[1]+30)
-                        element_wrapped = UICardWrapper(element,card_XY,img)
-                        self.handInfo.append(element_wrapped)
                     
-                        
                 if event.key == pygame.K_8:
                     print("Ending turn")
                     bogusDiscards = []
@@ -76,7 +61,6 @@ class HandView():
                         WrappedDiscardCard = self.handInfo[0]
                         bogusDiscards = [WrappedDiscardCard._card]
                     else:
-                        # bogusDiscards = []
                         bogusDiscards = []                    
                     self.controller.Discard(bogusDiscards)
 
