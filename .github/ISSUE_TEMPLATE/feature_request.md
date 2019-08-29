@@ -1,17 +1,20 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
+about: Create a task to implement a planned feature
+title: ''
+labels: feature
+assignees: ''
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+**What feature needs to be implemented**
+A clear summary of what feature needs to be done
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+**What is the priority to get done**
+What part of this feature is blocking you or someone else, if any 
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+**Where is the design for this feature documented**
+Lay out where whoever implements this can find the design plan and any specifications made for it
 
 **Additional context**
 Add any other context or screenshots about the feature request here.

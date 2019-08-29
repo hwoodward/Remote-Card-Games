@@ -1,6 +1,9 @@
 ---
 name: Design Issue
 about: Discuss and clarify a part of the design
+title: ''
+labels: question
+assignees: ''
 
 ---
 
