@@ -31,7 +31,7 @@ def isWild(card):
 
 def getKeyOptions(card):
     """returns the possible keys for the groups the card can go in"""
-    if !isWild(card):
+    if not isWild(card):
         if card._number == 3:
             raise Exception("Cannot play 3s")
         return [card._number]
@@ -45,9 +45,9 @@ def canPlayGroup(key, cardGroup):
     typeDiff = 0
     for card in cardGroup:
         if isWild(card):
-            typeDiff--
+            typeDiff -= 1
         if card._number == key:
-            typeDiff++
+            typeDiff += 1
         else:
             raise Exception("Illegal card in group: {0} is not wild and is not part of the {1} group".format(card, key))
     if typeDiff > 0:
