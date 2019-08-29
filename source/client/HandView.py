@@ -3,32 +3,9 @@ import textwrap
 from common.Card import Card
 import client.UIConstants as UIC
 from client.TableView import TableView
-from time import sleep 
-from PodSixNet.Connection import connection, ConnectionListener
-
-class UICardWrapper():     
-        """GUI needs image and position of card.  Do this when card is drawn.
-        Do NOT re-wrap card in render loop -- that will reset "selected" status
-        and reload image file.
-        """
-
-        def __init__(self, thiscard, loc_xy, img):
-                # should we check that card is in deck?
-                self._card = thiscard
-                self._img = UICardWrapper.get_image(self._card)
-                self._xy = loc_xy
-                self._selected = False
-        def get_image(onecard):
-                temp = onecard._suit
-                if(temp is not None):
-                        temp = temp[0]
-                else:
-                        temp = 'N'
-                imageFileName='client\card_images\card'+str(onecard._number)+ temp + '.png'
-                print(imageFileName)
-                img = pygame.image.load(imageFileName)
-                return(img)
-
+from client.UICardWrapper import UICardWrapper
+# from time import sleep 
+# from PodSixNet.Connection import connection, ConnectionListener
 
 class HandView():
     """This class handles letting players actualy input information
@@ -45,7 +22,7 @@ class HandView():
         # create window for game - left side is table=PUBLIC, right side is users
         # TO DO - change this so bottom is current hand and top is table.
         handDisplayWidth = UIC.displayWidth * UIC.handColumnFraction
-        gameDisplay=pygame.display.set_mode((UIC.displayWidth,UIC.displayHeight))
+        gameDisplay= pygame.display.set_mode((UIC.displayWidth,UIC.displayHeight))
         self.display = pygame.display.set_mode((UIC.displayWidth, UIC.displayHeight))
         pygame.display.set_caption(self.controller.Get_Name() + " View")
         self.display.fill(UIC.White)
@@ -57,7 +34,8 @@ class HandView():
         #TODO render the table view showing the visible cards
         # TO DO change screen split so top=table and bottom = hand (instead of side-by-side)
         self.display.fill(UIC.White)
-        currentHand = self.controller.Get_Hand()
+        currentHand = self.controller.Get_Hand()       
+        self.handInfo = self.WrapHand(currentHand) 
         self.Show_Holding(self.handInfo)
         self.display.blit(UIC.backImg,(UIC.displayWidth/2,UIC.displayHeight/2))
         self.Print_Text("{0}".format(currentHand), (UIC.publicPrivateBoundary,0))
@@ -70,23 +48,7 @@ class HandView():
             if event.type == pygame.QUIT:
                 #The window crashed, we should handle this
                 print("pygame crash, AAAHHH")
-
-            if event.type == pygame.KEYUP:
-                if (event.key == pygame.K_9 or event.key == pygame.K_8) :
-                    print("Refreshing view of hand -- seem to need to do this after drawing card.")
-                    print(" TO DO -- preserve selection status (this currently resets selections)")
-                    # TableView.Network_visibleCards()
-                    # ?? was Network_visibleCards() renamed ??
-                    currentHand = self.controller.Get_Hand()
-                    card_XY = (100,100)
-                    img = UIC.backImg
-                    self.handInfo = []                   
-                    for element in currentHand:
-                        print(currentHand)
-                        card_XY = (card_XY[0]+30,card_XY[1]+30)
-                        element_wrapped = UICardWrapper(element,card_XY,img)
-                        self.handInfo.append(element_wrapped)                    
-                    
+                              
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_9:
                     currentHand = self.controller.Get_Hand()
@@ -117,9 +79,20 @@ class HandView():
                         # bogusDiscards = []
                         bogusDiscards = []                    
                     self.controller.Discard(bogusDiscards)
-                    
-                    
 
+    def WrapHand(self,updatedHand):
+        """METHOD DOC TODO"""
+        card_XY = (10,10)
+        img = UIC.backImg
+        self.wrappedHand = []
+        for element in updatedHand:
+            # print(updatedHand)
+            card_XY = (card_XY[0]+50,card_XY[1]+50)
+            element_wrapped = UICardWrapper(element,card_XY,img)
+            self.wrappedHand.append(element_wrapped)
+        return(self.wrappedHand)
+
+        
     def Show_Holding(self,wrappedCards):
         for wrappedElement in wrappedCards:
             self.display.blit(wrappedElement._img,wrappedElement._xy)
