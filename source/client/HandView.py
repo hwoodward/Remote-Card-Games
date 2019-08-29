@@ -81,7 +81,12 @@ class HandView():
                     self.controller.Discard(bogusDiscards)
 
     def WrapHand(self,updatedHand):
-        """METHOD DOC TODO"""
+        """Associate each card in updatedHand with a UICardWrapper
+
+        Only update new cards so that location and image not lost
+        """
+        # right now it updates all cards -- need to modify so that only
+        # updates new cards
         card_XY = (10,10)
         img = UIC.backImg
         self.wrappedHand = []
