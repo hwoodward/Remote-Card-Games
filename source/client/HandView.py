@@ -1,9 +1,11 @@
 import pygame
-
+import textwrap
 from common.Card import Card
 import client.UIConstants as UIC
-
-from PodSixNet.Connection import connection, ConnectionListener
+from client.TableView import TableView
+from client.UICardWrapper import UICardWrapper
+# from time import sleep 
+# from PodSixNet.Connection import connection, ConnectionListener
 
 class HandView():
     """This class handles letting players actualy input information
@@ -15,18 +17,27 @@ class HandView():
         self.controller = controller
         # initialize pygame modules
         pygame.init()
-        # create window
+        # initialize handInfo (handInfo =UICardWrapped elements of currentHand).
+        self.handInfo = []                  
+        # create window for game - left side is table=PUBLIC, right side is users
+        # TO DO - change this so bottom is current hand and top is table.
+        handDisplayWidth = UIC.displayWidth * UIC.handColumnFraction
         self.display = pygame.display.set_mode((UIC.displayWidth, UIC.displayHeight))
-        pygame.display.set_caption(self.controller.Get_Name() + " Hand View")
+        pygame.display.set_caption(self.controller.Get_Name() + " View")
         self.display.fill(UIC.White)
-        # render starting window
+        # render starting window, 
         self.Render()
 
     def Render(self):
         """This should render the actual UI, for now it just prints the hand"""
         #TODO render the table view showing the visible cards
-        currentHand = self.controller.Get_Hand()
-        self.Print_Text("{0}".format(currentHand), (UIC.displayWidth/2, UIC.displayHeight/3))
+        # TO DO change screen split so top=table and bottom = hand (instead of side-by-side)
+        self.display.fill(UIC.White)
+        currentHand = self.controller.Get_Hand()       
+        self.handInfo = self.WrapHand(currentHand) 
+        self.Show_Holding(self.handInfo)
+        self.display.blit(UIC.backImg,(UIC.displayWidth/2,UIC.displayHeight/2))
+        self.Print_Text("{0}".format(currentHand), (UIC.publicPrivateBoundary,0))
         pygame.display.update()
 
     def Next_Event(self):
@@ -36,16 +47,54 @@ class HandView():
             if event.type == pygame.QUIT:
                 #The window crashed, we should handle this
                 print("pygame crash, AAAHHH")
+                              
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_9:
-                    print("Drawing card")
                     self.controller.Draw()
+                    
                 if event.key == pygame.K_8:
                     print("Ending turn")
-                    self.controller.Discard(self.controller.Get_Hand())
+                    bogusDiscards = []
+                    # while creating UI we want to simplify discards
+                    # but discarding entire list of cards too simple.
+                    if(len(self.handInfo)>0):
+                        WrappedDiscardCard = self.handInfo[0]
+                        bogusDiscards = [WrappedDiscardCard._card]
+                    else:
+                        bogusDiscards = []                    
+                    self.controller.Discard(bogusDiscards)
 
-    def Print_Text(self, textString, boxCenter):
-        """pring the textString in a text box centered at boxCenter in the display"""
-        textSurface = UIC.bigText.render(textString, True, UIC.Black)
-        textSurface.get_rect().center = boxCenter
-        self.display.blit(textSurface, textSurface.get_rect())
+    def WrapHand(self,updatedHand):
+        """Associate each card in updatedHand with a UICardWrapper
+
+        Only update new cards so that location and image not lost
+        """
+        # right now it updates all cards -- need to modify so that only
+        # updates new cards
+        card_XY = (10,10)
+        img = UIC.backImg
+        self.wrappedHand = []
+        for element in updatedHand:
+            # print(updatedHand)
+            card_XY = (card_XY[0]+50,card_XY[1]+50)
+            element_wrapped = UICardWrapper(element,card_XY,img)
+            self.wrappedHand.append(element_wrapped)
+        return(self.wrappedHand)
+
+        
+    def Show_Holding(self,wrappedCards):
+        for wrappedElement in wrappedCards:
+            self.display.blit(wrappedElement._img,wrappedElement._xy)
+
+    def Print_Text(self, textString, textStartXY):
+        """print the textString in a text box starting on the top left."""
+        # self.display.fill(UIC.White)
+        # Wrap the textString
+        word_list = textwrap.wrap(text=textString,width=UIC.Wrap_Width)
+        textStartXY_wfeed = textStartXY
+        for element in word_list:
+            text = UIC.bigText.render(element, True, UIC.Blue, UIC.White)
+            textRect = text.get_rect()
+            textRect.topleft = textStartXY_wfeed
+            self.display.blit(text, textRect)
+            textStartXY_wfeed = (textStartXY_wfeed[0],textStartXY_wfeed[1]+UIC.text_feed)
