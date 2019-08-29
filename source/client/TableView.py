@@ -21,7 +21,7 @@ class TableView(ConnectionListener):
     ### Network event/message callbacks ###
     #######################################
 
-    def Network_visibleCards(self, data):
+    def Network_publicInfo(self, data):
         print("Recieved an update about cards on the table")
         #TODO either:
         # a) copy the data to the internal save you are keeping and
