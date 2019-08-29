@@ -48,7 +48,12 @@ class Controller(ConnectionListener):
         return self.state.hand_cards.copy()
 
     def Is_Turn(self):
+        """return if the player should be active"""
         return self.state.interactive
+
+    def GetDiscardInfo(self):
+        """let the UI know the discard information"""
+        return self.state.discardInfo.copy()
 
     #######################################
     ### Network event/message callbacks ###
@@ -81,7 +86,10 @@ class Controller(ConnectionListener):
         self.state.interactive=True
 
     def Network_newCards(self, data):
-        print("Got new cards")
         cardList = [Card.Deserialize(c) for c in data["cards"]]
         self.state.NewCards(cardList)
-        
+
+    def Network_discardInfo(self, data):
+        topCard = Card.deserialize(data["topCard"])
+        size = data["size"]
+        self.state.UpdateDiscardInfo(topCard, size)

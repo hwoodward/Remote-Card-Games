@@ -1,5 +1,7 @@
 from common.Card import Card
+
 import random
+import importlib
 
 class ServerState():
     """This tracks the game's shared state on the server.
@@ -10,17 +12,19 @@ class ServerState():
     -discard pile
     """
 
-    def __init__(self):
+    def __init__(self, ruleset):
+        ruleModule = "common." + ruleset
+        self.Rules = importlib.import_module(ruleModule)
         self.draw_pile = Card.GetJokerDeck()
         random.shuffle(self.draw_pile)
         self.discard_pile = []
         self.active_game = False
         self.turn_index = 0
 
-    def DrawCards(self, numCards):
+    def DrawCards(self):
         """Return the next numCards from the draw pile"""
         result = []
-        for _ in range(numCards):
+        for _ in range(self.Rules.Draw_Size):
             result.append(self.draw_pile.pop())
         return result
 

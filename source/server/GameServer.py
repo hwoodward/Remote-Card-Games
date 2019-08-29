@@ -6,12 +6,12 @@ from PodSixNet.Server import Server
 class GameServer(Server, ServerState):
     channelClass = PlayerChannel
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, localaddr, ruleset):
         """This overrides the library server init
         It's a place to do any 'on launch' actions for the server
         """
-        Server.__init__(self, *args, **kwargs)
-        ServerState.__init__(self)
+        Server.__init__(self, localaddr=localaddr)
+        ServerState.__init__(self, ruleset)
         self.players = []
         print('Server launched')
 
@@ -55,15 +55,15 @@ class GameServer(Server, ServerState):
         """Adds a player to the end of the turn order"""
         self.SendToAll({"action": "turnOrder", "players": [p.name for p in self.players]})
 
-    def Send_visibleCards(self):
+    def Send_publicInfo(self):
         """Send the update to the melded cards on the table"""
-        #NOTE: Visible cards need to be serialized.
-        #Current plan: never deserialize them, the client sends them in serialized and we leave them that way as they go out
-        self.SendToAll({"action": "visibleCards", "meld": dict([(p.name, p.visible_cards) for p in self.players])})
+        #NOTE: visible_cards needs to be serialized.
+        #Current plan: never deserialize them, the client sends them in serialized and we leave them serialized in the channel during storage and so they are serialized when they go out again
+        self.SendToAll({"action": "publicInfo", "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
 
     def Send_discardInfo(self):
         """Send the update to the discard pile"""
         info = self.DiscardInfo()
-        self.SendToAll({"action": "discardInfo", "topCard": info[0].Serialize(), "size": info[1]})
+        self.SendToAll({"action": "discardInfo", "top_card": info[0].Serialize(), "size": info[1]})
 
 

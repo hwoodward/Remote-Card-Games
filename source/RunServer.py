@@ -19,7 +19,8 @@ def runServer():
     """This is the functionality start point for the server."""
     # get command line argument of server, port
     host, port = sys.argv[1].split(":")
-    server = GameServer(localaddr=(host, int(port)))
+    rulesetName = sys.argv[2]
+    server = GameServer(localaddr=(host, int(port)), ruleset=rulesetName)
     #set up thread for user input
     global Waiting_For_Start, Waiting_For_End
     inputThread = threading.Thread(target=commandLineTransitions)
@@ -36,9 +37,9 @@ def runServer():
     print("To play again restart server with same command")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage:", sys.argv[0], "host:port")
-        print("e.g.", sys.argv[0], "localhost:31425")
+    if len(sys.argv) != 3:
+        print("Usage:", sys.argv[0], "host:port ruleset")
+        print("e.g.", sys.argv[0], "localhost:31425 HandAndFoot")
     else:
         runServer()
 else:
