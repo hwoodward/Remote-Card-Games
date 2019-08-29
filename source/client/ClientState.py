@@ -7,8 +7,10 @@ class ClientState():
     It stores what is needed to compute scores and decide on move legality
     """
 
-    def __init__(self):
+    def __init__(self, ruleset):
         """Initialize a state tracker for a given client"""
+        ruleModule = "common." + ruleset
+        self.Rules = importlib.import_module(ruleModule)
         self.interactive = False #Wait for server to start turn
         self.name = "guest"
         self.hand_cards = []

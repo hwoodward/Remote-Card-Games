@@ -8,13 +8,14 @@ from client.HandView import HandView
 from client.ClientState import ClientState
 #TODO: consistent import ordering for ease of finding stuff
 
-if len(sys.argv) != 2:
-    print("Usage:", sys.argv[0], "host:port")
-    print("e.g.", sys.argv[0], "localhost:31425")
+if len(sys.argv) != 3:
+    print("Usage:", sys.argv[0], "host:port ruleset")
+    print("e.g.", sys.argv[0], "localhost:31425 HandAndFoot")
 else:
     host, port = sys.argv[1].split(":")
+    ruleset = sys.argv[2]
     connection.DoConnect((host, int(port)))
-    clientState = ClientState()
+    clientState = ClientState(ruleset)
     gameControl = Controller(clientState)
     handView = HandView(gameControl)
     tableView = TableView()
