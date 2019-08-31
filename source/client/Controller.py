@@ -91,5 +91,6 @@ class Controller(ConnectionListener):
 
     def Network_discardInfo(self, data):
         topCard = Card.deserialize(data["topCard"])
+        topCard = Card.Deserialize(data["topCard"])
         size = data["size"]
         self.state.UpdateDiscardInfo(topCard, size)
