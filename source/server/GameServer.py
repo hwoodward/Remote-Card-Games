@@ -64,6 +64,6 @@ class GameServer(Server, ServerState):
     def Send_discardInfo(self):
         """Send the update to the discard pile"""
         info = self.DiscardInfo()
-        self.SendToAll({"action": "discardInfo", "top_card": info[0].Serialize(), "size": info[1]})
+        self.SendToAll({"action": "discardInfo", "topCard": info[0].Serialize(), "size": info[1]})
 
 
