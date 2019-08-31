@@ -41,7 +41,7 @@ class PlayerChannel(Channel):
         self._server.NextTurn()
 
     def Network_draw(self, data):
-        cards = self._server.DrawCards(1)
+        cards = self._server.DrawCards()
         serialized = [c.Serialize() for c in cards]
         self.Send({"action": "newCards", "cards": serialized})
 
