@@ -7,7 +7,7 @@ osing quotes on their own line
 
 Naming conventions:
 folder names: lowercase (preferably one word)
-file names: CapWords format
+file names: CapWords format  (exception = card image files, they are cardNS.png)
 class names: CapWords (remember that import statements look like "from folder.path.FileName import ClassName" when naming)
 
 method names (functions in classes): Prefix_mixCase or mixedCase depending on if there is a prefix.

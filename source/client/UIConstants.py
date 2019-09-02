@@ -21,23 +21,23 @@ Bright_Blue = (0,0,255)
 # Set dislays size
 # (below good for my laptop, screen resolution: 3840x2160, display set to 300%)
 # displayWidth = 300  # temporary value for use while we're only running handview,
-displayWidth = 1200
-displayHeight = 600
-handColumnFraction = 0.3
-publicPrivateBoundary = displayWidth * (1-handColumnFraction)
+Disp_Width = 1200
+Disp_Height = 600
+Hand_Col_Fraction = 0.3
+Table_Hand_Border = Disp_Width * (1-Hand_Col_Fraction)
 
 
 # fonts
 pygame.font.init()
-smallText = pygame.font.Font("freesansbold.ttf",14)
-bigText = pygame.font.Font("freesansbold.ttf",20)
-bigFontSz = 20
-bigText = pygame.font.Font("freesansbold.ttf",bigFontSz)
-text_feed = int(bigFontSz * 1.5)
-Wrap_Width = int(handColumnFraction * displayWidth / (bigFontSz * 0.5))
+Small_Text = pygame.font.Font("freesansbold.ttf",14)
+# Big_Text = pygame.font.Font("freesansbold.ttf",20)
+Big_Font_Sz = 20
+Big_Text = pygame.font.Font("freesansbold.ttf",Big_Font_Sz)
+Text_Feed = int(Big_Font_Sz * 1.5)
+Wrap_Width = int(Hand_Col_Fraction * Disp_Width / (Big_Font_Sz * 0.5))
 
 # load image of back of card.
-backImg = pygame.image.load('client\card_images\cardBack.png')
+Back_Img = pygame.image.load('client\cardimages\cardBack.png')
 
 
 # Need card for testing.
