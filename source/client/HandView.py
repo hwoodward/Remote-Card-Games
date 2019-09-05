@@ -26,22 +26,22 @@ class HandView():
         pygame.display.set_caption(self.controller.Get_Name() + " View")
         self.display.fill(UIC.White)
         # render starting window 
-        self.Render()
+        self.render()
 
-    def Render(self):
+    def render(self):
         """This should render the actual UI, for now it just prints the hand"""
         #TODO render the table view showing the visible cards
         # TO DO
         # change screen split so top=table & bottom=hand(instead of side-by-side)
         self.display.fill(UIC.White)
         current_hand = self.controller.Get_Hand()       
-        self.hand_info = self.WrapHand(current_hand) 
-        self.Show_Holding(self.hand_info)
+        self.hand_info = self.wrapHand(current_hand) 
+        self.showHolding(self.hand_info)
         self.display.blit(UIC.Back_Img,(UIC.Disp_Width/2,UIC.Disp_Height/2))
-        self.Print_Text("{0}".format(current_hand), (UIC.Table_Hand_Border,0))
+        self.printText("{0}".format(current_hand), (UIC.Table_Hand_Border,0))
         pygame.display.update()
 
-    def Next_Event(self):
+    def nextEvent(self):
         """This submits the next user input to the controller"""
         #TODO find out what user event was
         for event in pygame.event.get():
@@ -65,13 +65,13 @@ class HandView():
                         bogus_discards = []                    
                     self.controller.Discard(bogus_discards)
 
-    def WrapHand(self,updated_hand):
+    def wrapHand(self,updated_hand):
         """Associate each card in updated_hand with a UICardWrapper
 
         Only update new cards so that location and image not lost
         """
         # right now it updates all cards -- need to modify so that only
-        # updates new cards
+        # updates cards that aren't already wrapped.
         card_XY = (10,10)
         img = UIC.Back_Img
         self.wrapped_hand = []
@@ -83,11 +83,11 @@ class HandView():
         return(self.wrapped_hand)
 
         
-    def Show_Holding(self,wrapped_cards):
+    def showHolding(self,wrapped_cards):
         for wrapped_element in wrapped_cards:
             self.display.blit(wrapped_element._img,wrapped_element._xy)
 
-    def Print_Text(self, text_string, start_xy):
+    def printText(self, text_string, start_xy):
         """print the text_string in a text box starting on the top left."""
         # self.display.fill(UIC.White)
         # Wrap the text_string, beginning at start_xy

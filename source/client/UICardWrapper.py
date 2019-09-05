@@ -5,15 +5,9 @@ from common.Card import Card
 import client.UIConstants as UIC
 
 class UICardWrapper():     
-    """GUI needs image and position of card.
-
-    Do this when card is drawn.
-    Do NOT re-wrap card in render loop -- that will reset "selected" status
-    and reload image file.
-    """
+    """GUI needs image and position of card. """
 
     def __init__(self, this_card, loc_xy, img):
-        # should we check that card is in deck?
         self._card = this_card
         self._img = UICardWrapper.getImage(self._card)
         self._xy = loc_xy

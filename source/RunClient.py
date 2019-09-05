@@ -21,11 +21,11 @@ def RunClient():
     handView = HandView(gameControl)
     tableView = TableView()
     while 1:
-        handView.Next_Event()
+        handView.nextEvent()
         connection.Pump()
         gameControl.Pump()
         tableView.Pump()
-        handView.Render()
+        handView.render()
         sleep(0.001)
 
 if __name__ == "__main__":
