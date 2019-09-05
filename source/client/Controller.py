@@ -25,7 +25,7 @@ class Controller(ConnectionListener):
 
     def Discard(self, discardList):
         """Send discard to server"""
-        self.state.DiscardCards(discardList)
+        self.state.discardCards(discardList)
         self.state.interactive = False #turn is over
         connection.Send({"action": "discard", "cards": [c.serialize() for c in discardList]})
 
