@@ -7,7 +7,7 @@ from server.GameServer import GameServer
 Waiting_For_Start = True
 Waiting_For_End = True
 
-def commandLineTransitions():
+def CommandLineTransitions():
     """This waits on input for game start and end"""
     global Waiting_For_Start, Waiting_For_End
     temp = input("Press enter when all players are connected to start the game\n")
@@ -15,15 +15,15 @@ def commandLineTransitions():
     temp = input("Press enter to end the game when finsihed playing\n")
     Waiting_For_End = False
 
-def runServer():
+def RunServer():
     """This is the functionality start point for the server."""
     # get command line argument of server, port
     host, port = sys.argv[1].split(":")
-    rulesetName = sys.argv[2]
-    server = GameServer(localaddr=(host, int(port)), ruleset=rulesetName)
+    ruleset_name = sys.argv[2]
+    server = GameServer(localaddr=(host, int(port)), ruleset=ruleset_name)
     #set up thread for user input
     global Waiting_For_Start, Waiting_For_End
-    inputThread = threading.Thread(target=commandLineTransitions)
+    inputThread = threading.Thread(target=CommandLineTransitions)
     inputThread.start()
     # wait for game to start
     while Waiting_For_Start:
@@ -41,6 +41,6 @@ if __name__ == "__main__":
         print("Usage:", sys.argv[0], "host:port ruleset")
         print("e.g.", sys.argv[0], "localhost:31425 HandAndFoot")
     else:
-        runServer()
+        RunServer()
 else:
     print("RunServer should not be imported anywhere")
