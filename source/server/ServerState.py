@@ -15,7 +15,7 @@ class ServerState():
     def __init__(self, ruleset):
         ruleModule = "common." + ruleset
         self.Rules = importlib.import_module(ruleModule)
-        self.draw_pile = Card.GetJokerDeck()
+        self.draw_pile = Card.getJokerDeck()
         random.shuffle(self.draw_pile)
         self.discard_pile = []
         self.active_game = False

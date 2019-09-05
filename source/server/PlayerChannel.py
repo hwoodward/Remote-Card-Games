@@ -35,14 +35,14 @@ class PlayerChannel(Channel):
     ### Player Game Actions ###
 
     def Network_discard(self, data):
-        cardList = [Card.Deserialize(c) for c in data["cards"]]
+        cardList = [Card.deserialize(c) for c in data["cards"]]
         self._server.DiscardCards(cardList)
         self._server.Send_discardInfo()
         self._server.NextTurn()
 
     def Network_draw(self, data):
         cards = self._server.DrawCards()
-        serialized = [c.Serialize() for c in cards]
+        serialized = [c.serialize() for c in cards]
         self.Send({"action": "newCards", "cards": serialized})
 
     ### Visible card updates ###
