@@ -28,15 +28,15 @@ class PlayerChannel(Channel):
     ##################################
 
     def Network_displayName(self, data):
-        """Player submitted their displayName"""
+        """Player submitted their display name"""
         self.name = data['name']
         self._server.Send_turnOrder()
 
     ### Player Game Actions ###
 
     def Network_discard(self, data):
-        cardList = [Card.deserialize(c) for c in data["cards"]]
-        self._server.discardCards(cardList)
+        card_list = [Card.deserialize(c) for c in data["cards"]]
+        self._server.discardCards(card_list)
         self._server.Send_discardInfo()
         self._server.nextTurn()
 
