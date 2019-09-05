@@ -21,7 +21,7 @@ class TestServerState(unittest.TestCase):
         testState = ServerState()
         topCard = testState.draw_pile[-1]
         secondCard = testState.draw_pile[-2]
-        drawResult = testState.DrawCards(2)
+        drawResult = testState.drawCards(2)
         self.assertEqual(len(testState.draw_pile), 52)
         self.assertEqual(len(drawResult), 2)
         self.assertEqual(topCard, drawResult[0])
@@ -31,21 +31,21 @@ class TestServerState(unittest.TestCase):
         """Confirm that discarCards adds all cards to discard pile in order"""
         testState = ServerState()
         discardList = [Card(0,None), Card(3,'Spades'), Card(2, 'Clubs')]
-        testState.DiscardCards(discardList)
+        testState.discardCards(discardList)
         self.assertEqual(len(testState.discard_pile), 3)
         self.assertEqual(testState.discard_pile, discardList)
 
         discardList = [Card(12, 'Hearts')]
-        testState.DiscardCards(discardList)
+        testState.discardCards(discardList)
         self.assertEqual(len(testState.discard_pile), 4)
         self.assertEqual(testState.discard_pile[-1], discardList[0])
 
     def testDiscardInfo(self):
-        """Confirm that DiscardInfo accurately reporst discard_pile status"""
+        """Confirm that discardInfo accurately reporst discard_pile status"""
         testState = ServerState()
         discardList = [Card(0,None), Card(3,'Spades'), Card(2, 'Clubs')]
-        testState.DiscardCards(discardList)
-        info = testState.DiscardInfo()
+        testState.discardCards(discardList)
+        info = testState.discardInfo()
         self.assertEqual((Card(2, 'Clubs'), 3), info)
 
 if __name__ == '__main__':

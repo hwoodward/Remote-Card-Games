@@ -41,11 +41,11 @@ class TestClientState(unittest.TestCase):
 
         
     def testDiscardCards(self):
-        """Confirm DiscardCards removes cards without playing them"""
+        """Confirm discardCards removes cards without playing them"""
         testState = ClientState()
         hand = [Card(1, 'Spades'), Card(2, 'Clubs'), Card(3, 'Diamonds'), Card(4, 'Hearts'), Card(0, None)]
         testState.NewCards(hand)
-        testState.DiscardCards([Card(1, 'Spades')])
+        testState.discardCards([Card(1, 'Spades')])
         self.assertEqual(testState.visible_cards, [])
         hand.remove(Card(1, 'Spades'))
         self.assertEqual(testState.hand_cards, hand)
@@ -53,7 +53,7 @@ class TestClientState(unittest.TestCase):
         with self.assertRaises(ValueError):
             testState.PlayCards([Card(1, 'Spades')])
 
-        testState.DiscardCards([Card(2, 'Clubs'), Card(0, None)])
+        testState.discardCards([Card(2, 'Clubs'), Card(0, None)])
         self.assertEqual(testState.visible_cards, [])
         self.assertEqual(testState.hand_cards, [Card(3, 'Diamonds'), Card(4, 'Hearts')])
 

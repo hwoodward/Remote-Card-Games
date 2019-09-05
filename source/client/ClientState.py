@@ -28,7 +28,7 @@ class ClientState():
             self.hand_cards.remove(card)
             self.visible_cards.append(card)
 
-    def DiscardCards(self, cardList):
+    def discardCards(self, cardList):
         """Discard cards from hand"""
         #Note: remove errors if you don't have that card
         for card in cardList:
