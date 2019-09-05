@@ -55,6 +55,7 @@ class Card():
     def __ne__(self, other):
         return not self.__eq__(other)
 
+
     def getStandardDeck():
         """Provides a standard 52 card deck"""
         return [Card(1, 'Spades'),
