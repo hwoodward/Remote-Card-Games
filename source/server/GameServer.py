@@ -16,7 +16,7 @@ class GameServer(Server, ServerState):
         print('Server launched')
 
     def Connected(self, channel, addr):
-        """Called when a client connects and establishes a channel"""
+        """Called by podsixnet when a client connects and establishes a channel"""
         if self.active_game:
             print(channel, 'Client tried to connect during active game')
             channel.Send({"action": "connectionDenied"})
@@ -25,46 +25,42 @@ class GameServer(Server, ServerState):
             self.Send_turnOrder()
             print(channel, "Client connected")
 
-    def StartGame(self):
+    def startGame(self):
         if len(self.players) == 0:
             raise Exception("Can't start a game with no players")
         self.active_game = True
         #TODO: need to call 'start round' here when we add dealing and rounds
-        self.NextTurn()
+        self.nextTurn()
 
-    def DelPlayer(self, player):
+    def delPlayer(self, player):
         """Remove a player from the turn order"""
         self.players.remove(player)
         self.Send_turnOrder();
 
-    def NextTurn(self):
+    def nextTurn(self):
         """Advance to the next trun"""
         newIndex = (self.turn_index + 1) % len(self.players)
         self.turn_index = newIndex
-        self.SendToActive({"action": "startTurn"})
+        self.players[self.turn_index].Send({"action": "startTurn"})
         
-    def SendToAll(self, data):
+    def Send_broadcast(self, data):
         """Send data to every connected player"""
         [p.Send(data) for p in self.players]
 
-    def SendToActive(self, data):
-        """Send data to the player whose turn it is"""
-        self.players[self.turn_index].Send(data)
-
     def Send_turnOrder(self):
         """Adds a player to the end of the turn order"""
-        self.SendToAll({"action": "turnOrder", "players": [p.name for p in self.players]})
+        self.Send_broadcast({"action": "turnOrder", "players": [p.name for p in self.players]})
 
     def Send_publicInfo(self):
         """Send the update to the melded cards on the table"""
         #NOTE: visible_cards needs to be serialized.
         #Current plan: never deserialize them, the client sends them in serialized and
         #we leave them serialized in the channel during storage and thus when they go out again
-        self.SendToAll({"action": "publicInfo", "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
+        self.Send_broadcast({"action": "publicInfo", "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
 
     def Send_discardInfo(self):
         """Send the update to the discard pile"""
         info = self.discardInfo()
-        self.SendToAll({"action": "discardInfo", "topCard": info[0].serialize(), "size": info[1]})
+        self.Send_broadcast({"action": "discardInfo", "topCard": info[0].serialize(), "size": info[1]})
 
 

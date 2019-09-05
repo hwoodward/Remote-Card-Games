@@ -18,7 +18,7 @@ class PlayerChannel(Channel):
         Removes player from the turn order
         """
         if not self._server.active_game:
-            self._server.DelPlayer(self)
+            self._server.delPlayer(self)
             print(self, 'Client disconnected')
         else:
             print(self, 'Client disconnected during active game')
@@ -38,7 +38,7 @@ class PlayerChannel(Channel):
         cardList = [Card.deserialize(c) for c in data["cards"]]
         self._server.discardCards(cardList)
         self._server.Send_discardInfo()
-        self._server.NextTurn()
+        self._server.nextTurn()
 
     def Network_draw(self, data):
         cards = self._server.drawCards()
