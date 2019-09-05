@@ -9,11 +9,16 @@ class ClientState():
 
     def __init__(self, ruleset):
         """Initialize a state tracker for a given client"""
-        rule_module = "common." + ruleset
-        self.rules = importlib.import_module(rule_module)
+        if ruleset != None:
+            rule_module = "common." + ruleset
+            self.rules = importlib.import_module(rule_module)
+        else:
+            #This is the unit test case - we may want to put a dummy ruleset in
+            print("In unittest mode")
         self.interactive = False #Wait for server to start turn
         self.name = "guest"
         self.hand_cards = []
+        self.played_cards = []
         self.discard_info = (None, 0) #This is topCard and then size
 
     def newCards(self, card_list):
@@ -26,7 +31,7 @@ class ClientState():
         #TODO: verify this is a legal move
         for card in card_list:
             self.hand_cards.remove(card)
-            self.visible_cards.append(card)
+            self.played_cards.append(card)
 
     def discardCards(self, card_list):
         """Discard cards from hand"""
