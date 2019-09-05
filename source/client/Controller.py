@@ -35,7 +35,7 @@ class Controller(ConnectionListener):
 
     def Play(self, cardSet):
         """Send the server the current set of visible cards"""
-        self.state.PlayCards(cardSet)
+        self.state.playCards(cardSet)
         serialized = [c.serialize() for c in self.state.visible_card]
         connection.Send({"visibleCards": serialized})
 
@@ -53,7 +53,7 @@ class Controller(ConnectionListener):
 
     def GetDiscardInfo(self):
         """let the UI know the discard information"""
-        return self.state.discardInfo.copy()
+        return self.state.discard_info.copy()
 
     #######################################
     ### Network event/message callbacks ###
@@ -87,9 +87,9 @@ class Controller(ConnectionListener):
 
     def Network_newCards(self, data):
         cardList = [Card.deserialize(c) for c in data["cards"]]
-        self.state.NewCards(cardList)
+        self.state.newCards(cardList)
 
     def Network_discardInfo(self, data):
         topCard = Card.deserialize(data["topCard"])
         size = data["size"]
-        self.state.UpdateDiscardInfo(topCard, size)
+        self.state.updateDiscardInfo(topCard, size)

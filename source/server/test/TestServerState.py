@@ -41,11 +41,11 @@ class TestServerState(unittest.TestCase):
         self.assertEqual(testState.discard_pile[-1], discardList[0])
 
     def testDiscardInfo(self):
-        """Confirm that discardInfo accurately reporst discard_pile status"""
+        """Confirm that discard_info accurately reporst discard_pile status"""
         testState = ServerState()
         discardList = [Card(0,None), Card(3,'Spades'), Card(2, 'Clubs')]
         testState.discardCards(discardList)
-        info = testState.discardInfo()
+        info = testState.discard_info()
         self.assertEqual((Card(2, 'Clubs'), 3), info)
 
 if __name__ == '__main__':

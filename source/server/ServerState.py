@@ -33,6 +33,6 @@ class ServerState():
         for card in discard_list:
             self.discard_pile.append(card)
 
-    def discardInfo(self):
+    def discard_info(self):
         """Provides the top card and size of the discard pile as a tuple"""
         return (self.discard_pile[-1], len(self.discard_pile))

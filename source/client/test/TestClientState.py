@@ -12,30 +12,30 @@ class TestClientState(unittest.TestCase):
         self.assertEqual(testState.visible_cards, [])
 
     def testNewCards(self):
-        """Confirm NewCards adds cards to hand"""
+        """Confirm newCards adds cards to hand"""
         testState = ClientState()
         wholeDeck = Card.GetStandardDeck()
-        testState.NewCards(wholeDeck)
+        testState.newCards(wholeDeck)
         self.assertEqual(wholeDeck, testState.hand_cards)
 
         drawnCards = [Card(0, None), Card(0, None)]
-        testState.NewCards(drawnCards)
+        testState.newCards(drawnCards)
         self.assertEqual(Card.GetJokerDeck(), testState.hand_cards)
         
     def testPlayCards(self):
-        """Confirm PlayCards transfers cards from hand to visible"""
+        """Confirm playCards transfers cards from hand to visible"""
         testState = ClientState()
         hand = [Card(1, 'Spades'), Card(2, 'Clubs'), Card(3, 'Diamonds'), Card(4, 'Hearts'), Card(0, None)]
-        testState.NewCards(hand)
-        testState.PlayCards([Card(1, 'Spades')])
+        testState.newCards(hand)
+        testState.playCards([Card(1, 'Spades')])
         self.assertEqual(testState.visible_cards, [Card(1, 'Spades')])
         hand.remove(Card(1, 'Spades'))
         self.assertEqual(testState.hand_cards, hand)
 
         with self.assertRaises(ValueError):
-            testState.PlayCards([Card(1, 'Spades')])
+            testState.playCards([Card(1, 'Spades')])
 
-        testState.PlayCards([Card(2, 'Clubs'), Card(0, None)])
+        testState.playCards([Card(2, 'Clubs'), Card(0, None)])
         self.assertEqual(testState.visible_cards, [Card(1, 'Spades'), Card(2, 'Clubs'), Card(0, None)])
         self.assertEqual(testState.hand_cards, [Card(3, 'Diamonds'), Card(4, 'Hearts')])
 
@@ -44,14 +44,14 @@ class TestClientState(unittest.TestCase):
         """Confirm discardCards removes cards without playing them"""
         testState = ClientState()
         hand = [Card(1, 'Spades'), Card(2, 'Clubs'), Card(3, 'Diamonds'), Card(4, 'Hearts'), Card(0, None)]
-        testState.NewCards(hand)
+        testState.newCards(hand)
         testState.discardCards([Card(1, 'Spades')])
         self.assertEqual(testState.visible_cards, [])
         hand.remove(Card(1, 'Spades'))
         self.assertEqual(testState.hand_cards, hand)
 
         with self.assertRaises(ValueError):
-            testState.PlayCards([Card(1, 'Spades')])
+            testState.playCards([Card(1, 'Spades')])
 
         testState.discardCards([Card(2, 'Clubs'), Card(0, None)])
         self.assertEqual(testState.visible_cards, [])

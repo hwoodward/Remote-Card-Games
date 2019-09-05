@@ -9,31 +9,31 @@ class ClientState():
 
     def __init__(self, ruleset):
         """Initialize a state tracker for a given client"""
-        ruleModule = "common." + ruleset
-        self.Rules = importlib.import_module(ruleModule)
+        rule_module = "common." + ruleset
+        self.rules = importlib.import_module(rule_module)
         self.interactive = False #Wait for server to start turn
         self.name = "guest"
         self.hand_cards = []
-        self.discardInfo = (None, 0) #This is topCard and then size
+        self.discard_info = (None, 0) #This is topCard and then size
 
-    def NewCards(self, cardList):
+    def newCards(self, card_list):
         """Update the cards in hand"""
-        for card in cardList:
+        for card in card_list:
             self.hand_cards.append(card)
 
-    def PlayCards(self, cardList):
+    def playCards(self, card_list):
         """Move cards from hand to visible"""
         #TODO: verify this is a legal move
-        for card in cardList:
+        for card in card_list:
             self.hand_cards.remove(card)
             self.visible_cards.append(card)
 
-    def discardCards(self, cardList):
+    def discardCards(self, card_list):
         """Discard cards from hand"""
         #Note: remove errors if you don't have that card
-        for card in cardList:
+        for card in card_list:
             self.hand_cards.remove(card)
 
-    def UpdateDiscardInfo(self, topCard, size):
+    def updateDiscardInfo(self, topCard, size):
         """Update the discard information"""
-        self.discardInfo = (topCard, size)
+        self.discard_info = (topCard, size)
