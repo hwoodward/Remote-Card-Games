@@ -26,4 +26,4 @@ actionNames for network communications should all by mixedCase to help fit with 
 
 names for properties/keys in the json objects passed in the actions/API calls shoud be lower_case and matching the variables that will store that info is acceptable/encouraged
 
-When in doubt: methods/functions that you call have no uncerscores, and variables that store things have underscores. Things inside classes start with a lowercase letter and things outside a class start with a Capital letter.
+When in doubt: methods/functions that you call have no underscores, and variables that store things have underscores. Things inside classes start with a lowercase letter and things outside a class start with a Capital letter.

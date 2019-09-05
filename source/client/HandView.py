@@ -16,15 +16,16 @@ class HandView():
         self.controller = controller
         # initialize pygame modules
         pygame.init()
-        # initialize handInfo (handInfo =UICardWrapped elements of current_hand).
-        self.handInfo = []                  
+        # initialize hand_info
+        # (hand_info =UICardWrapped elements of current_hand).
+        self.hand_info = []                  
         # create window for game - left side is table=PUBLIC, right side is users
         # TO DO - change this so bottom is current hand and top is table.
         hand_disp_width = UIC.Disp_Width * UIC.Hand_Col_Fraction
         self.display = pygame.display.set_mode((UIC.Disp_Width, UIC.Disp_Height))
         pygame.display.set_caption(self.controller.Get_Name() + " View")
         self.display.fill(UIC.White)
-        # render starting window, 
+        # render starting window 
         self.Render()
 
     def Render(self):
@@ -34,8 +35,8 @@ class HandView():
         # change screen split so top=table & bottom=hand(instead of side-by-side)
         self.display.fill(UIC.White)
         current_hand = self.controller.Get_Hand()       
-        self.handInfo = self.WrapHand(current_hand) 
-        self.Show_Holding(self.handInfo)
+        self.hand_info = self.WrapHand(current_hand) 
+        self.Show_Holding(self.hand_info)
         self.display.blit(UIC.Back_Img,(UIC.Disp_Width/2,UIC.Disp_Height/2))
         self.Print_Text("{0}".format(current_hand), (UIC.Table_Hand_Border,0))
         pygame.display.update()
@@ -57,15 +58,15 @@ class HandView():
                     bogus_discards = []
                     # while creating UI we want to simplify discards
                     # but discarding entire list of cards too simple.
-                    if(len(self.handInfo)>0):
-                        discard_wrapped = self.handInfo[0]
+                    if(len(self.hand_info)>0):
+                        discard_wrapped = self.hand_info[0]
                         bogus_discards = [discard_wrapped._card]
                     else:
                         bogus_discards = []                    
                     self.controller.Discard(bogus_discards)
 
-    def WrapHand(self,updatedHand):
-        """Associate each card in updatedHand with a UICardWrapper
+    def WrapHand(self,updated_hand):
+        """Associate each card in updated_hand with a UICardWrapper
 
         Only update new cards so that location and image not lost
         """
@@ -73,28 +74,28 @@ class HandView():
         # updates new cards
         card_XY = (10,10)
         img = UIC.Back_Img
-        self.wrappedHand = []
-        for element in updatedHand:
-            # print(updatedHand)
+        self.wrapped_hand = []
+        for element in updated_hand:
+            # print(updated_hand)
             card_XY = (card_XY[0]+50,card_XY[1]+50)
             element_wrapped = UICardWrapper(element,card_XY,img)
-            self.wrappedHand.append(element_wrapped)
-        return(self.wrappedHand)
+            self.wrapped_hand.append(element_wrapped)
+        return(self.wrapped_hand)
 
         
-    def Show_Holding(self,wrappedCards):
-        for wrappedElement in wrappedCards:
-            self.display.blit(wrappedElement._img,wrappedElement._xy)
+    def Show_Holding(self,wrapped_cards):
+        for wrapped_element in wrapped_cards:
+            self.display.blit(wrapped_element._img,wrapped_element._xy)
 
-    def Print_Text(self, textString, textStartXY):
-        """print the textString in a text box starting on the top left."""
+    def Print_Text(self, text_string, start_xy):
+        """print the text_string in a text box starting on the top left."""
         # self.display.fill(UIC.White)
-        # Wrap the textString
-        word_list = textwrap.wrap(text=textString,width=UIC.Wrap_Width)
-        textStartXY_wfeed = textStartXY
+        # Wrap the text_string, beginning at start_xy
+        word_list = textwrap.wrap(text=text_string,width=UIC.Wrap_Width)
+        start_xy_wfeed = start_xy  # 'wfeed' -> "with line feed"
         for element in word_list:
             text = UIC.Big_Text.render(element, True, UIC.Blue, UIC.White)
             textRect = text.get_rect()
-            textRect.topleft = textStartXY_wfeed
+            textRect.topleft = start_xy_wfeed
             self.display.blit(text, textRect)
-            textStartXY_wfeed = (textStartXY_wfeed[0],textStartXY_wfeed[1]+UIC.Text_Feed)
+            start_xy_wfeed = (start_xy_wfeed[0],start_xy_wfeed[1]+UIC.Text_Feed)
