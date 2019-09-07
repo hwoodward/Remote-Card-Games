@@ -41,6 +41,6 @@ class ClientState():
         for card in card_list:
             self.hand_cards.remove(card)
 
-    def updateDiscardInfo(self, topCard, size):
+    def updateDiscardInfo(self, top_card, size):
         """Update the discard information"""
-        self.discard_info = (topCard, size)
+        self.discard_info = (top_card, size)

@@ -37,7 +37,8 @@ class Controller(ConnectionListener):
         """Send the server the current set of visible cards"""
         self._state.playCards(cardSet)
         serialized = [c.serialize() for c in self._state.visible_card]
-        connection.Send({"visibleCards": serialized})
+        #TODO: hand status is state information and order specified in ruleset - need to make helpers for handling it still
+        connection.Send({"action": "publicInfo", "visible_cards":serialized, "hand_status":[]})
         #TODO: Check for turn transition due to out or zephod
 
     def getName(self):
@@ -91,6 +92,6 @@ class Controller(ConnectionListener):
         self._state.newCards(cardList)
 
     def Network_discardInfo(self, data):
-        topCard = Card.deserialize(data["topCard"])
+        top_card = Card.deserialize(data["top_card"])
         size = data["size"]
-        self._state.updateDiscardInfo(topCard, size)
+        self._state.updateDiscardInfo(top_card, size)
