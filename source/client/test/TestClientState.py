@@ -7,7 +7,7 @@ class TestClientState(unittest.TestCase):
     def testSetup(self):
         """Confirm the state tracker initializes properly"""
         test_state = ClientState(ruleset=None)
-        self.assertFalse(test_state.interactive)
+        self.assertFalse(test_state.turn_phase)
         self.assertEqual(test_state.hand_cards, [])
         self.assertEqual(test_state.played_cards, [])
 

@@ -15,7 +15,9 @@ class ClientState():
         else:
             #This is the unit test case - we may want to put a dummy ruleset in
             print("In unittest mode")
-        self.interactive = False #Wait for server to start turn
+        #TODO: turn phase should go from "si my turn" boolean to 'drawing, playing, not my turn anymore' indicator 
+        # can hard code turn phases b/c this will only play games fitting that mode. If we ever make a trick game it will need its own app (although code can probably be reused)
+        self.turn_phase = False
         self.name = "guest"
         self.hand_cards = []
         self.played_cards = []
