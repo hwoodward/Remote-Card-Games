@@ -12,6 +12,7 @@ class UICardWrapper():
         self.xy = loc_xy
         self.selected = False
 
+    @staticmethod
     def getImage(card):
         """Helper to fetch correct image for a card"""
         suit_letter = 'N' # this doesn't distinguish between red & black Jokers

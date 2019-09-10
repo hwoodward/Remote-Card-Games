@@ -28,6 +28,7 @@ class Card():
         """translate into a format podsixnet can translate"""
         return (self.number, self.suit)
 
+    @staticmethod
     def deserialize(representation):
         """create a card object from the podsixnet transportable serialization"""
         return Card(representation[0], representation[1])
@@ -54,7 +55,6 @@ class Card():
 
     def __ne__(self, other):
         return not self.__eq__(other)
-
 
     def getStandardDeck():
         """Provides a standard 52 card deck"""
@@ -111,6 +111,7 @@ class Card():
                 Card(12, 'Clubs'),
                 Card(13, 'Clubs')]
 
+    @staticmethod
     def getJokerDeck():
         """Provides a with jokers based on the standard deck"""
         return Card.getStandardDeck() + [Card(0, None), Card(0, None)]

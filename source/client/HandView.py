@@ -24,7 +24,7 @@ class HandView:
         # TO DO - change this so bottom is current hand and top is table.
         hand_disp_width = UIC.Disp_Width * UIC.Hand_Col_Fraction
         self.display = pygame.display.set_mode((UIC.Disp_Width, UIC.Disp_Height))
-        pygame.display.set_caption(self.controller.Get_Name() + " View")
+        pygame.display.set_caption(self.controller.getName() + " View")
         self.display.fill(UIC.White)
         # render starting window 
         self.render()
@@ -36,7 +36,7 @@ class HandView:
         # change screen split so top=table & bottom=hand(instead of side-by-side)
         # render the table view showing the visible cards
         self.display.fill(UIC.White)
-        current_hand = self.controller.Get_Hand()       
+        current_hand = self.controller.getHand()       
         self.hand_info = self.wrapHand(current_hand) 
         self.showHolding(self.hand_info)
         self.display.blit(UIC.Back_Img, (UIC.Disp_Width/2, UIC.Disp_Height/2))
@@ -53,7 +53,7 @@ class HandView:
                               
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_9:
-                    self.controller.Draw()
+                    self.controller.draw()
                     
                 if event.key == pygame.K_8:
                     print("Ending turn")
@@ -65,7 +65,7 @@ class HandView:
                         bogus_discards = [discard_wrapped.card]
                     else:
                         bogus_discards = []                    
-                    self.controller.Discard(bogus_discards)
+                    self.controller.discard(bogus_discards)
 
     def wrapHand(self, updated_hand):
         """Associate each card in updated_hand with a UICardWrapper
