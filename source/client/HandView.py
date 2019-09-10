@@ -1,14 +1,16 @@
 import pygame
 import textwrap
-from common.Card import Card
 import client.UIConstants as UIC
-from client.TableView import TableView
 from client.UICardWrapper import UICardWrapper
-# from time import sleep 
-# from PodSixNet.Connection import connection, ConnectionListener
+#  Next few imports flagged by pyCharm because not used. Keep for now in case needed later.
+#  from common.Card import Card
+#  from client.TableView import TableView
+#  from time import sleep
+#  from PodSixNet.Connection import connection, ConnectionListener
+
 
 class HandView:
-    """This class handles letting players actualy input information
+    """This class handles letting players actually input information
 
     It handles the entire turn cycle
     """
@@ -27,12 +29,12 @@ class HandView:
         pygame.display.set_caption(self.controller.getName() + " View")
         self.display.fill(UIC.White)
         # render starting window 
-        self.render()
+        self.render
 
     def render(self):
         """This should render the actual UI, for now it just prints the hand"""
 
-        # TO DO
+        # TODO
         # change screen split so top=table & bottom=hand(instead of side-by-side)
         # render the table view showing the visible cards
         self.display.fill(UIC.White)
@@ -57,10 +59,10 @@ class HandView:
                     
                 if event.key == pygame.K_8:
                     print("Ending turn")
-                    bogus_discards = []
+                    # bogus_discards = []
                     # while creating UI we want to simplify discards
                     # but discarding entire list of cards too simple.
-                    if(len(self.hand_info)>0):
+                    if len(self.hand_info) > 0:
                         discard_wrapped = self.hand_info[0]
                         bogus_discards = [discard_wrapped.card]
                     else:
@@ -74,19 +76,19 @@ class HandView:
         """
         # right now it updates all cards -- need to modify so that only
         # updates cards that aren't already wrapped.
-        card_XY = (10, 10)
+        card_xy = (10, 10)
         # TO DO modify code so that only append new cards to wrapped_hand (preserve XY, img, selected)
         self.wrapped_hand = []
         for element in updated_hand:
             # print(updated_hand)
-            card_XY = (card_XY[0]+50,card_XY[1]+50)
-            element_wrapped = UICardWrapper(element,card_XY)
+            card_xy = (card_xy[0] + 50, card_xy[1] + 50)
+            element_wrapped = UICardWrapper(element, card_xy)
             self.wrapped_hand.append(element_wrapped)
-        return(self.wrapped_hand)
+        return self.wrapped_hand
 
     def showHolding(self, wrapped_cards):
         for wrapped_element in wrapped_cards:
-            self.display.blit(wrapped_element.img,wrapped_element.xy)
+            self.display.blit(wrapped_element.img, wrapped_element.xy)
 
     def printText(self, text_string, start_xy):
         """print the text_string in a text box starting on the top left."""
@@ -99,4 +101,4 @@ class HandView:
             text_rect = text.get_rect()
             text_rect.topleft = start_xy_wfeed
             self.display.blit(text, text_rect)
-            start_xy_wfeed = (start_xy_wfeed[0], start_xy_wfeed[1]+UIC.Text_Feed)
+            start_xy_wfeed = (start_xy_wfeed[0], start_xy_wfeed[1] + UIC.Text_Feed)
