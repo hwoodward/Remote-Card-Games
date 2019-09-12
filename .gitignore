@@ -48,6 +48,16 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
+# Eclipse IDE stuff:
+.settings/
+.classpath
+.project
+# PyDev Eclipse plugin:
+.pydevproject
+
+#JetBrains style IDE stuff (Pycharm):
+**/.idea/**
+
 # Translations
 *.mo
 *.pot
