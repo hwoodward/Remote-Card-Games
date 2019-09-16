@@ -9,8 +9,9 @@ class PlayerChannel(Channel):
         It's a place to set any client information thats provided from the server
         """
         self.name = "guest"
+        #visible cards and hand status are public info
         self.visible_cards = []
-        self.hand_status = []
+        self.hand_status = [] #order of information in this is specified by the ruleset
         Channel.__init__(self, *args, **kwargs)
 
     def Close(self):
@@ -18,7 +19,7 @@ class PlayerChannel(Channel):
         Removes player from the turn order
         """
         if not self._server.active_game:
-            self._server.DelPlayer(self)
+            self._server.delPlayer(self)
             print(self, 'Client disconnected')
         else:
             print(self, 'Client disconnected during active game')
@@ -28,25 +29,25 @@ class PlayerChannel(Channel):
     ##################################
 
     def Network_displayName(self, data):
-        """Player submitted their displayName"""
+        """Player submitted their display name"""
         self.name = data['name']
         self._server.Send_turnOrder()
 
     ### Player Game Actions ###
 
     def Network_discard(self, data):
-        cardList = [Card.Deserialize(c) for c in data["cards"]]
-        self._server.DiscardCards(cardList)
+        card_list = [Card.deserialize(c) for c in data["cards"]]
+        self._server.discardCards(card_list)
         self._server.Send_discardInfo()
-        self._server.NextTurn()
+        self._server.nextTurn()
 
     def Network_draw(self, data):
-        cards = self._server.DrawCards()
-        serialized = [c.Serialize() for c in cards]
+        cards = self._server.drawCards()
+        serialized = [c.serialize() for c in cards]
         self.Send({"action": "newCards", "cards": serialized})
 
     ### Visible card updates ###
-    def Network_updatePublicInfo(self, data):
+    def Network_publicInfo(self, data):
         """This is refreshed public information data from the client"""
         self.visible_cards = data["visible_cards"]
         self.hand_status = data["hand_status"]
