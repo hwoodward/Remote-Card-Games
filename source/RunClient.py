@@ -8,10 +8,11 @@ from client.HandView import HandView
 from client.ClientState import ClientState
 #TODO: consistent import ordering for ease of finding stuff
 
-if len(sys.argv) != 3:
-    print("Usage:", sys.argv[0], "host:port ruleset")
-    print("e.g.", sys.argv[0], "localhost:31425 HandAndFoot")
-else:
+def RunClient():
+    """This is the launch point for the client.
+    
+    It sets up the various classes and starts the game loop
+    """
     host, port = sys.argv[1].split(":")
     ruleset = sys.argv[2]
     connection.DoConnect((host, int(port)))
@@ -20,10 +21,18 @@ else:
     handView = HandView(gameControl)
     tableView = TableView()
     while 1:
-        handView.Next_Event()
+        handView.nextEvent()
         connection.Pump()
         gameControl.Pump()
         tableView.Pump()
-        handView.Render()
+        handView.render()
         sleep(0.001)
 
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage:", sys.argv[0], "host:port ruleset")
+        print("e.g.", sys.argv[0], "localhost:31425 HandAndFoot")
+    else:
+        RunClient()
+else:
+    print("RunServer should not be imported anywhere")

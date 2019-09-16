@@ -7,55 +7,56 @@ class Card():
     def __init__(self, number, suit):
         if suit not in [None, 'Spades', 'Hearts', 'Diamonds', 'Clubs']:
             raise ValueError("Invalid Suit")
-        self._suit = suit
+        self.suit = suit
 
         if suit is None:
-            self._number = 0 #Jokers are always 0
+            self.number = 0 #Jokers are always 0
         elif number not in range(1,14): #range includes start but not stop number
             raise ValueError("Invalid card number")
         else:
-            self._number = number
+            self.number = number
 
 
-    def GetColor(self):
-        if self._suit in ['Spades', 'Clubs']:
+    def getColor(self):
+        if self.suit in ['Spades', 'Clubs']:
             return 'Black'
-        if self._suit in ['Hearts', 'Diamonds']:
+        if self.suit in ['Hearts', 'Diamonds']:
             return 'Red'
         return None #For jokers
 
-    def Serialize(self):
+    def serialize(self):
         """translate into a format podsixnet can translate"""
-        return (self._number, self._suit)
+        return (self.number, self.suit)
 
-    def Deserialize(representation):
+    @staticmethod
+    def deserialize(representation):
         """create a card object from the podsixnet transportable serialization"""
         return Card(representation[0], representation[1])
 
     def __str__(self):
-        if self._suit is None:
+        if self.suit is None:
             return "Joker"
-        if self._number > 10:
-            if self._number == 11:
-                return "Jack of " + self._suit
-            if self._number == 12:
-                return "Queen of " + self._suit
-            if self._number == 13:
-                return "King of " + self._suit
-        if self._number == 1:
-            return "Ace of " + self._suit
-        return "{0} of {1}".format(self._number, self._suit)
+        if self.number > 10:
+            if self.number == 11:
+                return "Jack of " + self.suit
+            if self.number == 12:
+                return "Queen of " + self.suit
+            if self.number == 13:
+                return "King of " + self.suit
+        if self.number == 1:
+            return "Ace of " + self.suit
+        return "{0} of {1}".format(self.number, self.suit)
 
     def __repr__(self):
-        return "({0}, {1})".format(self._number, self._suit)
+        return "({0}, {1})".format(self.number, self.suit)
 
     def __eq__(self, other):
-        return (self._number == other._number) and (self._suit == other._suit)
+        return (self.number == other.number) and (self.suit == other.suit)
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    def GetStandardDeck():
+    def getStandardDeck():
         """Provides a standard 52 card deck"""
         return [Card(1, 'Spades'),
                 Card(2, 'Spades'),
@@ -110,6 +111,7 @@ class Card():
                 Card(12, 'Clubs'),
                 Card(13, 'Clubs')]
 
-    def GetJokerDeck():
+    @staticmethod
+    def getJokerDeck():
         """Provides a with jokers based on the standard deck"""
-        return Card.GetStandardDeck() + [Card(0, None), Card(0, None)]
+        return Card.getStandardDeck() + [Card(0, None), Card(0, None)]

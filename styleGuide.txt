@@ -7,7 +7,7 @@ osing quotes on their own line
 
 Naming conventions:
 folder names: lowercase (preferably one word)
-file names: CapWords format
+file names: CapWords format  (exception = card image files, they are cardNS.png)
 class names: CapWords (remember that import statements look like "from folder.path.FileName import ClassName" when naming)
 
 method names (functions in classes): Prefix_mixCase or mixedCase depending on if there is a prefix.
@@ -26,4 +26,4 @@ actionNames for network communications should all by mixedCase to help fit with 
 
 names for properties/keys in the json objects passed in the actions/API calls shoud be lower_case and matching the variables that will store that info is acceptable/encouraged
 
-When in doubt: methods/functions that you call have no uncerscores, and variables that store things have underscores. Things inside classes start with a lowercase letter and things outside a class start with a Capital letter.
+When in doubt: methods/functions that you call have no underscores, and variables that store things have underscores. Things inside classes start with a lowercase letter and things outside a class start with a Capital letter.

@@ -13,26 +13,26 @@ class ServerState():
     """
 
     def __init__(self, ruleset):
-        ruleModule = "common." + ruleset
-        self.Rules = importlib.import_module(ruleModule)
-        self.draw_pile = Card.GetJokerDeck()
+        rule_module = "common." + ruleset
+        self.rules = importlib.import_module(rule_module)
+        self.draw_pile = Card.getJokerDeck()
         random.shuffle(self.draw_pile)
         self.discard_pile = []
         self.active_game = False
         self.turn_index = 0
 
-    def DrawCards(self):
+    def drawCards(self):
         """Return the next numCards from the draw pile"""
         result = []
-        for _ in range(self.Rules.Draw_Size):
+        for _ in range(self.rules.Draw_Size):
             result.append(self.draw_pile.pop())
         return result
 
-    def DiscardCards(self, discardList):
+    def discardCards(self, discard_list):
         """This adds the discarded card(s) to the discard pile in order"""
-        for card in discardList:
+        for card in discard_list:
             self.discard_pile.append(card)
 
-    def DiscardInfo(self):
+    def discard_info(self):
         """Provides the top card and size of the discard pile as a tuple"""
         return (self.discard_pile[-1], len(self.discard_pile))
