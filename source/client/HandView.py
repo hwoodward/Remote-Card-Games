@@ -2,6 +2,7 @@ import pygame
 import textwrap
 import client.UIConstants as UIC
 from client.UICardWrapper import UICardWrapper
+import client.ClickableImage as Cli
 #  Next few imports flagged by pyCharm because not used. Keep for now in case needed later.
 #  from common.Card import Card
 #  from client.TableView import TableView
@@ -28,6 +29,9 @@ class HandView:
         self.display = pygame.display.set_mode((UIC.Disp_Width, UIC.Disp_Height))
         pygame.display.set_caption(self.controller.getName() + " View")
         self.display.fill(UIC.White)
+        self.outline_color = UIC.no_outline_color
+        self.draw_pile = Cli.ClickableImage\
+                (UIC.Back_Img, 10, 255, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), self.outline_color)
         # render starting window 
         self.render
 
@@ -41,7 +45,9 @@ class HandView:
         current_hand = self.controller.getHand()       
         self.hand_info = self.wrapHand(current_hand) 
         self.showHolding(self.hand_info)
-        self.display.blit(UIC.Back_Img, (UIC.Disp_Width/2, UIC.Disp_Height/2))
+        # display draw pile
+        self.draw_pile.draw(self.display, self.outline_color)
+        # self.display.blit(UIC.Back_Img, (UIC.Disp_Width/2, UIC.Disp_Height/2))
         self.printText("{0}".format(current_hand), (UIC.Table_Hand_Border, 0))
         pygame.display.update()
 
@@ -49,10 +55,15 @@ class HandView:
         """This submits the next user input to the controller"""
 
         for event in pygame.event.get():
+            pos = pygame.mouse.get_pos()
+
             if event.type == pygame.QUIT:
                 # The window crashed, we should handle this
                 print("pygame crash, AAAHHH")
-                              
+                # run = False
+                pygame.quit()
+                quit()
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_9:
                     self.controller.draw()
@@ -68,6 +79,16 @@ class HandView:
                     else:
                         bogus_discards = []                    
                     self.controller.discard(bogus_discards)
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.draw_pile.isOver(pos):
+                    self.controller.draw()
+
+            if event.type == pygame.MOUSEMOTION:
+                if self.draw_pile.isOver(pos):
+                    self.outline_color = UIC.isOver_outline_color
+                else:
+                    self.outline_color = UIC.no_outline_color
 
     def wrapHand(self, updated_hand):
         """Associate each card in updated_hand with a UICardWrapper
