@@ -1,17 +1,6 @@
 import pygame
 import client.UIConstants as UIC
 
-# TODO:
-#  done (i) scale images,
-#  done (ii) get width & height = dimensions of scaled images
-#  done (iii) put border around images and have them change color when clicked on.
-#  done (iv) Currently stand alone -- remove test code, integrate with HandView and UIConstants.
-
-# (ivb) Make certain this is style compliant.
-# (v)  Make clicking on card back image (=draw-pile) replace pressing 9 as event.
-# (vi) Have clicking on other cards toggle whether they are selected or not.
-# (vii) Create button to play selected cards
-# (viii) Consult on how we want to initiate picking-up the pile (have to select cards to meld to do it).
 
 class ClickableImage:
     """This class draws an image which can be used as a button to initiate actions.
@@ -33,7 +22,7 @@ class ClickableImage:
         # TODO currently outline is 6 pixels wide - move that to UIConstants.
         if not outline_color[0] == -1:
             pygame.draw.rect(display, outline_color, (self.x - 6, self.y - 6, self.width + 12, self.height + 12), 0)
-        display.blit(self.image, (self.x,self.y))
+        display.blit(self.image, (self.x, self.y))
 
     def isOver(self, pos):
         # pos is the mouse position or a tuple of (x,y) coordinates

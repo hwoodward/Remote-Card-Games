@@ -19,11 +19,10 @@ Bright_Blue = (0,0,255)
 
 # Set display size
 # (below good for my laptop, screen resolution: 3840x2160, display set to 300%)
-# displayWidth = 300  # temporary value for use while we're only running handview,
 Disp_Width = 1200
 Disp_Height = 600
 Hand_Col_Fraction = 0.3
-Table_Hand_Border = Disp_Width * (1-Hand_Col_Fraction)
+Table_Hand_Border = Disp_Width * (1 - Hand_Col_Fraction)
 
 # fonts
 pygame.font.init()
@@ -35,13 +34,13 @@ Text_Feed = int(Big_Font_Sz * 1.5)
 Wrap_Width = int(Hand_Col_Fraction * Disp_Width / (Big_Font_Sz * 0.5))
 
 # cards
-scale=0.7
+scale = 0.7
 no_outline_color = (-1, -1, -1)
-isOver_outline_color = Yellow
-isClicked_outline_color = Red
-# not yet using (might not use at all) isSelected_outline_color = Green
-# load image of back of card.
-# Back_Img = pygame.image.load(os.path.join('cardimages', 'cardBack.png'))
+is_over_outline_color = Yellow
+# not yet using (might not use at all):
+#  is_selected_outline_color = Green
+# is_clicked_outline_color = Red
+# load image of back of card, and scale it.
 Back_Img = pygame.image.load(os.path.join('client', 'cardimages', 'cardBack.png'))
 Back_Img = pygame.transform.rotozoom(Back_Img, 0, scale)
 # Temporary notes for SLW:

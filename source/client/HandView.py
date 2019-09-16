@@ -86,7 +86,7 @@ class HandView:
 
             if event.type == pygame.MOUSEMOTION:
                 if self.draw_pile.isOver(pos):
-                    self.outline_color = UIC.isOver_outline_color
+                    self.outline_color = UIC.is_over_outline_color
                 else:
                     self.outline_color = UIC.no_outline_color
 
