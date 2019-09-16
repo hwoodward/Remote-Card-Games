@@ -3,9 +3,9 @@ import pygame
 # import UIConstants as UIC < running test case from client directory...
 
 # TODO:
-# (i) scale images,
-# (ii) set width/height = dimensions of scaled images
-# (iii) put border around images and have them change color when clicked on.
+#  done (i) scale images,
+#  done (ii) get width & height = dimensions of scaled images
+#  done (iii) put border around images and have them change color when clicked on.
 # (iv) Currently stand alone -- remove test code, integrate with HandView and UIConstants.
 
 # (ivb) Make certain this is style compliant.
@@ -19,8 +19,19 @@ pygame.init()
 # load image of back of card -- this is in UIConstants.
 Back_Img = pygame.image.load('cardimages/cardBack.png')
 
+# Temporary notes for SLW:
+# To set new width and height to be (50, 30).
+# Back_Img = pygame.transform.scale(IMAGE, (50, 30))
+# to rotate by 0 degrees, and multiply size by scale.
+scale=0.5
+Back_Img = pygame.transform.rotozoom(Back_Img, 0, scale)
+no_outline_color = (-1, -1, -1)
+isOver_outline_color = (255,255,0)
+isClicked_outline_color = (255,0,0)
+
 display = pygame.display.set_mode((1200,600))
 display.fill((255,255,255))
+outline_color = no_outline_color
 
 # class button():
 class ClickableImage:
@@ -30,30 +41,20 @@ class ClickableImage:
     https://www.youtube.com/watch?v=4_9twnEduFA
     to create this.
     """
-    def __init__(self, image, x, y, width, height, text=''):
+    def __init__(self, image, x, y, width, height, outline_color):
         self.image = image
         self.x = x
         self.y = y
         self.width = width
         self.height = height
-        self.text = text
-        self.outlineColor = (0,255,0)
+        self.outline_color = outline_color
 
-    def draw(self, display, outline=None):
+    def draw(self, display, outline_color):
         # Call this method to draw the ClickableImage on the screen,
-        # TODO currently outline is 2 pixels wide - move that to UIConstants.
-        if outline:
-            pygame.draw.rect(display, outline, (self.x - 2, self.y - 2, self.width + 4, self.height + 4), 0)
-
-        # pygame.draw.rect(display, (40,40,40), (self.x, self.y, self.width, self.height), 0)
-        # display.blit(self.image, self.x, self.y)
+        # TODO currently outline is 6 pixels wide - move that to UIConstants.
+        if not outline_color[0] == -1:
+            pygame.draw.rect(display, outline_color, (self.x - 6, self.y - 6, self.width + 12, self.height + 12), 0)
         display.blit(self.image, (self.x,self.y))
-
-        if self.text != '':
-            font = pygame.font.SysFont('comicsans', 60)
-            text = font.render(self.text, 1, (0, 0, 0))
-            display.blit(text, (
-            self.x + (self.width / 2 - text.get_width() / 2), self.y + (self.height / 2 - text.get_height() / 2)))
 
     def isOver(self, pos):
         # Pos is the mouse position or a tuple of (x,y) coordinates
@@ -67,10 +68,10 @@ class ClickableImage:
 def redrawWindow():
     """ this section is to test code above - remove later"""
     display.fill((255,255,255))
-    # greenButton.draw(display, (0,0.,0))  < Later can put outline around image.
-    greenButton.draw(display)
+    drawPile.draw(display,outline_color)
+    # drawPile.draw(display)  < no outline on image
 run = True
-greenButton = ClickableImage(Back_Img, 155, 255, 250, 100,'Click Me:)')
+drawPile = ClickableImage(Back_Img, 10, 255, Back_Img.get_width(), Back_Img.get_height(), outline_color)
 while run:
     redrawWindow()
     pygame.display.update()
@@ -84,11 +85,12 @@ while run:
             quit()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if greenButton.isOver(pos):
-                print('clicked the button')
+            if drawPile.isOver(pos):
+                outline_color = isClicked_outline_color
+                print('clicked the draw pile ! ')
 
         if event.type == pygame.MOUSEMOTION:
-            if greenButton.isOver(pos):
-                greenButton.color = (255,0,0)
+            if drawPile.isOver(pos):
+                outline_color = isOver_outline_color
             else:
-                greenButton.color = (0,255,0)
+                outline_color = no_outline_color
