@@ -9,20 +9,25 @@ class ClickableImage:
     https://www.youtube.com/watch?v=4_9twnEduFA
     to create this.
     """
-    def __init__(self, image, x, y, width, height, outline_color):
+    def __init__(self, image, x, y, width, height, outline_index):
         self.image = image
         self.x = x
         self.y = y
         self.width = width
         self.height = height
-        self.outline_color = outline_color
+        self.outline_index = outline_index
+        self.outline_color = UIC.outline_colors[outline_index]
 
-    def draw(self, display, outline_color):
+    def draw(self, display, outline_choice):
         # Call this method to draw the ClickableImage on the screen,
         # TODO currently outline is 6 pixels wide - move that to UIConstants.
-        if not outline_color[0] == -1:
-            pygame.draw.rect(display, outline_color, (self.x - 6, self.y - 6, self.width + 12, self.height + 12), 0)
+        if not outline_choice[0] == -1:
+            pygame.draw.rect(display, self.outline_color, (self.x - 6, self.y - 6, self.width + 12, self.height + 12), 0)
         display.blit(self.image, (self.x, self.y))
+
+    def changeOutline(self,outline_idx):
+        self.outline_index = outline_idx
+        self.outline_color = UIC.outline_colors[outline_idx]
 
     def isOver(self, pos):
         # pos is the mouse position or a tuple of (x,y) coordinates

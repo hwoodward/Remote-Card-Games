@@ -29,10 +29,10 @@ class HandView:
         self.display = pygame.display.set_mode((UIC.Disp_Width, UIC.Disp_Height))
         pygame.display.set_caption(self.controller.getName() + " View")
         self.display.fill(UIC.White)
-        self.outline_color = UIC.no_outline_color
+        # self.outline_color = UIC.outline_colors[0]
         self.draw_pile = Cli.ClickableImage\
-                (UIC.Back_Img, 10, 255, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), self.outline_color)
-        # render starting window 
+                (UIC.Back_Img, 10, 255, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
+        # render starting window
         self.render
 
     def render(self):
@@ -42,11 +42,12 @@ class HandView:
         # change screen split so top=table & bottom=hand(instead of side-by-side)
         # render the table view showing the visible cards
         self.display.fill(UIC.White)
-        current_hand = self.controller.getHand()       
-        self.hand_info = self.wrapHand(current_hand) 
+        current_hand = self.controller.getHand()
+        self.hand_info = self.wrapHand(current_hand)
+        # to debug selecting cards have to make it so that wrapHand does NOT re-wrap cards!!
         self.showHolding(self.hand_info)
         # display draw pile
-        self.draw_pile.draw(self.display, self.outline_color)
+        self.draw_pile.draw(self.display, self.draw_pile.outline_color)
         # self.display.blit(UIC.Back_Img, (UIC.Disp_Width/2, UIC.Disp_Height/2))
         self.printText("{0}".format(current_hand), (UIC.Table_Hand_Border, 0))
         pygame.display.update()
@@ -67,6 +68,7 @@ class HandView:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_9:
                     self.controller.draw()
+                    UIC.debugflag = 0
                     
                 if event.key == pygame.K_8:
                     print("Ending turn")
@@ -85,10 +87,25 @@ class HandView:
                     self.controller.draw()
 
             if event.type == pygame.MOUSEMOTION:
-                if self.draw_pile.isOver(pos):
-                    self.outline_color = UIC.is_over_outline_color
+                if self.draw_pile.isOver(pos):   #later will need to require that it be the beginning of the turn, too.
+                    # self.outline_color = UIC.is_over_outline_color
+                    self.draw_pile.changeOutline(1)
                 else:
-                    self.outline_color = UIC.no_outline_color
+                    # self.outline_color = UIC.no_outline_color
+                    self.draw_pile.changeOutline(0)
+                    # Cannot be over the drawpile and any other cards at the same time.
+                    for element in self.hand_info:
+                        if element.img_clickable.isOver(pos):
+                            element.img_clickable.changeOutline(1)
+                            # self.outline_color = UIC.is_over_outline_color
+                            # self.showHolding(self.hand_info)
+                            element.img_clickable.draw(self.display,
+                                                       UIC.outline_colors[element.outline_indx])
+                        else:
+                            # self.outline_color = UIC.no_outline_color
+                            element.img_clickable.changeOutline(0)
+                            element.img_clickable.draw(self.display,
+                                                               UIC.outline_colors[element.outline_indx])
 
     def wrapHand(self, updated_hand):
         """Associate each card in updated_hand with a UICardWrapper
@@ -109,7 +126,8 @@ class HandView:
 
     def showHolding(self, wrapped_cards):
         for wrapped_element in wrapped_cards:
-            self.display.blit(wrapped_element.img, wrapped_element.xy)
+            # self.display.blit(wrapped_element.img, wrapped_element.xy)
+            wrapped_element.img_clickable.draw(self.display, UIC.outline_colors[wrapped_element.outline_indx])
 
     def printText(self, text_string, start_xy):
         """print the text_string in a text box starting on the top left."""
