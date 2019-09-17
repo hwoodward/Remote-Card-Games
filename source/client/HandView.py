@@ -23,7 +23,6 @@ class HandView:
         # (hand_info =UICardWrapped elements of current_hand).
         self.current_hand = []
         self.hand_info = []
-        self.wrapped_hand = []
         # create window for game - left side is table=PUBLIC, right side is users
         # TO DO - change this so bottom is current hand and top is table.
         hand_disp_width = UIC.Disp_Width * UIC.Hand_Col_Fraction
@@ -46,7 +45,7 @@ class HandView:
         self.last_hand = self.current_hand
         self.current_hand = self.controller.getHand()
         if not self.last_hand == self.current_hand:
-            self.hand_info = self.wrapHand(self.current_hand)
+            self.hand_info = self.wrapHand(self.current_hand, self.hand_info)
             # to debug selecting cards have to make it so that wrapHand does NOT re-wrap cards!!
         self.showHolding(self.hand_info)
         # display draw pile
@@ -81,6 +80,7 @@ class HandView:
                     if len(self.hand_info) > 0:
                         discard_wrapped = self.hand_info[0]
                         bogus_discards = [discard_wrapped.card]
+                        # TODO - REMOVE DISCARD FROM WRAPPED CARDS ARRAY.
                     else:
                         bogus_discards = []                    
                     self.controller.discard(bogus_discards)
@@ -113,6 +113,7 @@ class HandView:
                             # discuss with others...
                             # Need to decide what card status we need to track...
                             # Might want options 'selected' and 'selected for discard'
+                            # Note that color_index and 'selected' carry same info.
                             if (color_index % 2) == 0:
                                 color_index = element.img_clickable.outline_index + 1
                                 element.img_clickable.changeOutline(color_index)
@@ -123,7 +124,7 @@ class HandView:
                                 element.img_clickable.changeOutline(color_index)
 
 
-    def wrapHand(self, updated_hand):
+    def wrapHand(self, updated_hand, wrapped_hand):
         """Associate each card in updated_hand with a UICardWrapper
 
         Only update new cards so that location and image not lost
@@ -132,12 +133,26 @@ class HandView:
         # updates cards that aren't already wrapped.
         card_xy = (10, 10)
         # TO DO modify code so that only append new cards to wrapped_hand (preserve XY, img, selected)
-        self.wrapped_hand = []
-        for element in updated_hand:
-            card_xy = (card_xy[0] + 50, card_xy[1] + 50)
-            element_wrapped = UICardWrapper(element, card_xy)
-            self.wrapped_hand.append(element_wrapped)
-        return self.wrapped_hand
+        old_wrapped_hand = wrapped_hand
+        updated_wrapped_hand = []
+        if not updated_hand == []:
+            for card in updated_hand:
+                newcard = True
+                for already_wrapped in old_wrapped_hand :
+                    if newcard and card == already_wrapped.card :
+                        element_wrapped = already_wrapped
+                        # card_xy is where we start printing new cards. Should end up being beyond last card.
+                        # this should work so long have routine to straighten cards somewhere else...
+                        # else will march off of display.
+                        card_xy = (element_wrapped.xy[0] + 50, element_wrapped.xy[1] + 50)
+                        old_wrapped_hand.remove(already_wrapped)
+                        newcard = False
+                if newcard:
+                    #TODO -- remove "50" [below] -- use fraction of disp size or card size or something.
+                    card_xy = (card_xy[0] + 50, card_xy[1] + 50)
+                    element_wrapped = UICardWrapper(card, card_xy)
+                updated_wrapped_hand.append(element_wrapped)
+        return updated_wrapped_hand
 
     def showHolding(self, wrapped_cards):
         for wrapped_element in wrapped_cards:
