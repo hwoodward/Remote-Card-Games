@@ -37,11 +37,12 @@ Wrap_Width = int(Hand_Col_Fraction * Disp_Width / (Big_Font_Sz * 0.5))
 scale = 0.7
 outline_width = 6
 no_outline_color = (-1, -1, -1)  # flags there is no outline.
-is_over_outline_color = Yellow
-outline_colors=(no_outline_color,is_over_outline_color)
+outline_colors=(no_outline_color, Yellow, Red, Bright_Green)
+vertical_offset = 30  # used to further flag selected cards.
 # not yet using (might not use at all):
-#  is_selected_outline_color = Green
-# is_clicked_outline_color = Red
+# is_over_outline_color = Yellow
+# is_clicked_outline_color (draw pile) = Red
+# is_selected_outline_color = Bright_Green
 # load image of back of card, and scale it.
 Back_Img = pygame.image.load(os.path.join('client', 'cardimages', 'cardBack.png'))
 Back_Img = pygame.transform.rotozoom(Back_Img, 0, scale)

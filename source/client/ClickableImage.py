@@ -22,7 +22,9 @@ class ClickableImage:
         # Call this method to draw the ClickableImage on the screen,
         # TODO currently outline is 6 pixels wide - move that to UIConstants.
         if not outline_choice[0] == -1:
-            pygame.draw.rect(display, self.outline_color, (self.x - 6, self.y - 6, self.width + 12, self.height + 12), 0)
+            pygame.draw.rect(display, outline_choice,
+                             (self.x - UIC.outline_width, self.y - UIC.outline_width,
+                              self.width + 2 * UIC.outline_width, self.height + 2 * UIC.outline_width), 0)
         display.blit(self.image, (self.x, self.y))
 
     def changeOutline(self,outline_idx):

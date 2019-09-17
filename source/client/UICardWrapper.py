@@ -16,7 +16,6 @@ class UICardWrapper:
             (self.img, loc_xy[0], loc_xy[1], self.img.get_width(), self.img.get_height(), 0)
         self.xy = loc_xy
         self.selected = False
-        self.outline_indx = self.img_clickable.outline_index
 
 
     @staticmethod

@@ -21,6 +21,7 @@ class HandView:
         pygame.init()
         # initialize hand_info
         # (hand_info =UICardWrapped elements of current_hand).
+        self.current_hand = []
         self.hand_info = []
         self.wrapped_hand = []
         # create window for game - left side is table=PUBLIC, right side is users
@@ -33,7 +34,7 @@ class HandView:
         self.draw_pile = Cli.ClickableImage\
                 (UIC.Back_Img, 10, 255, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
         # render starting window
-        self.render
+        self.render()
 
     def render(self):
         """This should render the actual UI, for now it just prints the hand"""
@@ -42,14 +43,16 @@ class HandView:
         # change screen split so top=table & bottom=hand(instead of side-by-side)
         # render the table view showing the visible cards
         self.display.fill(UIC.White)
-        current_hand = self.controller.getHand()
-        self.hand_info = self.wrapHand(current_hand)
-        # to debug selecting cards have to make it so that wrapHand does NOT re-wrap cards!!
+        self.last_hand = self.current_hand
+        self.current_hand = self.controller.getHand()
+        if not self.last_hand == self.current_hand:
+            self.hand_info = self.wrapHand(self.current_hand)
+            # to debug selecting cards have to make it so that wrapHand does NOT re-wrap cards!!
         self.showHolding(self.hand_info)
         # display draw pile
         self.draw_pile.draw(self.display, self.draw_pile.outline_color)
         # self.display.blit(UIC.Back_Img, (UIC.Disp_Width/2, UIC.Disp_Height/2))
-        self.printText("{0}".format(current_hand), (UIC.Table_Hand_Border, 0))
+        self.printText("{0}".format(self.current_hand), (UIC.Table_Hand_Border, 0))
         pygame.display.update()
 
     def nextEvent(self):
@@ -86,26 +89,30 @@ class HandView:
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
 
+                for element in self.hand_info:
+                    if element.img_clickable.isOver(pos):
+                        element.selected = not element.selected
+                        if element.selected:
+                            element.img_clickable.changeOutline(3)
+                            element.xy = (element.xy[0], element.xy[1] + UIC.vertical_offset)
+                        else:
+                            element.img_clickable.changeOutline(0)
+                            element.xy = (element.xy[0], element.xy[1] - UIC.vertical_offset)
+
             if event.type == pygame.MOUSEMOTION:
                 if self.draw_pile.isOver(pos):   #later will need to require that it be the beginning of the turn, too.
-                    # self.outline_color = UIC.is_over_outline_color
                     self.draw_pile.changeOutline(1)
                 else:
-                    # self.outline_color = UIC.no_outline_color
                     self.draw_pile.changeOutline(0)
-                    # Cannot be over the drawpile and any other cards at the same time.
-                    for element in self.hand_info:
-                        if element.img_clickable.isOver(pos):
-                            element.img_clickable.changeOutline(1)
-                            # self.outline_color = UIC.is_over_outline_color
-                            # self.showHolding(self.hand_info)
-                            element.img_clickable.draw(self.display,
-                                                       UIC.outline_colors[element.outline_indx])
-                        else:
-                            # self.outline_color = UIC.no_outline_color
-                            element.img_clickable.changeOutline(0)
-                            element.img_clickable.draw(self.display,
-                                                               UIC.outline_colors[element.outline_indx])
+
+                for element in self.hand_info:
+                    if element.img_clickable.isOver(pos):
+                        color = UIC.outline_colors[1]
+                    else:
+                        color = UIC.outline_colors[element.img_clickable.outline_index]
+                    element.img_clickable.draw(self.display, color)
+                    # color = UIC.outline_colors[element.img_clickable.outline_index]
+                    # element.img_clickable.draw(self.display, color)
 
     def wrapHand(self, updated_hand):
         """Associate each card in updated_hand with a UICardWrapper
@@ -118,7 +125,6 @@ class HandView:
         # TO DO modify code so that only append new cards to wrapped_hand (preserve XY, img, selected)
         self.wrapped_hand = []
         for element in updated_hand:
-            # print(updated_hand)
             card_xy = (card_xy[0] + 50, card_xy[1] + 50)
             element_wrapped = UICardWrapper(element, card_xy)
             self.wrapped_hand.append(element_wrapped)
@@ -127,11 +133,12 @@ class HandView:
     def showHolding(self, wrapped_cards):
         for wrapped_element in wrapped_cards:
             # self.display.blit(wrapped_element.img, wrapped_element.xy)
-            wrapped_element.img_clickable.draw(self.display, UIC.outline_colors[wrapped_element.outline_indx])
+            color = UIC.outline_colors[wrapped_element.img_clickable.outline_index]
+            wrapped_element.img_clickable.draw(self.display, color)
 
     def printText(self, text_string, start_xy):
         """print the text_string in a text box starting on the top left."""
-        # self.display.fill(UIC.White)
+
         # Wrap the text_string, beginning at start_xy
         word_list = textwrap.wrap(text=text_string, width=UIC.Wrap_Width)
         start_xy_wfeed = start_xy  # 'wfeed' -> "with line feed"
