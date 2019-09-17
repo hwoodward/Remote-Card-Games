@@ -88,31 +88,40 @@ class HandView:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
-
-                for element in self.hand_info:
-                    if element.img_clickable.isOver(pos):
-                        element.selected = not element.selected
-                        if element.selected:
-                            element.img_clickable.changeOutline(3)
-                            element.xy = (element.xy[0], element.xy[1] + UIC.vertical_offset)
-                        else:
-                            element.img_clickable.changeOutline(0)
-                            element.xy = (element.xy[0], element.xy[1] - UIC.vertical_offset)
+                else:
+                    for element in self.hand_info:
+                        if element.img_clickable.isOver(pos):
+                            element.selected = not element.selected
+                            if element.selected:
+                                element.img_clickable.changeOutline(2)
+                                # element.xy[1] = element.xy[1] + UIC.vertical_offset
+                            else:
+                                element.img_clickable.changeOutline(0)
+                                # element.xy[1] = element.xy[1] - UIC.vertical_offset
 
             if event.type == pygame.MOUSEMOTION:
                 if self.draw_pile.isOver(pos):   #later will need to require that it be the beginning of the turn, too.
                     self.draw_pile.changeOutline(1)
                 else:
                     self.draw_pile.changeOutline(0)
+                    for element in self.hand_info:
+                        color_index = element.img_clickable.outline_index
+                        if element.img_clickable.isOver(pos):
+                            # Brighten colors that mouse is over.
+                            # Odd colors are bright, even show selected status.
+                            #
+                            # discuss with others...
+                            # Need to decide what card status we need to track...
+                            # Might want options 'selected' and 'selected for discard'
+                            if (color_index % 2) == 0:
+                                color_index = element.img_clickable.outline_index + 1
+                                element.img_clickable.changeOutline(color_index)
+                        else:
+                            color_index = element.img_clickable.outline_index
+                            if (color_index % 2) == 1:
+                                color_index = color_index - 1
+                                element.img_clickable.changeOutline(color_index)
 
-                for element in self.hand_info:
-                    if element.img_clickable.isOver(pos):
-                        color = UIC.outline_colors[1]
-                    else:
-                        color = UIC.outline_colors[element.img_clickable.outline_index]
-                    element.img_clickable.draw(self.display, color)
-                    # color = UIC.outline_colors[element.img_clickable.outline_index]
-                    # element.img_clickable.draw(self.display, color)
 
     def wrapHand(self, updated_hand):
         """Associate each card in updated_hand with a UICardWrapper

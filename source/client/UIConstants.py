@@ -33,16 +33,15 @@ Big_Text = pygame.font.Font("freesansbold.ttf", Big_Font_Sz)
 Text_Feed = int(Big_Font_Sz * 1.5)
 Wrap_Width = int(Hand_Col_Fraction * Disp_Width / (Big_Font_Sz * 0.5))
 
-# cards
+# card display
 scale = 0.7
 outline_width = 6
 no_outline_color = (-1, -1, -1)  # flags there is no outline.
-outline_colors=(no_outline_color, Yellow, Red, Bright_Green)
+outline_colors=(no_outline_color, Yellow, Green, Bright_Green, Red, Bright_Red)
+# even elements show status, odd elements indicate same status, but mouse is over
+# clickable image.
 vertical_offset = 30  # used to further flag selected cards.
-# not yet using (might not use at all):
-# is_over_outline_color = Yellow
-# is_clicked_outline_color (draw pile) = Red
-# is_selected_outline_color = Bright_Green
+
 # load image of back of card, and scale it.
 Back_Img = pygame.image.load(os.path.join('client', 'cardimages', 'cardBack.png'))
 Back_Img = pygame.transform.rotozoom(Back_Img, 0, scale)
