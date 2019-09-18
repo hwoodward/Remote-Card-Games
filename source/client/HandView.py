@@ -3,6 +3,15 @@ import textwrap
 import client.UIConstants as UIC
 from client.UICardWrapper import UICardWrapper
 import client.ClickableImage as Cli
+import operator
+
+# need "operator" for this command:  sorted_x = sorted(x, key=operator.attrgetter('score'))
+# or this one: x.sort(key=operator.attrgetter('score'))
+# Use key to trigger sorting or automatically sort cards when draw cards?
+# Need to think about when to update xy locations of cards and how I want to do it...
+# Want to see what you draw...
+# Two parts to sorting -- one is putting list in order, 2nd part is making xy location recognize list order...
+
 #  Next few imports flagged by pyCharm because not used. Keep for now in case needed later.
 #  from common.Card import Card
 #  from client.TableView import TableView
