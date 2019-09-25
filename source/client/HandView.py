@@ -33,19 +33,18 @@ class HandView:
         # (hand_info =UICardWrapped elements of current_hand).
         self.current_hand = []
         self.hand_info = []
-        # create window for game - left side is table=PUBLIC, right side is users
-        # TO DO - change this so bottom is current hand and top is table.
-        hand_disp_width = UIC.Disp_Width * UIC.Hand_Col_Fraction
+        # create window for game - top is table=PUBLIC, bottom is users view of hand.
+        # not used: hand_disp_height = UIC.Disp_Width * UIC.Hand_Row_Fraction
         self.display = pygame.display.set_mode((UIC.Disp_Width, UIC.Disp_Height))
         pygame.display.set_caption(self.controller.getName() + " View")
         self.display.fill(UIC.White)
         self.draw_pile = Cli.ClickableImage\
-                (UIC.Back_Img, 10, 255, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
+                (UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
         # Buttons to cause cards to be realigned, or realigned and sorted (by rank).
         # will move hard coded numbers to UIC constants once I've worked them out a bit more.
-        self.realign_btn = Btn.Button(UIC.White, 1000, 25, 50, 50, text='Align hand')
+        self.realign_btn = Btn.Button(UIC.White, 900, 25, 50, 50, text='Align hand')
         self.realign_btn.outline_color = UIC.Gray
-        self.sort_btn = Btn.Button(UIC.Bright_Blue, 1000, 100, 50, 50, text='sort')
+        self.sort_btn = Btn.Button(UIC.Bright_Blue, 1000, 25, 50, 50, text='sort')
         # render starting window
         self.render()
 
@@ -67,7 +66,7 @@ class HandView:
         self.realign_btn.draw(self.display, self.realign_btn.outline_color)
         self.sort_btn.draw(self.display, self.sort_btn.outline_color)
         # self.display.blit(UIC.Back_Img, (UIC.Disp_Width/2, UIC.Disp_Height/2))
-        self.printText("{0}".format(self.current_hand), (UIC.Table_Hand_Border, 0))
+        self.printText("{0}".format(self.current_hand), (5,UIC.Table_Hand_Border))
         pygame.display.update()
 
     def nextEvent(self):
@@ -106,8 +105,8 @@ class HandView:
                     # sort cards - for now draw, because that action works.
                     self.controller.draw()
                 if self.realign_btn.isOver(pos):
-                    # print text - for now draw, because that should do something (though it will be ephemeral).
-                    self.printText('Pushed realign button', (100,100))
+                    # sort cards - for now draw, because that action works.
+                    self.controller.draw()
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
                 else:
@@ -116,10 +115,8 @@ class HandView:
                             element.selected = not element.selected
                             if element.selected:
                                 element.img_clickable.changeOutline(2)
-                                # element.xy[1] = element.xy[1] + UIC.vertical_offset
                             else:
                                 element.img_clickable.changeOutline(0)
-                                # element.xy[1] = element.xy[1] - UIC.vertical_offset
 
             if event.type == pygame.MOUSEMOTION:
                 if self.realign_btn.isOver(pos):
@@ -129,7 +126,7 @@ class HandView:
                 if self.sort_btn.isOver(pos):
                     self.sort_btn.outline_color = UIC.Blue  # set outline color
                 else:
-                    self.sort_btn.outline_color = UIC.no_outline_color  # remove outline
+                    self.sort_btn.outline_color = UIC.Bright_Blue  # remove highlighted outline
                 if self.draw_pile.isOver(pos):   #later will need to require that it be the beginning of the turn, too.
                     self.draw_pile.changeOutline(1)
                 else:
@@ -159,7 +156,7 @@ class HandView:
 
         Only update new cards so that location and image not lost
         """
-        card_xy = (10, 10)
+        card_xy = (10, UIC.Table_Hand_Border + 40)
         old_wrapped_hand = wrapped_hand
         updated_wrapped_hand = []
         if not updated_hand == []:
@@ -171,12 +168,12 @@ class HandView:
                         # card_xy is where we start printing new cards. Should end up being beyond last card.
                         # this should work so long have routine to straighten cards somewhere else...
                         # else will march off of display.
-                        card_xy = (element_wrapped.xy[0] + 50, element_wrapped.xy[1] + 50)
+                        card_xy = (max(card_xy[0],element_wrapped.xy[0]), card_xy[1])
                         old_wrapped_hand.remove(already_wrapped)
                         newcard = False
                 if newcard:
                     #TODO -- remove "50" [below] -- use fraction of disp size or card size or something.
-                    card_xy = (card_xy[0] + 50, card_xy[1] + 50)
+                    card_xy = (card_xy[0] + 50, card_xy[1])
                     element_wrapped = UICardWrapper(card, card_xy)
                 updated_wrapped_hand.append(element_wrapped)
         return updated_wrapped_hand

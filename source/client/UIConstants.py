@@ -22,8 +22,9 @@ Bright_Blue = (100,100,255)
 # (below good for my laptop, screen resolution: 3840x2160, display set to 300%)
 Disp_Width = 1200
 Disp_Height = 600
-Hand_Col_Fraction = 0.3
-Table_Hand_Border = Disp_Width * (1 - Hand_Col_Fraction)
+Hand_Row_Fraction = 0.3
+Hand_Col_Fraction = 1.0
+Table_Hand_Border = Disp_Height * (1 - Hand_Row_Fraction)
 
 # fonts
 pygame.font.init()
