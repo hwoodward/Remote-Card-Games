@@ -3,6 +3,7 @@ import textwrap
 import client.UIConstants as UIC
 from client.UICardWrapper import UICardWrapper
 import client.ClickableImage as Cli
+import client.Button as Btn
 import operator
 
 # need "operator" for this command:  sorted_x = sorted(x, key=operator.attrgetter('score'))
@@ -41,6 +42,8 @@ class HandView:
         # self.outline_color = UIC.outline_colors[0]
         self.draw_pile = Cli.ClickableImage\
                 (UIC.Back_Img, 10, 255, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
+        # First try at creating meld button
+        self.meld_btn = Btn.Button(UIC.Bright_Red, 255, 255, 50, 50, text='test')
         # render starting window
         self.render()
 
@@ -59,6 +62,8 @@ class HandView:
         self.showHolding(self.hand_info)
         # display draw pile
         self.draw_pile.draw(self.display, self.draw_pile.outline_color)
+        # still testing button -- later replace UIC.Red with color ...
+        self.meld_btn.draw(self.display, UIC.Red)
         # self.display.blit(UIC.Back_Img, (UIC.Disp_Width/2, UIC.Disp_Height/2))
         self.printText("{0}".format(self.current_hand), (UIC.Table_Hand_Border, 0))
         pygame.display.update()
@@ -95,6 +100,9 @@ class HandView:
                     self.controller.discard(bogus_discards)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.meld_btn.isOver(pos):
+                    # play selected  - for now draw, because that action works.
+                    self.controller.draw()
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
                 else:
@@ -109,6 +117,10 @@ class HandView:
                                 # element.xy[1] = element.xy[1] - UIC.vertical_offset
 
             if event.type == pygame.MOUSEMOTION:
+                if self.meld_btn.isOver(pos):
+                    btnoutline = UIC.Red  # set outline color
+                else:
+                    btnoutline = None  # remove outline
                 if self.draw_pile.isOver(pos):   #later will need to require that it be the beginning of the turn, too.
                     self.draw_pile.changeOutline(1)
                 else:
