@@ -39,11 +39,13 @@ class HandView:
         self.display = pygame.display.set_mode((UIC.Disp_Width, UIC.Disp_Height))
         pygame.display.set_caption(self.controller.getName() + " View")
         self.display.fill(UIC.White)
-        # self.outline_color = UIC.outline_colors[0]
         self.draw_pile = Cli.ClickableImage\
                 (UIC.Back_Img, 10, 255, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
-        # First try at creating meld button
-        self.meld_btn = Btn.Button(UIC.Bright_Red, 255, 255, 50, 50, text='test')
+        # Buttons to cause cards to be realigned, or realigned and sorted (by rank).
+        # will move hard coded numbers to UIC constants once I've worked them out a bit more.
+        self.realign_btn = Btn.Button(UIC.White, 1000, 25, 50, 50, text='Align hand')
+        self.realign_btn.outline_color = UIC.Gray
+        self.sort_btn = Btn.Button(UIC.Bright_Blue, 1000, 100, 50, 50, text='sort')
         # render starting window
         self.render()
 
@@ -60,10 +62,10 @@ class HandView:
             self.hand_info = self.wrapHand(self.current_hand, self.hand_info)
             # to debug selecting cards have to make it so that wrapHand does NOT re-wrap cards!!
         self.showHolding(self.hand_info)
-        # display draw pile
+        # display draw pile and various action buttons
         self.draw_pile.draw(self.display, self.draw_pile.outline_color)
-        # still testing button -- later replace UIC.Red with color ...
-        self.meld_btn.draw(self.display, UIC.Red)
+        self.realign_btn.draw(self.display, self.realign_btn.outline_color)
+        self.sort_btn.draw(self.display, self.sort_btn.outline_color)
         # self.display.blit(UIC.Back_Img, (UIC.Disp_Width/2, UIC.Disp_Height/2))
         self.printText("{0}".format(self.current_hand), (UIC.Table_Hand_Border, 0))
         pygame.display.update()
@@ -100,9 +102,12 @@ class HandView:
                     self.controller.discard(bogus_discards)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if self.meld_btn.isOver(pos):
-                    # play selected  - for now draw, because that action works.
+                if self.sort_btn.isOver(pos):
+                    # sort cards - for now draw, because that action works.
                     self.controller.draw()
+                if self.realign_btn.isOver(pos):
+                    # print text - for now draw, because that should do something (though it will be ephemeral).
+                    self.printText('Pushed realign button', (100,100))
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
                 else:
@@ -117,10 +122,14 @@ class HandView:
                                 # element.xy[1] = element.xy[1] - UIC.vertical_offset
 
             if event.type == pygame.MOUSEMOTION:
-                if self.meld_btn.isOver(pos):
-                    btnoutline = UIC.Red  # set outline color
+                if self.realign_btn.isOver(pos):
+                    self.realign_btn.outline_color = UIC.Black  # set outline color
                 else:
-                    btnoutline = None  # remove outline
+                    self.realign_btn.outline_color = UIC.Gray  # remove outline
+                if self.sort_btn.isOver(pos):
+                    self.sort_btn.outline_color = UIC.Blue  # set outline color
+                else:
+                    self.sort_btn.outline_color = UIC.no_outline_color  # remove outline
                 if self.draw_pile.isOver(pos):   #later will need to require that it be the beginning of the turn, too.
                     self.draw_pile.changeOutline(1)
                 else:
@@ -150,10 +159,7 @@ class HandView:
 
         Only update new cards so that location and image not lost
         """
-        # right now it updates all cards -- need to modify so that only
-        # updates cards that aren't already wrapped.
         card_xy = (10, 10)
-        # TO DO modify code so that only append new cards to wrapped_hand (preserve XY, img, selected)
         old_wrapped_hand = wrapped_hand
         updated_wrapped_hand = []
         if not updated_hand == []:

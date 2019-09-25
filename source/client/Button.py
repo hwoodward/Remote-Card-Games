@@ -16,10 +16,11 @@ class Button():
         self.width = width
         self.height = height
         self.text = text
+        self.outline_color = UIC.no_outline_color
 
-    def draw(self, win, outline=None):
+    def draw(self, win, outline=UIC.no_outline_color):
         #Call this method to draw the button on the screen
-        if outline:
+        if not outline == UIC.no_outline_color:
             pygame.draw.rect(win, outline,
                              (self.x-UIC.outline_width, self.y-UIC.outline_width,
                               self.width+2*UIC.outline_width, self.height+2*UIC.outline_width), 0)

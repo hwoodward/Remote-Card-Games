@@ -7,7 +7,8 @@ import pygame
 import os
 
 # define colors (#rgb on scale of 0 to 255)
-Black = (0,0,0) 
+Black = (0,0,0)
+Gray = (100,100,100)
 White = (255,255,255)
 Red = (200,0,0)
 Green = (90,200,90)
@@ -15,7 +16,7 @@ Yellow = (255,255,0)
 Blue = (0,0,200)
 Bright_Red = (255,0,0)
 Bright_Green = (0,255,0)
-Bright_Blue = (0,0,255)
+Bright_Blue = (100,100,255)
 
 # Set display size
 # (below good for my laptop, screen resolution: 3840x2160, display set to 300%)
