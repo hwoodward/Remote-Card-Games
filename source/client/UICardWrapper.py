@@ -3,7 +3,7 @@ import os
 # Next two imports flagged by pyCharm, but may want them later.
 # from common.Card import Card
 import client.UIConstants as UIC
-import client.ClickableImage as Cli
+from client.ClickableImage import ClickableImage as ClickImg
 
 
 class UICardWrapper:
@@ -12,8 +12,7 @@ class UICardWrapper:
     def __init__(self, this_card, loc_xy):
         self.card = this_card
         self.img = UICardWrapper.getImage(self.card)
-        self.img_clickable = Cli.ClickableImage \
-            (self.img, loc_xy[0], loc_xy[1], self.img.get_width(), self.img.get_height(), 0)
+        self.img_clickable = ClickImg(self.img, loc_xy[0], loc_xy[1], self.img.get_width(), self.img.get_height(), 0)
         self.xy = loc_xy
         self.selected = False
 

@@ -2,16 +2,9 @@ import pygame
 import textwrap
 import client.UIConstants as UIC
 from client.UICardWrapper import UICardWrapper
-import client.ClickableImage as Cli
+from client.ClickableImage import ClickableImage as ClickImg
 import client.Button as Btn
 import operator
-
-# need "operator" for this command:  sorted_x = sorted(x, key=operator.attrgetter('score'))
-# or this one: x.sort(key=operator.attrgetter('score'))
-# Use key to trigger sorting or automatically sort cards when draw cards?
-# Need to think about when to update xy locations of cards and how I want to do it...
-# Want to see what you draw...
-# Two parts to sorting -- one is putting list in order, 2nd part is making xy location recognize list order...
 
 #  Next few imports flagged by pyCharm because not used. Keep for now in case needed later.
 #  from common.Card import Card
@@ -33,13 +26,10 @@ class HandView:
         # (hand_info =UICardWrapped elements of current_hand).
         self.current_hand = []
         self.hand_info = []
-        # create window for game - top is table=PUBLIC, bottom is users view of hand.
-        # not used: hand_disp_height = UIC.Disp_Width * UIC.Hand_Row_Fraction
         self.display = pygame.display.set_mode((UIC.Disp_Width, UIC.Disp_Height))
         pygame.display.set_caption(self.controller.getName() + " View")
         self.display.fill(UIC.White)
-        self.draw_pile = Cli.ClickableImage\
-                (UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
+        self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
         # Buttons to cause cards to be realigned, or realigned and sorted (by rank).
         # will move hard coded numbers to UIC constants once I've worked them out a bit more.
         self.realign_btn = Btn.Button(UIC.White, 900, 25, 50, 50, text='Align hand')
@@ -49,23 +39,21 @@ class HandView:
         self.render()
 
     def render(self):
-        """This should render the actual UI, for now it just prints the hand"""
+        """This should render the entire UI, for now it just
+        prints the hand and a few action buttons"""
 
-        # TODO
-        # change screen split so top=table & bottom=hand(instead of side-by-side)
-        # render the table view showing the visible cards
         self.display.fill(UIC.White)
         self.last_hand = self.current_hand
         self.current_hand = self.controller.getHand()
         if not self.last_hand == self.current_hand:
             self.hand_info = self.wrapHand(self.current_hand, self.hand_info)
-            # to debug selecting cards have to make it so that wrapHand does NOT re-wrap cards!!
-        self.showHolding(self.hand_info)
+        self.showHolding(self.hand_info)  # displays hand
         # display draw pile and various action buttons
         self.draw_pile.draw(self.display, self.draw_pile.outline_color)
         self.realign_btn.draw(self.display, self.realign_btn.outline_color)
         self.sort_btn.draw(self.display, self.sort_btn.outline_color)
-        # self.display.blit(UIC.Back_Img, (UIC.Disp_Width/2, UIC.Disp_Height/2))
+        # printText below is for debugging purposes.
+        # Will eventually replace hand display with info on game progress.
         self.printText("{0}".format(self.current_hand), (5,UIC.Table_Hand_Border))
         pygame.display.update()
 
@@ -78,7 +66,6 @@ class HandView:
             if event.type == pygame.QUIT:
                 # The window crashed, we should handle this
                 print("pygame crash, AAAHHH")
-                # run = False
                 pygame.quit()
                 quit()
 
@@ -89,13 +76,11 @@ class HandView:
                     
                 if event.key == pygame.K_8:
                     print("Ending turn")
-                    # bogus_discards = []
                     # while creating UI we want to simplify discards
                     # but discarding entire list of cards too simple.
                     if len(self.hand_info) > 0:
                         discard_wrapped = self.hand_info[0]
                         bogus_discards = [discard_wrapped.card]
-                        # TODO - REMOVE DISCARD FROM WRAPPED CARDS ARRAY.
                     else:
                         bogus_discards = []                    
                     self.controller.discard(bogus_discards)
@@ -136,11 +121,6 @@ class HandView:
                         if element.img_clickable.isOver(pos):
                             # Brighten colors that mouse is over.
                             # Odd colors are bright, even show selected status.
-                            #
-                            # discuss with others...
-                            # Need to decide what card status we need to track...
-                            # Might want options 'selected' and 'selected for discard'
-                            # Note that color_index and 'selected' carry same info.
                             if (color_index % 2) == 0:
                                 color_index = element.img_clickable.outline_index + 1
                                 element.img_clickable.changeOutline(color_index)
@@ -165,9 +145,6 @@ class HandView:
                 for already_wrapped in old_wrapped_hand :
                     if newcard and card == already_wrapped.card :
                         element_wrapped = already_wrapped
-                        # card_xy is where we start printing new cards. Should end up being beyond last card.
-                        # this should work so long have routine to straighten cards somewhere else...
-                        # else will march off of display.
                         card_xy = (max(card_xy[0],element_wrapped.xy[0]), card_xy[1])
                         old_wrapped_hand.remove(already_wrapped)
                         newcard = False
@@ -180,7 +157,6 @@ class HandView:
 
     def showHolding(self, wrapped_cards):
         for wrapped_element in wrapped_cards:
-            # self.display.blit(wrapped_element.img, wrapped_element.xy)
             color = UIC.outline_colors[wrapped_element.img_clickable.outline_index]
             wrapped_element.img_clickable.draw(self.display, color)
 
