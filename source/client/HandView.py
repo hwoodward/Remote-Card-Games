@@ -99,9 +99,6 @@ class HandView:
                 if self.sort_btn.isOver(pos):
                     self.hand_info.sort(key=lambda wc: wc.key)
                     self.hand_info = self.refreshXY(self.hand_info)
-                    # can see that the cards are in order, and refreshXY calculates cardXY correctly,
-                    # but they're being shown in original order.
-                    # Check if this is due to wrapHand or showHoldings ....
                 if self.mv_selected_btn.isOver(pos):
                     self.hand_info.sort(\
                         key=lambda wc: (wc.img_clickable.x + UIC.Disp_Width)\
@@ -109,35 +106,7 @@ class HandView:
                         )
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.discard_action_btn.isOver(pos):
-                    if self.discard_confirm == 1:
-                        self.discards = []
-                        for element in self.hand_info:
-                            if element.selected:
-                                self.discards.append(element.card)
-                        if self.discards == self.discards_confirm:
-                            self.controller.discard(self.discards)
-                            self.Notification = "It's someone's turn. "
-                        else:
-                            self.Notification = "Discard selection changed, discard canceled. "
-                        self.discard_confirm = 0
-                        self.discards = []
-                    else:
-                        self.discards = []
-                        if len(self.current_hand) == 0:
-                            self.controller.discard(self.discards)
-                            self.Notification = "Zaphod (check spelling) - no discard required, turn is over"
-                        else:
-                            for element in self.hand_info:
-                                if element.selected:
-                                    self.discards.append(element.card)
-                            if len(self.discards) == 1:
-                                # self.printText("{0}".format(self.current_hand), (5,UIC.Table_Hand_Border))
-                                self.Notification = "Please confirm - discard  " + "{0}".format(self.discards)
-                                self.discards_confirm = self.discards
-                                self.discard_confirm = 1 # ask for confirmation
-                            else:
-                                self.Notification = "Precisely one card must be selected to discard. "
-
+                    self.Notification = self.discardLogic()
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
                 else:
@@ -158,6 +127,10 @@ class HandView:
                     self.sort_btn.outline_color = UIC.Blue  # set outline color
                 else:
                     self.sort_btn.outline_color = UIC.Bright_Blue  # remove highlighted outline
+                if self.discard_action_btn.isOver(pos):
+                    self.discard_action_btn.outline_color = UIC.Black  # set outline color
+                else:
+                    self.discard_action_btn.outline_color = UIC.Bright_Red  # remove highlighted outline
                 if self.draw_pile.isOver(pos):   #later will need to require that it be the beginning of the turn, too.
                     self.draw_pile.changeOutline(1)
                 else:
@@ -235,4 +208,36 @@ class HandView:
             text_rect.topleft = start_xy_wfeed
             self.display.blit(text, text_rect)
             start_xy_wfeed = (start_xy_wfeed[0], start_xy_wfeed[1] + UIC.Text_Feed)
+
+    def discardLogic(self):
+        if self.discard_confirm == 1:
+            self.discards = []
+            for element in self.hand_info:
+                if element.selected:
+                    self.discards.append(element.card)
+            if self.discards == self.discards_confirm:
+                self.controller.discard(self.discards)
+                Note = "It's someone's turn. "
+            else:
+                Note = "Discard selection changed, discard canceled. "
+            self.discard_confirm = 0
+            self.discards = []
+        else:
+            self.discards = []
+            if len(self.current_hand) == 0:
+                self.controller.discard(self.discards)
+                Note = "Zaphod (check spelling) - no discard required, turn is over"
+            else:
+                for element in self.hand_info:
+                    if element.selected:
+                        self.discards.append(element.card)
+                if len(self.discards) == 1:
+                    # self.printText("{0}".format(self.current_hand), (5,UIC.Table_Hand_Border))
+                    Note = "Please confirm - discard  " + "{0}".format(self.discards)
+                    self.discards_confirm = self.discards
+                    self.discard_confirm = 1  # ask for confirmation
+                else:
+                    Note = "Precisely one card must be selected to discard. "
+        return Note
+
 
