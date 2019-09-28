@@ -4,10 +4,10 @@ import client.UIConstants as UIC
 from client.UICardWrapper import UICardWrapper
 from client.ClickableImage import ClickableImage as ClickImg
 import client.Button as Btn
-import operator
+# import operator
 
 #  Next few imports flagged by pyCharm because not used. Keep for now in case needed later.
-#  from common.Card import Card
+from common.Card import Card
 #  from client.TableView import TableView
 #  from time import sleep
 #  from PodSixNet.Connection import connection, ConnectionListener
@@ -87,8 +87,10 @@ class HandView:
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.sort_btn.isOver(pos):
-                    # sort cards - for now draw, because that action works.
-                    self.controller.draw()
+                    self.hand_info.sort(key=lambda wc: wc.key)
+                    self.refreshXY(self.hand_info)
+                    for element in self.hand_info:
+                        print(element.card)
                 if self.realign_btn.isOver(pos):
                     # sort cards - for now draw, because that action works.
                     self.controller.draw()
@@ -155,6 +157,16 @@ class HandView:
                 updated_wrapped_hand.append(element_wrapped)
         return updated_wrapped_hand
 
+    def refreshXY(self, wrapped_hand):  # NOT WORKING PROPERLY SLW!!
+        """After sorting or melding, may wish to refresh card.xy. """
+
+        card_xy = (10, UIC.Table_Hand_Border + 40)
+        for element in wrapped_hand:
+            element.xy = card_xy
+            card_xy = (card_xy[0] + 50, card_xy[1])
+            if card_xy[0] > UIC.Disp_Width:
+                print('Need to make loc_xy assignment more sophisticated')
+
     def showHolding(self, wrapped_cards):
         for wrapped_element in wrapped_cards:
             color = UIC.outline_colors[wrapped_element.img_clickable.outline_index]
@@ -172,3 +184,4 @@ class HandView:
             text_rect.topleft = start_xy_wfeed
             self.display.blit(text, text_rect)
             start_xy_wfeed = (start_xy_wfeed[0], start_xy_wfeed[1] + UIC.Text_Feed)
+
