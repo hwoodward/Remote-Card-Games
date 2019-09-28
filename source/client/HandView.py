@@ -32,9 +32,9 @@ class HandView:
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
         # Buttons to cause cards to be realigned, or realigned and sorted (by rank).
         # will move hard coded numbers to UIC constants once I've worked them out a bit more.
-        self.mv_selected_btn = Btn.Button(UIC.White, 900, 25, 100, 25, text='move selected cards')
+        self.mv_selected_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='move selected cards')
         self.mv_selected_btn.outline_color = UIC.Gray
-        self.sort_btn = Btn.Button(UIC.Bright_Blue, 1000, 50, 100, 25, text='sort')
+        self.sort_btn = Btn.Button(UIC.Bright_Blue, 1000, 75, 100, 25, text='sort')
         # render starting window
         self.render()
 
@@ -96,7 +96,10 @@ class HandView:
                     # but they're being shown in original order.
                     # Check if this is due to wrapHand or showHoldings ....
                 if self.mv_selected_btn.isOver(pos):
-                    self.hand_info.sort(key=lambda wc: (wc.key + 100) if wc.selected else wc.key)
+                    self.hand_info.sort(\
+                        key=lambda wc: (wc.img_clickable.x + UIC.Disp_Width)\
+                        if wc.selected else wc.img_clickable.x\
+                        )
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
@@ -151,7 +154,7 @@ class HandView:
                 for already_wrapped in old_wrapped_hand :
                     if newcard and card == already_wrapped.card :
                         element_wrapped = already_wrapped
-                        card_xy = (max(card_xy[0],element_wrapped.xy[0]), card_xy[1])
+                        card_xy = (max(card_xy[0],element_wrapped.img_clickable.x), card_xy[1])
                         old_wrapped_hand.remove(already_wrapped)
                         newcard = False
                 if newcard:
@@ -162,7 +165,7 @@ class HandView:
         return updated_wrapped_hand
 
     def refreshXY(self, original, layout_option = 1):
-        """After sorting or melding, may wish to refresh card.xy. """
+        """After sorting or melding, may wish to refresh card's xy coordinates """
 
         if not layout_option == 1:
             print('the only layout supported now is cards in a line, left to right')
