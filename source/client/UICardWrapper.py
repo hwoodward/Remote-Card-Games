@@ -14,10 +14,8 @@ class UICardWrapper:
         self.img = UICardWrapper.getImage(self.card)
         self.img_clickable = ClickImg(self.img, loc_xy[0], loc_xy[1], self.img.get_width(), self.img.get_height(), 0)
         self.xy = loc_xy
-        print(self.xy)
         self.selected = False
         self.key = UICardWrapper.sortKey(this_card)
-        print(self.key)
 
     @staticmethod
     def getImage(card):
@@ -49,3 +47,4 @@ class UICardWrapper:
         else:
             print('only 1 sorting option currently supported')
         return key4sorting
+

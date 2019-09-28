@@ -32,9 +32,9 @@ class HandView:
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
         # Buttons to cause cards to be realigned, or realigned and sorted (by rank).
         # will move hard coded numbers to UIC constants once I've worked them out a bit more.
-        self.realign_btn = Btn.Button(UIC.White, 900, 25, 50, 50, text='Align hand')
-        self.realign_btn.outline_color = UIC.Gray
-        self.sort_btn = Btn.Button(UIC.Bright_Blue, 1000, 25, 50, 50, text='sort')
+        self.mv_selected_btn = Btn.Button(UIC.White, 900, 25, 100, 25, text='move selected cards')
+        self.mv_selected_btn.outline_color = UIC.Gray
+        self.sort_btn = Btn.Button(UIC.Bright_Blue, 1000, 50, 100, 25, text='sort')
         # render starting window
         self.render()
 
@@ -48,9 +48,12 @@ class HandView:
         if not self.last_hand == self.current_hand:
             self.hand_info = self.wrapHand(self.current_hand, self.hand_info)
         self.showHolding(self.hand_info)  # displays hand
+        # debug note -- print out shows refreshXY changes reflected here.
+        #
         # display draw pile and various action buttons
-        self.draw_pile.draw(self.display, self.draw_pile.outline_color)
-        self.realign_btn.draw(self.display, self.realign_btn.outline_color)
+        loc_xy = (self.draw_pile.x, self.draw_pile.y)
+        self.draw_pile.draw(self.display, loc_xy, self.draw_pile.outline_color)
+        self.mv_selected_btn.draw(self.display, self.mv_selected_btn.outline_color)
         self.sort_btn.draw(self.display, self.sort_btn.outline_color)
         # printText below is for debugging purposes.
         # Will eventually replace hand display with info on game progress.
@@ -88,12 +91,13 @@ class HandView:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.sort_btn.isOver(pos):
                     self.hand_info.sort(key=lambda wc: wc.key)
-                    self.refreshXY(self.hand_info)
-                    for element in self.hand_info:
-                        print(element.card)
-                if self.realign_btn.isOver(pos):
-                    # sort cards - for now draw, because that action works.
-                    self.controller.draw()
+                    self.hand_info = self.refreshXY(self.hand_info)
+                    # can see that the cards are in order, and refreshXY calculates cardXY correctly,
+                    # but they're being shown in original order.
+                    # Check if this is due to wrapHand or showHoldings ....
+                if self.mv_selected_btn.isOver(pos):
+                    self.hand_info.sort(key=lambda wc: (wc.key + 100) if wc.selected else wc.key)
+                    self.hand_info = self.refreshXY(self.hand_info)
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
                 else:
@@ -106,10 +110,10 @@ class HandView:
                                 element.img_clickable.changeOutline(0)
 
             if event.type == pygame.MOUSEMOTION:
-                if self.realign_btn.isOver(pos):
-                    self.realign_btn.outline_color = UIC.Black  # set outline color
+                if self.mv_selected_btn.isOver(pos):
+                    self.mv_selected_btn.outline_color = UIC.Black  # set outline color
                 else:
-                    self.realign_btn.outline_color = UIC.Gray  # remove outline
+                    self.mv_selected_btn.outline_color = UIC.Gray  # remove outline
                 if self.sort_btn.isOver(pos):
                     self.sort_btn.outline_color = UIC.Blue  # set outline color
                 else:
@@ -157,20 +161,27 @@ class HandView:
                 updated_wrapped_hand.append(element_wrapped)
         return updated_wrapped_hand
 
-    def refreshXY(self, wrapped_hand):  # NOT WORKING PROPERLY SLW!!
+    def refreshXY(self, original, layout_option = 1):
         """After sorting or melding, may wish to refresh card.xy. """
 
+        if not layout_option == 1:
+            print('the only layout supported now is cards in a line, left to right')
+        refreshed = []
         card_xy = (10, UIC.Table_Hand_Border + 40)
-        for element in wrapped_hand:
-            element.xy = card_xy
+        for element in original:
+            element.img_clickable.x = card_xy[0]
+            element.img_clickable.y = card_xy[1]
             card_xy = (card_xy[0] + 50, card_xy[1])
             if card_xy[0] > UIC.Disp_Width:
                 print('Need to make loc_xy assignment more sophisticated')
+            refreshed.append(element)
+        return refreshed
 
     def showHolding(self, wrapped_cards):
         for wrapped_element in wrapped_cards:
             color = UIC.outline_colors[wrapped_element.img_clickable.outline_index]
-            wrapped_element.img_clickable.draw(self.display, color)
+            loc_xy = (wrapped_element.img_clickable.x, wrapped_element.img_clickable.y)
+            wrapped_element.img_clickable.draw(self.display, loc_xy, color)
 
     def printText(self, text_string, start_xy):
         """print the text_string in a text box starting on the top left."""

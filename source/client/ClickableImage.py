@@ -18,12 +18,14 @@ class ClickableImage:
         self.outline_index = outline_index
         self.outline_color = UIC.outline_colors[outline_index]
 
-    def draw(self, display, outline_choice):
+    def draw(self, display, loc_xy, outline_choice):
         # Call this method to draw the ClickableImage on the screen,
         if not outline_choice[0] == -1:
             pygame.draw.rect(display, outline_choice,
                              (self.x - UIC.outline_width, self.y - UIC.outline_width,
                               self.width + 2 * UIC.outline_width, self.height + 2 * UIC.outline_width), 0)
+        self.x = loc_xy[0]
+        self.y = loc_xy[1]
         display.blit(self.image, (self.x, self.y))
 
     def changeOutline(self,outline_idx):
