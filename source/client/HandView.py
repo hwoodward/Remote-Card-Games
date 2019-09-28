@@ -24,17 +24,21 @@ class HandView:
         pygame.init()
         # initialize hand_info
         # (hand_info =UICardWrapped elements of current_hand).
+        self.Notification = "It is someone's turn."
         self.current_hand = []
         self.hand_info = []
         self.display = pygame.display.set_mode((UIC.Disp_Width, UIC.Disp_Height))
         pygame.display.set_caption(self.controller.getName() + " View")
         self.display.fill(UIC.White)
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
-        # Buttons to cause cards to be realigned, or realigned and sorted (by rank).
+        # Buttons to cause actions -- e.g. cards will be sorted by selection status or by number.
         # will move hard coded numbers to UIC constants once I've worked them out a bit more.
         self.mv_selected_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='move selected cards')
         self.mv_selected_btn.outline_color = UIC.Gray
         self.sort_btn = Btn.Button(UIC.Bright_Blue, 1000, 75, 100, 25, text='sort')
+        self.discard_action_btn = Btn.Button(UIC.Bright_Red, (UIC.Disp_Width/2)-50, 25, 100, 25, text='discard')
+        self.discard_confirm = 0 # wish to confirm discards.
+
         # render starting window
         self.render()
 
@@ -55,9 +59,12 @@ class HandView:
         self.draw_pile.draw(self.display, loc_xy, self.draw_pile.outline_color)
         self.mv_selected_btn.draw(self.display, self.mv_selected_btn.outline_color)
         self.sort_btn.draw(self.display, self.sort_btn.outline_color)
+        self.discard_action_btn.draw(self.display, self.discard_action_btn.outline_color)
+
         # printText below is for debugging purposes.
         # Will eventually replace hand display with info on game progress.
-        self.printText("{0}".format(self.current_hand), (5,UIC.Table_Hand_Border))
+        # self.printText("{0}".format(self.current_hand), (5,UIC.Table_Hand_Border))
+        self.printText(self.Notification, (5,UIC.Table_Hand_Border))
         pygame.display.update()
 
     def nextEvent(self):
@@ -101,6 +108,36 @@ class HandView:
                         if wc.selected else wc.img_clickable.x\
                         )
                     self.hand_info = self.refreshXY(self.hand_info)
+                if self.discard_action_btn.isOver(pos):
+                    if self.discard_confirm == 1:
+                        self.discards = []
+                        for element in self.hand_info:
+                            if element.selected:
+                                self.discards.append(element.card)
+                        if self.discards == self.discards_confirm:
+                            self.controller.discard(self.discards)
+                            self.Notification = "It's someone's turn. "
+                        else:
+                            self.Notification = "Discard selection changed, discard canceled. "
+                        self.discard_confirm = 0
+                        self.discards = []
+                    else:
+                        self.discards = []
+                        if len(self.current_hand) == 0:
+                            self.controller.discard(self.discards)
+                            self.Notification = "Zaphod (check spelling) - no discard required, turn is over"
+                        else:
+                            for element in self.hand_info:
+                                if element.selected:
+                                    self.discards.append(element.card)
+                            if len(self.discards) == 1:
+                                # self.printText("{0}".format(self.current_hand), (5,UIC.Table_Hand_Border))
+                                self.Notification = "Please confirm - discard  " + "{0}".format(self.discards)
+                                self.discards_confirm = self.discards
+                                self.discard_confirm = 1 # ask for confirmation
+                            else:
+                                self.Notification = "Precisely one card must be selected to discard. "
+
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
                 else:
