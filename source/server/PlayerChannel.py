@@ -10,7 +10,7 @@ class PlayerChannel(Channel):
         """
         self.name = "guest"
         #visible cards and hand status are public info
-        self.visible_cards = []
+        self.visible_cards = {}
         self.hand_status = [] #order of information in this is specified by the ruleset
         Channel.__init__(self, *args, **kwargs)
 

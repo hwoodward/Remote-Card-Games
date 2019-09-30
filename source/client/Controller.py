@@ -14,6 +14,7 @@ class Controller(ConnectionListener):
 
     def __init__(self, clientState):
         self._state = clientState
+        self.prepared_cards = {} #This is the dict of cards prepared to be played
         self.setName()
 
     ### Player Actions ###
