@@ -15,9 +15,10 @@ Pickup_Size = 8
 Discard_Size = 1
 
 Meld_Threshold = [50, 90, 120, 150]
+Number_Rounds = len(Meld_Threshold) #For convenience
 
 Deal_Size = 11
-Number_Hands = 2
+Hands_Per_Player = 2
 
 def numDecks(numPlayers):
     """Specify how many decks of cards to put in the draw pile"""
@@ -48,13 +49,17 @@ def canPlayGroup(key, card_group):
     
     returns True if it can, otherwise raises an exception with an explanation
     """
+    if len(card_group) == 0:
+        return True # Need to allow empty groups to be "played" due to some side-effects of how we combined dictionaries
     if key == 3:
-        return Exception("Illegal key - cannot play 3s")
+        raise Exception("Illegal key - cannot play 3s")
+    if len(card_group) < 3: 
+        raise Exception("Too few careds in group - minimum is 3");
     typeDiff = 0
     for card in card_group:
         if isWild(card):
             typeDiff -= 1
-        if card.number == key:
+        elif card.number == key:
             typeDiff += 1
         else:
             raise Exception("Illegal card in group: {0} is not wild and is not part of the {1} group".format(card, key))
@@ -65,15 +70,16 @@ def canPlayGroup(key, card_group):
 def canMeld(prepared_cards, round_index):
     """Determines if a set of card groups is a legal meld"""
     score = 0
-    for key, card_group in prepared_cards:
+    for key, card_group in prepared_cards.items():
         if canPlayGroup(key, card_group):
             score += scoreGroup(card_group)
     min_score = Meld_Threshold[round_index]
-    if score >= min_score:
-        return True
-    raise Exception("Meld does not meat round minimum score or {0}".format(min_score))
+    if score < min_score:
+        raise Exception("Meld does not meat round minimum score or {0}".format(min_score))
+    return True
 
-def canPickupPile(discard_info, prepared_cards, played_cards):
+
+def canPickupPile(discard_info, prepared_cards, played_cards, round_index):
     """Determines if the player can pick up the pile with their suggested play"""
     #check there are enough cards
     if discard_info[1] < 8:
@@ -92,28 +98,43 @@ def canPickupPile(discard_info, prepared_cards, played_cards):
         top_key = key_opts[0]
     #check suggested play contains 2 cards matching the top card
     top_group = prepared_cards[top_key]
+    total = 0
     for card in top_group:
-        total = 0
         if not isWild(card):
             total += 1
-        if total < 2:
-            raise Exception("Cannot pickup the pile without 2 cards matching the top card of the discard pile")
-    #check suggested play is legal
-    top_group.append(top_card)
-    return canPlay(prepared_cards, played_cards)
+    if total < 2:
+        raise Exception("Cannot pickup the pile without 2 cards matching the top card of the discard pile")
+    #check suggested play is legal (using adjusted deep copy of prepared cards)
+    temp_prepared = {}
+    for key, card_group in prepared_cards.items():
+        temp_prepared[key] = [x for x in card_group]
+        if key == top_key:
+            temp_prepared[key].append(top_card)
+    return canPlay(temp_prepared, played_cards, round_index)
 
-def canPlay(prepared_cards, played_cards):
+def canPlay(prepared_cards, played_cards, round_index):
     """Confirms if playing the selected cards is legal"""
     if not played_cards: #empty dicts evaluate to false (as does None)
-        return canMeld(prepared_cards)
+        return canMeld(prepared_cards, round_index)
     #Combine dictionaries to get the final played cards if suggest cards played
-    combined_cards = {}
-    for key in set(prepared_cards).union(played_cards):
-        combined_cards[key] = prepared_cards.setdefault(key, []).append(played_cards.setdefault(key,[]))
+    combined_cards = combineCardDicts(prepared_cards, played_cards)
     #Confirm each combined group is playable
     for key, card_group in combined_cards.items():
         canPlayGroup(key, card_group)
     return True
+
+def combineCardDicts(dict1, dict2):
+    """Combine two dictionaries of cards, such as played and to be played cards"""
+    combined_cards = {}
+    for key in set(dict1).union(dict2):
+        combo_list = []
+        for card in dict1.setdefault(key, []):
+            combo_list.append(card)
+        for card in dict2.setdefault(key, []):
+            combo_list.append(card)
+        combined_cards[key] = combo_list
+    return combined_cards
+
 
 def cardValue(card):
     """Returns the point value for a card"""
