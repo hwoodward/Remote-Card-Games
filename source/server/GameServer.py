@@ -3,6 +3,7 @@ from server.ServerState import ServerState
 
 from PodSixNet.Server import Server
 
+
 class GameServer(Server, ServerState):
     channelClass = PlayerChannel
 
@@ -60,13 +61,7 @@ class GameServer(Server, ServerState):
 
     def Send_discardInfo(self):
         """Send the update to the discard pile"""
-        # <<<<<<< HEAD
-        # SLW asks which version to keep??  comment out next two lines and keep two below....
-        # info = self.DiscardInfo()
-        # self.SendToAll({"action": "discardInfo", "top_card": info[0].Serialize(), "size": info[1]})
-        # =======
         info = self.discard_info()
         self.Send_broadcast({"action": "discard_info", "top_card": info[0].serialize(), "size": info[1]})
-        # >>>>>>> master
 
 
