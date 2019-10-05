@@ -39,7 +39,7 @@ Wrap_Width = int(Hand_Col_Fraction * Disp_Width / (Big_Font_Sz * 0.5))
 scale = 0.7
 outline_width = 6
 no_outline_color = (-1, -1, -1)  # flags there is no outline.
-outline_colors=(no_outline_color, Yellow, Green, Bright_Green, Red, Bright_Red)
+outline_colors = (no_outline_color, Yellow, Green, Bright_Green, Red, Bright_Red)
 # even elements show status, odd elements indicate same status, but mouse is over
 # clickable image.
 vertical_offset = 30  # used to further flag selected cards.

@@ -4,12 +4,8 @@ import client.UIConstants as UIC
 from client.UICardWrapper import UICardWrapper
 from client.ClickableImage import ClickableImage as ClickImg
 import client.Button as Btn
-# import operator
-
-#  Next few imports flagged by pyCharm because not used. Keep for now in case needed later.
 from common.Card import Card
-#  from client.TableView import TableView
-#  from time import sleep
+from client.ShowTable import ShowTable
 #  from PodSixNet.Connection import connection, ConnectionListener
 
 
@@ -37,8 +33,8 @@ class HandView:
         self.mv_selected_btn.outline_color = UIC.Gray
         self.sort_btn = Btn.Button(UIC.Bright_Blue, 1000, 75, 100, 25, text='sort')
         self.discard_action_btn = Btn.Button(UIC.Bright_Red, (UIC.Disp_Width/2)-50, 25, 100, 25, text='discard')
-        self.discard_confirm = 0 # wish to confirm discards.
-
+        self.discard_confirm = 0                             # wish to confirm discards.
+        self.table_setting = ShowTable(self.display)         # displays public info.
         # render starting window
         self.render()
 
@@ -51,8 +47,8 @@ class HandView:
         self.current_hand = self.controller.getHand()
         if not self.last_hand == self.current_hand:
             self.hand_info = self.wrapHand(self.current_hand, self.hand_info)
-        self.showHolding(self.hand_info)  # displays hand
-        # debug note -- print out shows refreshXY changes reflected here.
+        self.showHolding(self.hand_info)               # displays hand
+        self.table_setting.playerByPlayer()            # displays public info.
         #
         # display draw pile and various action buttons
         loc_xy = (self.draw_pile.x, self.draw_pile.y)
