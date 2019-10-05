@@ -22,7 +22,10 @@ class HandView:
         # (hand_info =UICardWrapped elements of current_hand).
         self.Notification = "It is someone's turn."
         self.current_hand = []
+        self.last_hand = []
         self.hand_info = []
+        self.discards = []
+        self.discard_confirm = 0
         self.display = pygame.display.set_mode((UIC.Disp_Width, UIC.Disp_Height))
         pygame.display.set_caption(self.controller.getName() + " View")
         self.display.fill(UIC.White)
@@ -60,7 +63,7 @@ class HandView:
         # printText below is for debugging purposes.
         # Will eventually replace hand display with info on game progress.
         # self.printText("{0}".format(self.current_hand), (5,UIC.Table_Hand_Border))
-        self.printText(self.Notification, (5,UIC.Table_Hand_Border))
+        self.printText(self.Notification, (5, UIC.Table_Hand_Border))
         pygame.display.update()
 
     def nextEvent(self):
@@ -96,15 +99,20 @@ class HandView:
                     self.hand_info.sort(key=lambda wc: wc.key)
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.mv_selected_btn.isOver(pos):
-                    self.hand_info.sort(\
-                        key=lambda wc: (wc.img_clickable.x + UIC.Disp_Width)\
-                        if wc.selected else wc.img_clickable.x\
+                    self.hand_info.sort(
+                        key=lambda wc: (wc.img_clickable.x + UIC.Disp_Width)
+                        if wc.selected else wc.img_clickable.x
                         )
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.discard_action_btn.isOver(pos):
                     self.Notification = self.discardLogic()
+                    self.hand_info.sort(key=lambda wc: wc.img_clickable.x)
+                    self.hand_info = self.refreshXY(self.hand_info)
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
+                    self.hand_info.sort(key=lambda wc: wc.img_clickable.x)
+                    self.hand_info = self.refreshXY(self.hand_info)
+                    self.Notification = 'You may wish to click on "move selected cards" after drawing and discarding.'
                 else:
                     for element in self.hand_info:
                         if element.img_clickable.isOver(pos):
@@ -127,7 +135,7 @@ class HandView:
                     self.discard_action_btn.outline_color = UIC.Black  # set outline color
                 else:
                     self.discard_action_btn.outline_color = UIC.Bright_Red  # remove highlighted outline
-                if self.draw_pile.isOver(pos):   #later will need to require that it be the beginning of the turn, too.
+                if self.draw_pile.isOver(pos):
                     self.draw_pile.changeOutline(1)
                 else:
                     self.draw_pile.changeOutline(0)
@@ -145,7 +153,6 @@ class HandView:
                                 color_index = color_index - 1
                                 element.img_clickable.changeOutline(color_index)
 
-
     def wrapHand(self, updated_hand, wrapped_hand):
         """Associate each card in updated_hand with a UICardWrapper
 
@@ -157,20 +164,19 @@ class HandView:
         if not updated_hand == []:
             for card in updated_hand:
                 newcard = True
-                for already_wrapped in old_wrapped_hand :
-                    if newcard and card == already_wrapped.card :
-                        element_wrapped = already_wrapped
-                        card_xy = (max(card_xy[0],element_wrapped.img_clickable.x), card_xy[1])
+                for already_wrapped in old_wrapped_hand:
+                    if newcard and card == already_wrapped.card:
+                        card_wrapped = already_wrapped
+                        card_xy = (max(card_xy[0], card_wrapped.img_clickable.x), card_xy[1])
                         old_wrapped_hand.remove(already_wrapped)
                         newcard = False
                 if newcard:
-                    #TODO -- remove "50" [below] -- use fraction of disp size or card size or something.
-                    card_xy = (card_xy[0] + 50, card_xy[1])
-                    element_wrapped = UICardWrapper(card, card_xy)
-                updated_wrapped_hand.append(element_wrapped)
+                    card_xy = (card_xy[0] + UIC.Card_Spacing, card_xy[1])
+                    card_wrapped = UICardWrapper(card, card_xy)
+                updated_wrapped_hand.append(card_wrapped)
         return updated_wrapped_hand
 
-    def refreshXY(self, original, layout_option = 1):
+    def refreshXY(self, original, layout_option=1):
         """After sorting or melding, may wish to refresh card's xy coordinates """
 
         if not layout_option == 1:
@@ -180,7 +186,7 @@ class HandView:
         for element in original:
             element.img_clickable.x = card_xy[0]
             element.img_clickable.y = card_xy[1]
-            card_xy = (card_xy[0] + 50, card_xy[1])
+            card_xy = (card_xy[0] + UIC.Card_Spacing, card_xy[1])
             if card_xy[0] > UIC.Disp_Width:
                 print('Need to make loc_xy assignment more sophisticated')
             refreshed.append(element)
@@ -213,27 +219,28 @@ class HandView:
                     self.discards.append(element.card)
             if self.discards == self.discards_confirm:
                 self.controller.discard(self.discards)
-                Note = "It's someone's turn. "
+                note = "It's someone's turn. "
             else:
-                Note = "Discard selection changed, discard canceled. "
+                note = "Discard selection changed, discard canceled. "
             self.discard_confirm = 0
             self.discards = []
         else:
             self.discards = []
             if len(self.current_hand) == 0:
+                print('Program currently crashes if Zaephod and hit discard')
                 self.controller.discard(self.discards)
-                Note = "Zaphod (check spelling) - no discard required, turn is over"
+                note = "Zaephod - no discard required, turn is over"
             else:
                 for element in self.hand_info:
                     if element.selected:
                         self.discards.append(element.card)
                 if len(self.discards) == 1:
                     # self.printText("{0}".format(self.current_hand), (5,UIC.Table_Hand_Border))
-                    Note = "Please confirm - discard  " + "{0}".format(self.discards)
+                    note = "Please confirm - discard  " + "{0}".format(self.discards)
                     self.discards_confirm = self.discards
                     self.discard_confirm = 1  # ask for confirmation
                 else:
-                    Note = "Precisely one card must be selected to discard. "
-        return Note
+                    note = "Precisely one card must be selected to discard. "
+        return note
 
 
