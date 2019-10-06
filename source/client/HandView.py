@@ -18,14 +18,14 @@ class HandView:
         self.controller = controller
         # initialize pygame modules
         pygame.init()
-        # initialize hand_info
-        # (hand_info =UICardWrapped elements of current_hand).
+        # initialize variables
         self.Notification = "It is someone's turn."
         self.current_hand = []
         self.last_hand = []
-        self.hand_info = []
+        self.hand_info = []          # will contain UICardWrapped elements of current_hand
         self.discards = []
         self.discard_confirm = 0
+        # Set up user display.
         self.display = pygame.display.set_mode((UIC.Disp_Width, UIC.Disp_Height))
         pygame.display.set_caption(self.controller.getName() + " View")
         self.display.fill(UIC.White)
@@ -36,14 +36,12 @@ class HandView:
         self.mv_selected_btn.outline_color = UIC.Gray
         self.sort_btn = Btn.Button(UIC.Bright_Blue, 1000, 75, 100, 25, text='sort')
         self.discard_action_btn = Btn.Button(UIC.Bright_Red, (UIC.Disp_Width/2)-50, 25, 100, 25, text='discard')
-        self.discard_confirm = 0                             # wish to confirm discards.
         self.table_setting = ShowTable(self.display)         # displays public info.
         # render starting window
         self.render()
 
     def render(self):
-        """This should render the entire UI, for now it just
-        prints the hand and a few action buttons"""
+        """This renders the User Interface """
 
         self.display.fill(UIC.White)
         self.last_hand = self.current_hand
@@ -59,10 +57,6 @@ class HandView:
         self.mv_selected_btn.draw(self.display, self.mv_selected_btn.outline_color)
         self.sort_btn.draw(self.display, self.sort_btn.outline_color)
         self.discard_action_btn.draw(self.display, self.discard_action_btn.outline_color)
-
-        # printText below is for debugging purposes.
-        # Will eventually replace hand display with info on game progress.
-        # self.printText("{0}".format(self.current_hand), (5,UIC.Table_Hand_Border))
         self.printText(self.Notification, (5, UIC.Table_Hand_Border))
         pygame.display.update()
 
@@ -83,17 +77,6 @@ class HandView:
                     self.controller.draw()
                     UIC.debugflag = 0
                     
-                if event.key == pygame.K_8:
-                    print("Ending turn")
-                    # while creating UI we want to simplify discards
-                    # but discarding entire list of cards too simple.
-                    if len(self.hand_info) > 0:
-                        discard_wrapped = self.hand_info[0]
-                        bogus_discards = [discard_wrapped.card]
-                    else:
-                        bogus_discards = []                    
-                    self.controller.discard(bogus_discards)
-
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.sort_btn.isOver(pos):
                     self.hand_info.sort(key=lambda wc: wc.key)

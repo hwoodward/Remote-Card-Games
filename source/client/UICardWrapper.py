@@ -1,7 +1,5 @@
 import pygame
 import os
-# Next two imports flagged by pyCharm, but may want them later.
-# from common.Card import Card
 import client.UIConstants as UIC
 from client.ClickableImage import ClickableImage as ClickImg
 
@@ -13,7 +11,6 @@ class UICardWrapper:
         self.card = this_card
         self.img = UICardWrapper.getImage(self.card)
         self.img_clickable = ClickImg(self.img, loc_xy[0], loc_xy[1], self.img.get_width(), self.img.get_height(), 0)
-        # self.xy = loc_xy < is this used anywhere?
         self.selected = False
         self.key = UICardWrapper.sortKey(this_card)
 
@@ -23,7 +20,6 @@ class UICardWrapper:
         suit_letter = 'N'  # this doesn't distinguish between red & black Jokers
         if card.suit is not None:
             suit_letter = card.suit[0]
-
         image_file = os.path.join('client', 'cardimages', 'card' + str(card.number) + suit_letter + '.png')
         img = pygame.image.load(image_file)
         img = pygame.transform.rotozoom(img, 0, UIC.scale)
@@ -36,7 +32,7 @@ class UICardWrapper:
         For Bridge or other games different sorting would probably be preferred, and
         could create multiple buttons so that user could sort it how they wanted.
         """
-        if (sort_option == 1):
+        if sort_option == 1:
             key4sorting = this_card.number
             if key4sorting == 1:
                 key4sorting = 14
@@ -47,4 +43,3 @@ class UICardWrapper:
         else:
             print('only 1 sorting option currently supported')
         return key4sorting
-
