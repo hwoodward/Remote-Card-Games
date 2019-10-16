@@ -3,6 +3,7 @@ from server.ServerState import ServerState
 
 from PodSixNet.Server import Server
 
+
 class GameServer(Server, ServerState):
     channelClass = PlayerChannel
 
