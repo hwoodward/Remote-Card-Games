@@ -7,14 +7,16 @@ class ClientState():
     It stores what is needed to compute scores and decide on move legality
     """
 
-    def __init__(self, ruleset):
+    def __init__(self, ruleset = None):
         """Initialize a state tracker for a given client"""
         if ruleset != None:
             rule_module = "common." + ruleset
-            self.rules = importlib.import_module(rule_module)
         else:
             #This is the unit test case - we may want to put a dummy ruleset in
-            print("In unittest mode")
+            print("In unittest mode - using HandAndFoot rules")
+            rule_module = "common.HandAndFoot"
+
+        self.rules = importlib.import_module(rule_module)
         #TODO: turn phase should go from "is my turn" boolean to 'drawing, playing, not my turn anymore' indicator 
         # can hard code turn phases b/c this will only play games fitting that mode. If we ever make a trick game it will need its own app (although code can probably be reused)
         self.turn_phase = False
