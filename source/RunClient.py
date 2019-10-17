@@ -3,6 +3,7 @@ from time import sleep
 
 from PodSixNet.Connection import connection
 from client.Controller import Controller
+from client.CreateDisplay import CreateDisplay
 from client.TableView import TableView
 from client.HandView import HandView
 from client.ClientState import ClientState
@@ -18,14 +19,18 @@ def RunClient():
     connection.DoConnect((host, int(port)))
     clientState = ClientState(ruleset)
     gameControl = Controller(clientState)
-    handView = HandView(gameControl)
-    tableView = TableView()
-    while 1:
+    createDisplay = CreateDisplay(gameControl)
+    handView = HandView(gameControl,createDisplay.display)
+    tableView = TableView(createDisplay.display)
+    while True:
+        createDisplay.refresh()
         handView.nextEvent()
         connection.Pump()
         gameControl.Pump()
         tableView.Pump()
-        handView.render()
+        handView.update()
+        tableView.playerByPlayer()
+        createDisplay.render()
         sleep(0.001)
 
 if __name__ == "__main__":
