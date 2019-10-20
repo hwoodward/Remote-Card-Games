@@ -28,7 +28,8 @@ def RunClient():
         tableView.Pump()
         handView.update()
         tableView.playerByPlayer()
-        createDisplay.render()
+        note = gameControl.note
+        createDisplay.render(note)
         sleep(0.001)
 
 if __name__ == "__main__":

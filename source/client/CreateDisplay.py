@@ -1,12 +1,6 @@
 import pygame
 import textwrap
 import client.UIConstants as UIC
-# from client.UICardWrapper import UICardWrapper
-# from client.ClickableImage import ClickableImage as ClickImg
-# import client.Button as Btn
-# import client.TableView as TableView
-# from common.Card import Card
-# from PodSixNet.Connection import connection, ConnectionListener
 
 
 class CreateDisplay:
@@ -20,7 +14,7 @@ class CreateDisplay:
         # initialize pygame modules
         pygame.init()
         # initialize variables
-        self.notification = "Notification in CreateDisplay."
+        self.notification = "Waiting for notification from game controller."
         # Set up user display.
         self.display = pygame.display.set_mode((UIC.Disp_Width, UIC.Disp_Height))
         pygame.display.set_caption(self.controller.getName() + " View")
@@ -33,12 +27,13 @@ class CreateDisplay:
         """This refreshes the display """
         self.display.fill(UIC.White)
 
-    def render(self):
+    def render(self, notification):
         """This updates the display
 
         latest views of hand and table are created in HandView and TableView,
          which are called just prior to this 'render'
          """
+        self.notification = notification
         self.printText(self.notification, (5, UIC.Table_Hand_Border))
         pygame.display.update()
 
@@ -55,37 +50,3 @@ class CreateDisplay:
             text_rect.topleft = start_xy_wfeed
             self.display.blit(text, text_rect)
             start_xy_wfeed = (start_xy_wfeed[0], start_xy_wfeed[1] + UIC.Text_Feed)
-
-    def discardLogic(self):
-        if self.discard_confirm == 1:
-            self.discards = []
-            for element in self.hand_info:
-                if element.selected:
-                    self.discards.append(element.card)
-            if self.discards == self.discards_confirm:
-                self.controller.discard(self.discards)
-                note = "It's someone's turn. "
-            else:
-                note = "Discard selection changed, discard canceled. "
-            self.discard_confirm = 0
-            self.discards = []
-        else:
-            self.discards = []
-            if len(self.current_hand) == 0:
-                print('Program currently crashes if Zaephod and hit discard')
-                self.controller.discard(self.discards)
-                note = "Zaephod - no discard required, turn is over"
-            else:
-                for element in self.hand_info:
-                    if element.selected:
-                        self.discards.append(element.card)
-                if len(self.discards) == 1:
-                    note = "Please confirm - discard  " + "{0}".format(self.discards)
-                    self.discards_confirm = self.discards
-                    self.discard_confirm = 1  # ask for confirmation
-                else:
-                    note = "Precisely one card must be selected to discard. "
-        return note
-
-
-

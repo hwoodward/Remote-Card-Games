@@ -2,11 +2,9 @@ import pygame
 import textwrap
 import client.Button as Btn
 from client.ClickableImage import ClickableImage as ClickImg
-# from client.TableView import TableView
 from client.UICardWrapper import UICardWrapper
 import client.UIConstants as UIC
 from common.Card import Card
-#  from PodSixNet.Connection import connection, ConnectionListener
 
 
 class HandView:
@@ -28,7 +26,7 @@ class HandView:
         self.last_hand = []
         self.hand_info = []          # will contain UICardWrapped elements of current_hand
         self.discards = []
-        self.discard_confirm = 0
+        self.discard_confirm = False
         self.note = ''
         '''
         # Set up user display.
@@ -87,14 +85,10 @@ class HandView:
                         )
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.discard_action_btn.isOver(pos):
-                    note = self.discardLogic()
-                    self.hand_info.sort(key=lambda wc: wc.img_clickable.x)
-                    self.hand_info = self.refreshXY(self.hand_info)
+                    self.discards = self.gatherSelected()
+                    self.discard_confirm, self.note = self.controller.discardLogic(self.discard_confirm, self.discards)
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
-                    self.hand_info.sort(key=lambda wc: wc.img_clickable.x)
-                    self.hand_info = self.refreshXY(self.hand_info)
-                    note = 'You may wish to click on "move selected cards" after drawing and discarding.'
                 else:
                     for element in self.hand_info:
                         if element.img_clickable.isOver(pos):
@@ -175,40 +169,17 @@ class HandView:
         return refreshed
 
     def showHolding(self, wrapped_cards):
+        wrapped_cards.sort(key=lambda wc: wc.img_clickable.x)
         for wrapped_element in wrapped_cards:
             color = UIC.outline_colors[wrapped_element.img_clickable.outline_index]
             loc_xy = (wrapped_element.img_clickable.x, wrapped_element.img_clickable.y)
             wrapped_element.img_clickable.draw(self.display, loc_xy, color)
 
-    def discardLogic(self):
-        if self.discard_confirm == 1:
-            self.discards = []
-            for element in self.hand_info:
-                if element.selected:
-                    self.discards.append(element.card)
-            if self.discards == self.discards_confirm:
-                self.controller.discard(self.discards)
-                note = "It's someone's turn. "
-            else:
-                note = "Discard selection changed, discard canceled. "
-            self.discard_confirm = 0
-            self.discards = []
-        else:
-            self.discards = []
-            if len(self.current_hand) == 0:
-                print('Program currently crashes if Zaephod and hit discard')
-                self.controller.discard(self.discards)
-                note = "Zaephod - no discard required, turn is over"
-            else:
-                for element in self.hand_info:
-                    if element.selected:
-                        self.discards.append(element.card)
-                if len(self.discards) == 1:
-                    note = "Please confirm - discard  " + "{0}".format(self.discards)
-                    self.discards_confirm = self.discards
-                    self.discard_confirm = 1  # ask for confirmation
-                else:
-                    note = "Precisely one card must be selected to discard. "
-        return note
+    def gatherSelected(self):
+        self.selected_list = []
+        for element in self.hand_info:
+            if element.selected:
+                self.selected_list.append(element.card)
+        return self.selected_list
 
 
