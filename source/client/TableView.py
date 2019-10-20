@@ -1,6 +1,8 @@
-from common.Card import Card
-
+import pygame
+import textwrap
 from PodSixNet.Connection import connection, ConnectionListener
+import client.UIConstants as UIC
+from common.Card import Card
 
 
 class TableView(ConnectionListener):
@@ -14,7 +16,20 @@ class TableView(ConnectionListener):
         # TODO: set up any member variables here
         self.display = display
         self.compressed_info = {}
-        self.Notification = "Beginning game, it is someone's turn"
+        self.notification = "Beginning game, it is someone's turn"
+        # TODO: replace example values with data from server.
+        # TODO:  currently have wrong format for visible_cards both here and in compressSets method.
+        self.visible_cards = (('Ted', {1: ((1, 'Hearts'), (1, 'Hearts'), (1, 'Spades'), (0, 'None')),
+                                       4: ((4, 'Diamonds'), (4, 'Clubs'), (4, 'Clubs')),
+                                       13: ((13, 'Hearts'), (13, 'Hearts'), (2, 'Hearts'))}),
+                              ('Sheri', {}),
+                              ('Helen', {}),
+                              ('Miriam', {}))
+        self.hand_stats = [('Ted', [12, True]), ('Sheri', [20, False]), ('Helen', [10, False]),
+                           ('Miriam', [15, False])]
+        print(self.visible_cards)
+        print(self.hand_stats)
+        self.playerByPlayer()
 
     #######################################
     ### Network event/message callbacks ###
@@ -27,21 +42,6 @@ class TableView(ConnectionListener):
         #    i) rerender immediately
         #    ii) rerender when explicitly told to
         # b) call Render with the provided data and only ever rerender on new broadcast
-
-        # TODO: replace example values with data from server.
-        # TODO:  currently have wrong format for visible_cards both here and in compressSets method.
-        self.visible_cards = (('Ted', {1: ((1, 'Hearts'), (1, 'Hearts'), (1, 'Spades'), (0, 'None')),
-                                       4: ((4, 'Diamonds'), (4, 'Clubs'), (4, 'Clubs')),
-                                      13: ((13, 'Hearts'), (13, 'Hearts'), (2, 'Hearts'))}),
-                              ('Sheri', {}),
-                              ('Helen', {}),
-                              ('Miriam', {}))
-        self.hand_stats = [('Ted', [12, True]), ('Sheri', [20, False]), ('Helen', [10, False]),
-                           ('Miriam', [15, False])]
-        print(self.visible_cards)
-        print(self.hand_stats)
-        self.playerByPlayer()
-
 
     def playerByPlayer(self):
         self.compressSets(self.visible_cards)

@@ -1,11 +1,11 @@
 import pygame
 import textwrap
-import client.UIConstants as UIC
-from client.UICardWrapper import UICardWrapper
-from client.ClickableImage import ClickableImage as ClickImg
 import client.Button as Btn
+from client.ClickableImage import ClickableImage as ClickImg
+# from client.TableView import TableView
+from client.UICardWrapper import UICardWrapper
+import client.UIConstants as UIC
 from common.Card import Card
-from client.TableView import TableView
 #  from PodSixNet.Connection import connection, ConnectionListener
 
 
@@ -29,6 +29,7 @@ class HandView:
         self.hand_info = []          # will contain UICardWrapped elements of current_hand
         self.discards = []
         self.discard_confirm = 0
+        self.note = ''
         '''
         # Set up user display.
         self.display = pygame.display.set_mode((UIC.Disp_Width, UIC.Disp_Height))
@@ -42,34 +43,21 @@ class HandView:
         self.mv_selected_btn.outline_color = UIC.Gray
         self.sort_btn = Btn.Button(UIC.Bright_Blue, 1000, 75, 100, 25, text='sort')
         self.discard_action_btn = Btn.Button(UIC.Bright_Red, (UIC.Disp_Width/2)-50, 25, 100, 25, text='discard')
-        #TODO  move next line to createDisplay or TableView...
-        # self.table_setting = ShowTable(self.display)         # displays public info.
-        '''
-        # render starting window
-        self.render()
-        '''
 
     def update(self):
         """This updates the view of the hand """
 
-        # self.display.fill(UIC.White)
         self.last_hand = self.current_hand
         self.current_hand = self.controller.getHand()
         if not self.last_hand == self.current_hand:
             self.hand_info = self.wrapHand(self.current_hand, self.hand_info)
         self.showHolding(self.hand_info)               # displays hand
-        # self.table_setting.playerByPlayer()            # displays public info.
-        #
         # display draw pile and various action buttons
         loc_xy = (self.draw_pile.x, self.draw_pile.y)
         self.draw_pile.draw(self.display, loc_xy, self.draw_pile.outline_color)
         self.mv_selected_btn.draw(self.display, self.mv_selected_btn.outline_color)
         self.sort_btn.draw(self.display, self.sort_btn.outline_color)
         self.discard_action_btn.draw(self.display, self.discard_action_btn.outline_color)
-        '''
-        self.printText(self.Notification, (5, UIC.Table_Hand_Border))
-        pygame.display.update()
-        '''
 
     def nextEvent(self):
         """This submits the next user input to the controller"""
@@ -99,14 +87,14 @@ class HandView:
                         )
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.discard_action_btn.isOver(pos):
-                    self.Notification = self.discardLogic()
+                    note = self.discardLogic()
                     self.hand_info.sort(key=lambda wc: wc.img_clickable.x)
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
                     self.hand_info.sort(key=lambda wc: wc.img_clickable.x)
                     self.hand_info = self.refreshXY(self.hand_info)
-                    self.Notification = 'You may wish to click on "move selected cards" after drawing and discarding.'
+                    note = 'You may wish to click on "move selected cards" after drawing and discarding.'
                 else:
                     for element in self.hand_info:
                         if element.img_clickable.isOver(pos):
@@ -216,7 +204,6 @@ class HandView:
                     if element.selected:
                         self.discards.append(element.card)
                 if len(self.discards) == 1:
-                    # self.printText("{0}".format(self.current_hand), (5,UIC.Table_Hand_Border))
                     note = "Please confirm - discard  " + "{0}".format(self.discards)
                     self.discards_confirm = self.discards
                     self.discard_confirm = 1  # ask for confirmation

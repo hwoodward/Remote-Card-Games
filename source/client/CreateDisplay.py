@@ -1,12 +1,12 @@
 import pygame
 import textwrap
 import client.UIConstants as UIC
-from client.UICardWrapper import UICardWrapper
-from client.ClickableImage import ClickableImage as ClickImg
-import client.Button as Btn
-from common.Card import Card
-from client.ShowTable import ShowTable
-#  from PodSixNet.Connection import connection, ConnectionListener
+# from client.UICardWrapper import UICardWrapper
+# from client.ClickableImage import ClickableImage as ClickImg
+# import client.Button as Btn
+# import client.TableView as TableView
+# from common.Card import Card
+# from PodSixNet.Connection import connection, ConnectionListener
 
 
 class CreateDisplay:
@@ -20,12 +20,12 @@ class CreateDisplay:
         # initialize pygame modules
         pygame.init()
         # initialize variables
-        self.Notification = "It is someone's turn."
+        self.notification = "Notification in CreateDisplay."
         # Set up user display.
         self.display = pygame.display.set_mode((UIC.Disp_Width, UIC.Disp_Height))
         pygame.display.set_caption(self.controller.getName() + " View")
         self.display.fill(UIC.White)
-        self.table_setting = ShowTable(self.display)         # displays public info.
+        # self.tableView = TableView(self.display)         # displays public info.
         # render starting window
         self.refresh()
 
@@ -39,14 +39,14 @@ class CreateDisplay:
         latest views of hand and table are created in HandView and TableView,
          which are called just prior to this 'render'
          """
-        Notification = tableView.Notification
-        self.printText(self.Notification, (5, UIC.Table_Hand_Border))
+        self.printText(self.notification, (5, UIC.Table_Hand_Border))
         pygame.display.update()
 
     def printText(self, text_string, start_xy):
-        """print the text_string in a text box starting on the top left."""
+        """print the text_string in a text box starting on the top left.
 
-        # Wrap the text_string, beginning at start_xy
+        This wraps the text_string, so it is all displayed.
+        """
         word_list = textwrap.wrap(text=text_string, width=UIC.Wrap_Width)
         start_xy_wfeed = start_xy  # 'wfeed' -> "with line feed"
         for element in word_list:
@@ -80,7 +80,6 @@ class CreateDisplay:
                     if element.selected:
                         self.discards.append(element.card)
                 if len(self.discards) == 1:
-                    # self.printText("{0}".format(self.current_hand), (5,UIC.Table_Hand_Border))
                     note = "Please confirm - discard  " + "{0}".format(self.discards)
                     self.discards_confirm = self.discards
                     self.discard_confirm = 1  # ask for confirmation
