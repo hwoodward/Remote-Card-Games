@@ -89,13 +89,13 @@ class Controller(ConnectionListener):
         self._state.turn_phase=True #This is going to change to a phase advancement
 
     def Network_newCards(self, data):
-        cardList = [Card.deserialize(c) for c in data["cards"]]
-        self._state.newCards(cardList)
+        card_list = [Card.deserialize(c) for c in data["cards"]]
+        self._state.newCards(card_list)
     
     def Network_deal(self, data):
-        handList = [[Card.deserialize(c) for c in hand] for hand in data["hands"]]
-        #TODO for now we just put the first hand as newCards and ignore the second, but this needs to be fixed
-        self._state.newCards(handList[0])
+        hand_list = [[Card.deserialize(c) for c in hand] for hand in data["hands"]]
+        #TODO: we want to allow the player to choose the order of the hands eventually
+        self._state.dealtHands(hand_list)
 
     def Network_discardInfo(self, data):
         top_card = Card.deserialize(data["top_card"])
