@@ -17,7 +17,8 @@ def RunClient():
     connection.DoConnect((host, int(port)))
     clientState = ClientState(ruleset)
     gameControl = Controller(clientState)
-    createDisplay = CreateDisplay(gameControl)
+    playername = gameControl.getName()
+    createDisplay = CreateDisplay(playername)
     handView = HandView(gameControl, createDisplay.display)
     tableView = TableView(createDisplay.display)
     while True:

@@ -9,17 +9,15 @@ class CreateDisplay:
     Initialize display and other variables used by BOTH HandView and TableView.
     CreateDisplay.render does stuff common to BOTH HandView and TableView
     """
-    def __init__(self, controller):
-        self.controller = controller
+    def __init__(self, playername):
         # initialize pygame modules
         pygame.init()
         # initialize variables
         self.notification = "Waiting for notification from game controller."
         # Set up user display.
         self.display = pygame.display.set_mode((UIC.Disp_Width, UIC.Disp_Height))
-        pygame.display.set_caption(self.controller.getName() + " View")
+        pygame.display.set_caption(playername + " View")
         self.display.fill(UIC.White)
-        # self.tableView = TableView(self.display)         # displays public info.
         # render starting window
         self.refresh()
 

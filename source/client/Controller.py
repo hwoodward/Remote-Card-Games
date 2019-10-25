@@ -108,18 +108,14 @@ class Controller(ConnectionListener):
             # for other games may wish to have alternate discard rules.
             # here discard = 1 unless len(hand)==0. < ==this has been submitted as an issue.
             # to address issue will also need to update "self.note = " statements below.
-            if len(self._state.hand_cards) == 0:
-                self.discard(self.discards)
-                self.note = "Zaephod - no discard required, turn is over"
-                please_confirm = False
+
+            if self.numbercards == 1:
+                self.note = "Please confirm - discard  " + "{0}".format(self.discards)
+                self.discards_to_confirm = self.discards
+                please_confirm = True  # ask for confirmation
             else:
-                if self.numbercards == 1:
-                    self.note = "Please confirm - discard  " + "{0}".format(self.discards)
-                    self.discards_to_confirm = self.discards
-                    please_confirm = True  # ask for confirmation
-                else:
-                    self.note = "Precisely one card must be selected to discard. "
-                    please_confirm = False
+                self.note = "Precisely one card must be selected to discard. "
+                please_confirm = False
         else:
             # confirmed is True
             if self.discards == self.discards_to_confirm:

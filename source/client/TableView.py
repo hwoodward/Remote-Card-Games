@@ -31,18 +31,6 @@ class TableView(ConnectionListener):
         print(self.hand_stats)
         self.playerByPlayer()
 
-    #######################################
-    ### Network event/message callbacks ###
-    #######################################
-
-    def Network_publicInfo(self, data):
-        print("Recieved an update about cards on the table")
-        # TODO either:
-        # a) copy the data to the internal save you are keeping and
-        #    i) rerender immediately
-        #    ii) rerender when explicitly told to
-        # b) call Render with the provided data and only ever rerender on new broadcast
-
     def playerByPlayer(self):
         self.compressSets(self.visible_cards)
         num_players = len(self.hand_stats)
@@ -90,3 +78,16 @@ class TableView(ConnectionListener):
     def textObjects(self, text, font):
         text_surface = font.render(text, True, UIC.Black)
         return text_surface, text_surface.get_rect()
+
+    #######################################
+    ### Network event/message callbacks ###
+    #######################################
+
+    def Network_publicInfo(self, data):
+        print("Recieved an update about cards on the table")
+        # TODO either:
+        # a) copy the data to the internal save you are keeping and
+        #    i) rerender immediately
+        #    ii) rerender when explicitly told to
+        # b) call Render with the provided data and only ever rerender on new broadcast
+

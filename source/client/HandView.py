@@ -27,7 +27,6 @@ class HandView:
         self.hand_info = []          # will contain UICardWrapped elements of current_hand
         self.discards = []
         self.discard_confirm = False
-        self.note = ''
         '''
         # Set up user display.
         self.display = pygame.display.set_mode((UIC.Disp_Width, UIC.Disp_Height))
