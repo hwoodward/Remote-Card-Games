@@ -12,14 +12,28 @@ class ServerState():
     -discard pile
     """
 
-    def __init__(self, ruleset):
-        rule_module = "common." + ruleset
+    def __init__(self, ruleset = None):
+        if ruleset != None:
+            rule_module = "common." + ruleset
+        else:
+            #This is the unit test case - we may want to put a dummy ruleset in
+            print("In unittest mode - using HandAndFoot rules")
+            rule_module = "common.HandAndFoot"
+
         self.rules = importlib.import_module(rule_module)
-        self.draw_pile = Card.getJokerDeck()
-        random.shuffle(self.draw_pile)
+        self.draw_pile = []
+        self.round = -1 #Start at negative so first nextRound call increments to 0
         self.discard_pile = []
-        self.active_game = False
         self.turn_index = 0
+
+    def constructDeck(self, numPlayers):
+        """Build up and shuffle the draw_pile deck based on rules"""
+        deck = []
+        for _ in range(0, self.rules.numDecks(numPlayers)):
+            for card in self.rules.singleDeck():
+                deck.append(card)
+        random.shuffle(deck)
+        self.draw_pile = deck
 
     def drawCards(self):
         """Return the next numCards from the draw pile"""
@@ -33,6 +47,16 @@ class ServerState():
         for card in discard_list:
             self.discard_pile.append(card)
 
-    def discard_info(self):
+    def getDiscardInfo(self):
         """Provides the top card and size of the discard pile as a tuple"""
         return (self.discard_pile[-1], len(self.discard_pile))
+
+    def dealHands(self):
+        """Return all hands to deal to a single player at the start of a round"""
+        all_hands = []
+        for _ in range(self.rules.Hands_Per_Player):
+            hand = []
+            for _ in range(self.rules.Deal_Size):
+                hand.append(self.draw_pile.pop())
+            all_hands.append(hand)
+        return all_hands
