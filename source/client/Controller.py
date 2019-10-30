@@ -7,7 +7,7 @@ class Controller(ConnectionListener):
 
     Currently the client is incomplete
 
-    The client displays the game _state it recieves from the server
+    The client displays the game _state it receives from the server
     It validates and submits player actions to the server during the player's turn
     It submits its score on round or game end
     """
@@ -16,6 +16,7 @@ class Controller(ConnectionListener):
         self._state = clientState
         self.prepared_cards = {} #This is the dict of cards prepared to be played
         self.setName()
+        self.note = "Game is beginning."
 
     ### Player Actions ###
     def setName(self):
@@ -65,6 +66,7 @@ class Controller(ConnectionListener):
     ### built in stuff ###
     def Network_connected(self, data):
         print("Connected to the server")
+        self.note = "Connected to the server!"
     
     def Network_error(self, data):
         print('error:', data['error'])
@@ -72,12 +74,14 @@ class Controller(ConnectionListener):
     
     def Network_disconnected(self, data):
         print('Server disconnected')
+        self.note = "Disconnected from the server :("
         exit()
 
     ### Setup messages ###
     def Network_connectionDenied(self, data):
         """Server denied the connection, likely due to a game already in progress"""
         print('Server denied connection request')
+        self.note = "Server denied connection request :("
         connection.Close()
 
     def Network_turnOrder(self, data):
@@ -101,3 +105,29 @@ class Controller(ConnectionListener):
         top_card = Card.deserialize(data["top_card"])
         size = data["size"]
         self._state.updateDiscardInfo(top_card, size)
+
+    ### Check user's actions, and remind them of rules as necessary ###
+    def discardLogic(self, confirmed, discards):
+        self.discards = discards
+        self.numbercards = len(discards)
+        if not confirmed:
+            # for other games may wish to have alternate discard rules.
+            # here discard = 1 unless len(hand)==0. < ==this has been submitted as an issue.
+            # to address issue will also need to update "self.note = " statements below.
+
+            if self.numbercards == 1:
+                self.note = "Please confirm - discard  " + "{0}".format(self.discards)
+                self.discards_to_confirm = self.discards
+                please_confirm = True  # ask for confirmation
+            else:
+                self.note = "Precisely one card must be selected to discard. "
+                please_confirm = False
+        else:
+            # confirmed is True
+            if self.discards == self.discards_to_confirm:
+                self.discard(self.discards)
+                self.note = "Discard complete, your turn is over. "
+            else:
+                self.note = "Discard selection changed, discard canceled. "
+            please_confirm = False
+        return please_confirm, self.note

@@ -1,34 +1,38 @@
 import pygame
 import textwrap
-import client.UIConstants as UIC
-from client.UICardWrapper import UICardWrapper
-from client.ClickableImage import ClickableImage as ClickImg
 import client.Button as Btn
+from client.ClickableImage import ClickableImage as ClickImg
+from client.UICardWrapper import UICardWrapper
+import client.UIConstants as UIC
 from common.Card import Card
-from client.ShowTable import ShowTable
-#  from PodSixNet.Connection import connection, ConnectionListener
 
 
 class HandView:
     """This class handles letting players actually input information
 
-    It handles the entire turn cycle
+    Drawing, melding and discards are all done in this class.
+    Player can also fidget with hand during other players' turns.
     """
-    def __init__(self, controller):
+    def __init__(self, controller, display):
         self.controller = controller
+        self.display = display
+        '''
         # initialize pygame modules
         pygame.init()
         # initialize variables
         self.Notification = "It is someone's turn."
+        '''
         self.current_hand = []
         self.last_hand = []
         self.hand_info = []          # will contain UICardWrapped elements of current_hand
         self.discards = []
-        self.discard_confirm = 0
+        self.discard_confirm = False
+        '''
         # Set up user display.
         self.display = pygame.display.set_mode((UIC.Disp_Width, UIC.Disp_Height))
         pygame.display.set_caption(self.controller.getName() + " View")
         self.display.fill(UIC.White)
+        '''
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
         # Buttons to cause actions -- e.g. cards will be sorted by selection status or by number.
         # will move hard coded numbers to UIC constants once I've worked them out a bit more.
@@ -36,29 +40,21 @@ class HandView:
         self.mv_selected_btn.outline_color = UIC.Gray
         self.sort_btn = Btn.Button(UIC.Bright_Blue, 1000, 75, 100, 25, text='sort')
         self.discard_action_btn = Btn.Button(UIC.Bright_Red, (UIC.Disp_Width/2)-50, 25, 100, 25, text='discard')
-        self.table_setting = ShowTable(self.display)         # displays public info.
-        # render starting window
-        self.render()
 
-    def render(self):
-        """This renders the User Interface """
+    def update(self):
+        """This updates the view of the hand """
 
-        self.display.fill(UIC.White)
         self.last_hand = self.current_hand
         self.current_hand = self.controller.getHand()
         if not self.last_hand == self.current_hand:
             self.hand_info = self.wrapHand(self.current_hand, self.hand_info)
         self.showHolding(self.hand_info)               # displays hand
-        self.table_setting.playerByPlayer()            # displays public info.
-        #
         # display draw pile and various action buttons
         loc_xy = (self.draw_pile.x, self.draw_pile.y)
         self.draw_pile.draw(self.display, loc_xy, self.draw_pile.outline_color)
         self.mv_selected_btn.draw(self.display, self.mv_selected_btn.outline_color)
         self.sort_btn.draw(self.display, self.sort_btn.outline_color)
         self.discard_action_btn.draw(self.display, self.discard_action_btn.outline_color)
-        self.printText(self.Notification, (5, UIC.Table_Hand_Border))
-        pygame.display.update()
 
     def nextEvent(self):
         """This submits the next user input to the controller"""
@@ -88,14 +84,10 @@ class HandView:
                         )
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.discard_action_btn.isOver(pos):
-                    self.Notification = self.discardLogic()
-                    self.hand_info.sort(key=lambda wc: wc.img_clickable.x)
-                    self.hand_info = self.refreshXY(self.hand_info)
+                    self.discards = self.gatherSelected()
+                    self.discard_confirm, self.note = self.controller.discardLogic(self.discard_confirm, self.discards)
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
-                    self.hand_info.sort(key=lambda wc: wc.img_clickable.x)
-                    self.hand_info = self.refreshXY(self.hand_info)
-                    self.Notification = 'You may wish to click on "move selected cards" after drawing and discarding.'
                 else:
                     for element in self.hand_info:
                         if element.img_clickable.isOver(pos):
@@ -176,54 +168,17 @@ class HandView:
         return refreshed
 
     def showHolding(self, wrapped_cards):
+        wrapped_cards.sort(key=lambda wc: wc.img_clickable.x)
         for wrapped_element in wrapped_cards:
             color = UIC.outline_colors[wrapped_element.img_clickable.outline_index]
             loc_xy = (wrapped_element.img_clickable.x, wrapped_element.img_clickable.y)
             wrapped_element.img_clickable.draw(self.display, loc_xy, color)
 
-    def printText(self, text_string, start_xy):
-        """print the text_string in a text box starting on the top left."""
-
-        # Wrap the text_string, beginning at start_xy
-        word_list = textwrap.wrap(text=text_string, width=UIC.Wrap_Width)
-        start_xy_wfeed = start_xy  # 'wfeed' -> "with line feed"
-        for element in word_list:
-            text = UIC.Big_Text.render(element, True, UIC.Blue, UIC.White)
-            text_rect = text.get_rect()
-            text_rect.topleft = start_xy_wfeed
-            self.display.blit(text, text_rect)
-            start_xy_wfeed = (start_xy_wfeed[0], start_xy_wfeed[1] + UIC.Text_Feed)
-
-    def discardLogic(self):
-        if self.discard_confirm == 1:
-            self.discards = []
-            for element in self.hand_info:
-                if element.selected:
-                    self.discards.append(element.card)
-            if self.discards == self.discards_confirm:
-                self.controller.discard(self.discards)
-                note = "It's someone's turn. "
-            else:
-                note = "Discard selection changed, discard canceled. "
-            self.discard_confirm = 0
-            self.discards = []
-        else:
-            self.discards = []
-            if len(self.current_hand) == 0:
-                print('Program currently crashes if Zaephod and hit discard')
-                self.controller.discard(self.discards)
-                note = "Zaephod - no discard required, turn is over"
-            else:
-                for element in self.hand_info:
-                    if element.selected:
-                        self.discards.append(element.card)
-                if len(self.discards) == 1:
-                    # self.printText("{0}".format(self.current_hand), (5,UIC.Table_Hand_Border))
-                    note = "Please confirm - discard  " + "{0}".format(self.discards)
-                    self.discards_confirm = self.discards
-                    self.discard_confirm = 1  # ask for confirmation
-                else:
-                    note = "Precisely one card must be selected to discard. "
-        return note
+    def gatherSelected(self):
+        self.selected_list = []
+        for element in self.hand_info:
+            if element.selected:
+                self.selected_list.append(element.card)
+        return self.selected_list
 
 
