@@ -30,6 +30,7 @@ class Controller(ConnectionListener):
         self._state.discardCards(discardList)
         self._state.turn_phase = False #this is changing to a phase advancement
         connection.Send({"action": "discard", "cards": [c.serialize() for c in discardList]})
+        self.sendPublicInfo()
 
     def draw(self):
         """Request a draw from the server"""
@@ -38,10 +39,8 @@ class Controller(ConnectionListener):
     def play(self, cardSet):
         """Send the server the current set of visible cards"""
         self._state.playCards(cardSet)
-        serialized = [c.serialize() for c in self._state.visible_card]
-        #TODO: hand status is state information and order specified in ruleset - need to make helpers for handling it still
-        connection.Send({"action": "publicInfo", "visible_cards":serialized, "hand_status":[]})
         #TODO: Check for turn transition due to out or zephod
+        self.sendPublicInfo()
 
     def getName(self):
         """return player name for labeling"""
@@ -58,6 +57,12 @@ class Controller(ConnectionListener):
     def getDiscardInfo(self):
         """let the UI know the discard information"""
         return self._state.discard_info.copy()
+    
+    def sendPublicInfo(self):
+        """Utility method to send public information to the server"""
+        serialized_cards = {key:[card.serialize() for card in card_group] for (key, card_group) in self._state.played_cards.items()}
+        status_info = self._state.getHandInfo()
+        connection.Send({"action": "publicInfo", "visible_cards":serialized_cards, "hand_status":status_info})
 
     #######################################
     ### Network event/message callbacks ###
@@ -95,11 +100,13 @@ class Controller(ConnectionListener):
     def Network_newCards(self, data):
         card_list = [Card.deserialize(c) for c in data["cards"]]
         self._state.newCards(card_list)
+        self.sendPublicInfo() #More cards in hand now, need to update public information
     
     def Network_deal(self, data):
         hand_list = [[Card.deserialize(c) for c in hand] for hand in data["hands"]]
         #TODO: we want to allow the player to choose the order of the hands eventually
         self._state.dealtHands(hand_list)
+        #More cards in hand now, need to update public information
 
     def Network_discardInfo(self, data):
         top_card = Card.deserialize(data["top_card"])

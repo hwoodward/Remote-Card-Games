@@ -53,3 +53,8 @@ class ClientState():
     def updateDiscardInfo(self, top_card, size):
         """Update the discard information"""
         self.discard_info = (top_card, size)
+    
+    def getHandInfo(self):
+        """Returns the bundled public information that should be broadcast to the server"""
+        ### Public info has a hard coded order for interpretation - see the wiki to make sure it is kept consistent
+        return []
