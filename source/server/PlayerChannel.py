@@ -62,3 +62,4 @@ class PlayerChannel(Channel):
         """This is refreshed public information data from the client"""
         self.visible_cards = data["visible_cards"]
         self.hand_status = data["hand_status"]
+        self._server.Send_publicInfo()
