@@ -61,7 +61,7 @@ class Controller(ConnectionListener):
     def sendPublicInfo(self):
         """Utility method to send public information to the server"""
         serialized_cards = {key:[card.serialize() for card in card_group] for (key, card_group) in self._state.played_cards.items()}
-        status_info = self._state.getHandInfo()
+        status_info = self._state.getHandStatus()
         connection.Send({"action": "publicInfo", "visible_cards":serialized_cards, "hand_status":status_info})
 
     #######################################
@@ -114,6 +114,8 @@ class Controller(ConnectionListener):
         self._state.updateDiscardInfo(top_card, size)
 
     ### Check user's actions, and remind them of rules as necessary ###
+    #TODO: this needs slight refactor to move and to implement intended confirmation procedure and error catching
+    #May be combined somewhat with existing discard method depending on confirmation method
     def discardLogic(self, confirmed, discards):
         self.discards = discards
         self.numbercards = len(discards)
