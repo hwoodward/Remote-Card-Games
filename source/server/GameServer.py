@@ -18,7 +18,7 @@ class GameServer(Server, ServerState):
 
     def Connected(self, channel, addr):
         """Called by podsixnet when a client connects and establishes a channel"""
-        if self.active_game:
+        if self.round >= 0:
             print(channel, 'Client tried to connect during active game')
             channel.Send({"action": "connectionDenied"})
         else:
@@ -29,10 +29,16 @@ class GameServer(Server, ServerState):
     def startGame(self):
         if len(self.players) == 0:
             raise Exception("Can't start a game with no players")
-        self.active_game = True
-        #TODO: need to call 'start round' here when we add dealing and rounds
+        self.nextRound()
         self.nextTurn()
 
+    def nextRound(self):
+        """Start the next round of play"""
+        self.round += 1
+        self.constructDeck(len(self.players))
+        for player in self.players:
+            player.Send_deal(self.dealHands())
+                    
     def delPlayer(self, player):
         """Remove a player from the turn order"""
         self.players.remove(player)
@@ -52,16 +58,22 @@ class GameServer(Server, ServerState):
         """Adds a player to the end of the turn order"""
         self.Send_broadcast({"action": "turnOrder", "players": [p.name for p in self.players]})
 
+    def Send_dealtCards(self):
+        """Sends each player their dealt hand(s)"""
+        for player in self.players:
+            dealtCards = self.dealHands()
+            player.Send_deal(dealtCards)
+
     def Send_publicInfo(self):
         """Send the update to the melded cards on the table"""
         #NOTE: visible_cards needs to be serialized.
         #Current plan: never deserialize them, the client sends them in serialized and
         #we leave them serialized in the channel during storage and thus when they go out again
-        self.Send_broadcast({"action": "publicInfo", "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
+        self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
 
     def Send_discardInfo(self):
         """Send the update to the discard pile"""
-        info = self.discard_info()
+        info = self.getDiscardInfo()
         self.Send_broadcast({"action": "discard_info", "top_card": info[0].serialize(), "size": info[1]})
 
 

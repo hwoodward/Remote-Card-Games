@@ -10,7 +10,7 @@ class PlayerChannel(Channel):
         """
         self.name = "guest"
         #visible cards and hand status are public info
-        self.visible_cards = []
+        self.visible_cards = {}
         self.hand_status = [] #order of information in this is specified by the ruleset
         Channel.__init__(self, *args, **kwargs)
 
@@ -18,11 +18,21 @@ class PlayerChannel(Channel):
         """Called when a player disconnects
         Removes player from the turn order
         """
-        if not self._server.active_game:
+        if self._server.round == -1:
             self._server.delPlayer(self)
             print(self, 'Client disconnected')
         else:
             print(self, 'Client disconnected during active game')
+
+    def Send_newCards(self, cards):
+        """Serialize cards and format json to send newCards from a draw or pile pickup""" 
+        serialized = [c.serialize() for c in cards]
+        self.Send({"action": "newCards", "cards": serialized})
+
+    def Send_deal(self, dealtCards):
+        """Serialize and format json to send deal at start of round"""
+        serializedDeal = [[c.serialize() for c in hand] for hand in dealtCards]
+        self.Send({"action": "deal", "hands": serializedDeal})
 
     ##################################
     ### Network callbacks          ###
@@ -43,11 +53,13 @@ class PlayerChannel(Channel):
 
     def Network_draw(self, data):
         cards = self._server.drawCards()
-        serialized = [c.serialize() for c in cards]
-        self.Send({"action": "newCards", "cards": serialized})
+        self.Send_newCards(cards)
 
+    #TODO: add pickup pile action
+    
     ### Visible card updates ###
     def Network_publicInfo(self, data):
         """This is refreshed public information data from the client"""
         self.visible_cards = data["visible_cards"]
         self.hand_status = data["hand_status"]
+        self._server.Send_publicInfo()
