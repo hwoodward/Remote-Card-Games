@@ -18,7 +18,7 @@ class PlayerChannel(Channel):
         """Called when a player disconnects
         Removes player from the turn order
         """
-        if not self._server.active_game:
+        if self._server.round == -1:
             self._server.delPlayer(self)
             print(self, 'Client disconnected')
         else:
@@ -62,3 +62,4 @@ class PlayerChannel(Channel):
         """This is refreshed public information data from the client"""
         self.visible_cards = data["visible_cards"]
         self.hand_status = data["hand_status"]
+        self._server.Send_publicInfo()

@@ -69,7 +69,7 @@ class GameServer(Server, ServerState):
         #NOTE: visible_cards needs to be serialized.
         #Current plan: never deserialize them, the client sends them in serialized and
         #we leave them serialized in the channel during storage and thus when they go out again
-        self.Send_broadcast({"action": "publicInfo", "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
+        self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
 
     def Send_discardInfo(self):
         """Send the update to the discard pile"""

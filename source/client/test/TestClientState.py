@@ -66,6 +66,15 @@ class TestClientState(unittest.TestCase):
         self.assertEqual(test_state.played_cards, {})
         self.assertEqual(test_state.hand_cards, [Card(3, 'Diamonds'), Card(4, 'Hearts')])
 
+    def testHandStatus(self):
+        """Confirm that hand status information is ordered correctly"""
+        test_state = ClientState(ruleset=None)
+        #set turn phase
+        test_state.turn_phase = 'TestPhase'
+        #setup so that hand has 5 cards and there is a foot left to play
+        hand = [Card(1, 'Spades'), Card(2, 'Clubs'), Card(3, 'Diamonds'), Card(4, 'Hearts'), Card(0, None)]
+        test_state.dealtHands([hand, hand])
+        self.assertEqual(test_state.getHandStatus(), ['TestPhase', 5, 1])
 
 if __name__ == '__main__':
     unittest.main()
