@@ -18,7 +18,7 @@ class PlayerChannel(Channel):
         """Called when a player disconnects
         Removes player from the turn order
         """
-        if not self._server.active_game:
+        if self._server.round == -1:
             self._server.delPlayer(self)
             print(self, 'Client disconnected')
         else:

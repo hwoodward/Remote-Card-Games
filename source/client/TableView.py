@@ -85,6 +85,8 @@ class TableView(ConnectionListener):
 
     def Network_publicInfo(self, data):
         print("Recieved an update about cards on the table")
+        print("Raw info recieved for testing:")
+        print(data)
         # TODO either:
         # a) copy the data to the internal save you are keeping and
         #    i) rerender immediately
