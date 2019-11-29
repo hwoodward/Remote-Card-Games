@@ -106,7 +106,7 @@ class Controller(ConnectionListener):
         hand_list = [[Card.deserialize(c) for c in hand] for hand in data["hands"]]
         #TODO: we want to allow the player to choose the order of the hands eventually
         self._state.dealtHands(hand_list)
-        #More cards in hand now, need to update public information
+        self.sendPublicInfo() #More cards in hand now, need to update public information
 
     def Network_discardInfo(self, data):
         top_card = Card.deserialize(data["top_card"])
