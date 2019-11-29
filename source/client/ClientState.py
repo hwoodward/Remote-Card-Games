@@ -17,9 +17,8 @@ class ClientState():
             rule_module = "common.HandAndFoot"
 
         self.rules = importlib.import_module(rule_module)
-        #TODO: turn phase should go from "is my turn" boolean to 'drawing, playing, not my turn anymore' indicator 
-        # can hard code turn phases b/c this will only play games fitting that mode. If we ever make a trick game it will need its own app (although code can probably be reused)
-        self.turn_phase = False
+        #Turn phase handled by controller
+        self.turn_phase = 'inactive' #hard coded start phase as 'not my turn'
         self.name = "guest"
         self.hand_list = []
         self.hand_cards = []
