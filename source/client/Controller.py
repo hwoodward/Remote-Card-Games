@@ -96,6 +96,7 @@ class Controller(ConnectionListener):
     ### Gameplay messages ###
     def Network_startTurn(self, data):
         self._state.turn_phase=True #This is going to change to a phase advancement
+        self.sendPublicInfo() #Let everyone know its your turn.
 
     def Network_newCards(self, data):
         card_list = [Card.deserialize(c) for c in data["cards"]]
