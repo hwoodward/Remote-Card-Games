@@ -2,6 +2,9 @@ from common.Card import Card
 
 from PodSixNet.Connection import connection, ConnectionListener
 
+#TODO: figure out where this should actually live
+Turn_Phases = ['inactive', 'draw', 'forcedAction', 'play']
+
 class Controller(ConnectionListener):
     """ This client connects to a GameServer which will host a cardgame
 
@@ -25,20 +28,45 @@ class Controller(ConnectionListener):
         self._state.name = displayName
         connection.Send({"action": "displayName", "name": displayName})
 
-    def discard(self, discardList):
+    def discard(self, discard_list):
         """Send discard to server"""
-        self._state.discardCards(discardList)
-        self._state.turn_phase = False #this is changing to a phase advancement
-        connection.Send({"action": "discard", "cards": [c.serialize() for c in discardList]})
+        if self._state.turn_phase != Turn_Phases[3]:
+            self.note = "You can only discard at the end of your turn (after having drawn)"
+            return
+        self._state.discardCards(discard_list)
+        connection.Send({"action": "discard", "cards": [c.serialize() for c in discard_list]})
+        self.turn_phase = Turn_Phases[0] #end turn after discard
         self.sendPublicInfo()
 
     def draw(self):
         """Request a draw from the server"""
+        if self._state.turn_phase != Turn_Phases[1]:
+            self.note = "You can only draw at the start of your turn"
+            return
         connection.Send({"action": "draw"})
+    
+    def pickUpPile(self):
+        """Attempt to pick up the pile"""
+        if self._state.turn_phase != Turn_Phases[1]:
+            self.note = "You can only pick up the pile at the start of your turn"
+            return
+        #TODO: call clientstate to confirm legality of pickup
+        #TODO: call server to get new cards
+        self.turn_phase = Turn_Phases[2] #Set turn phase to reflect forced action
+        self.note = "Waiting for new cards to make required play"
 
-    def play(self, cardSet):
+    def makeForcedPlay(self, top_card):
+        """Complete the required play for picking up the pile"""
+        self.note = "Performing the play required to pick up the pile"
+        #TODO: add top_card to prepared cards (it should be able to be automatically given a key)
+        self.play()
+        
+    def play(self):
         """Send the server the current set of visible cards"""
-        self._state.playCards(cardSet)
+        if self._state.turn_phase != Turn_Phases[3]:
+            self.note = "You can only play on your turn after you draw"
+            return
+        self._state.playCards(self.prepared_cards)
         #TODO: Check for turn transition due to out or zephod
         self.sendPublicInfo()
 
@@ -95,12 +123,18 @@ class Controller(ConnectionListener):
 
     ### Gameplay messages ###
     def Network_startTurn(self, data):
-        self._state.turn_phase=True #This is going to change to a phase advancement
+        self._state.turn_phase = Turn_Phases[1]
+        self.note = "Your turn has started. You may draw or attempt to pick up the pile"
         self.sendPublicInfo() #Let everyone know its your turn.
 
     def Network_newCards(self, data):
         card_list = [Card.deserialize(c) for c in data["cards"]]
         self._state.newCards(card_list)
+        if self._state.turn_phase == Turn_Phases[2]:
+            #This is the result of a pickup and we have a forced action
+            self.makeForcedPlay(card_list[0])
+        #Now ready to be in play turn phase
+        self._state.turn_phase = Turn_Phases[3]
         self.sendPublicInfo() #More cards in hand now, need to update public information
     
     def Network_deal(self, data):
