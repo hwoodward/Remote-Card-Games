@@ -84,8 +84,7 @@ class HandView:
                         )
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.discard_action_btn.isOver(pos):
-                    self.discards = self.gatherSelected()
-                    self.discard_confirm, self.note = self.controller.discardLogic(self.discard_confirm, self.discards)
+                    self.discard_confirm = self.discardLogic(self.discard_confirm, self.gatherSelected())
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
                 else:
@@ -181,4 +180,16 @@ class HandView:
                 self.selected_list.append(element.card)
         return self.selected_list
 
-
+    # Confirm a user is sure about a discard and then perform it once confirmed
+    def discardLogic(self, confirmed, discards):
+        if self.discards != discards:
+            confirmed = False
+            self.discards = discards
+        if not confirmed:
+            self.controller.note = "Please confirm - discard  " + "{0}".format(self.discards)
+            self.discards_to_confirm = self.discards
+            return True  # ask for confirmation
+        else:
+            # confirmed is True, performing discard
+            self.controller.discard(self.discards)
+            return False # now that this is done, we don't have anything waiting on confirmation

@@ -36,6 +36,7 @@ class Controller(ConnectionListener):
         self._state.discardCards(discard_list)
         connection.Send({"action": "discard", "cards": [c.serialize() for c in discard_list]})
         self.turn_phase = Turn_Phases[0] #end turn after discard
+        self.note = "Discard completed. Your turn is over."
         self.sendPublicInfo()
 
     def draw(self):
@@ -135,6 +136,7 @@ class Controller(ConnectionListener):
             self.makeForcedPlay(card_list[0])
         #Now ready to be in play turn phase
         self._state.turn_phase = Turn_Phases[3]
+        self.note = "You can now play cards or discard"
         self.sendPublicInfo() #More cards in hand now, need to update public information
     
     def Network_deal(self, data):
@@ -147,31 +149,3 @@ class Controller(ConnectionListener):
         top_card = Card.deserialize(data["top_card"])
         size = data["size"]
         self._state.updateDiscardInfo(top_card, size)
-
-    ### Check user's actions, and remind them of rules as necessary ###
-    #TODO: this needs slight refactor to move and to implement intended confirmation procedure and error catching
-    #May be combined somewhat with existing discard method depending on confirmation method
-    def discardLogic(self, confirmed, discards):
-        self.discards = discards
-        self.numbercards = len(discards)
-        if not confirmed:
-            # for other games may wish to have alternate discard rules.
-            # here discard = 1 unless len(hand)==0. < ==this has been submitted as an issue.
-            # to address issue will also need to update "self.note = " statements below.
-
-            if self.numbercards == 1:
-                self.note = "Please confirm - discard  " + "{0}".format(self.discards)
-                self.discards_to_confirm = self.discards
-                please_confirm = True  # ask for confirmation
-            else:
-                self.note = "Precisely one card must be selected to discard. "
-                please_confirm = False
-        else:
-            # confirmed is True
-            if self.discards == self.discards_to_confirm:
-                self.discard(self.discards)
-                self.note = "Discard complete, your turn is over. "
-            else:
-                self.note = "Discard selection changed, discard canceled. "
-            please_confirm = False
-        return please_confirm, self.note
