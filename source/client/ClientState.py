@@ -55,6 +55,6 @@ class ClientState():
         self.discard_info = (top_card, size)
     
     def getHandStatus(self):
-        """Returns the bundled public information that should be broadcast to the server"""
+        """Bundles public information in the format needed for sending to the server"""
         ### Public info has a hard coded order for interpretation - see the wiki to make sure it is kept consistent
         return [self.turn_phase, len(self.hand_cards), len(self.hand_list)]
