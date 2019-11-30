@@ -49,7 +49,8 @@ class ClientState():
 
     def discardCards(self, card_list):
         """Discard cards from hand"""
-        #Note: remove errors if you don't have that card
+        if len(card_list) != self.rules.Discard_Size:
+            raise Exception("Wrong discard size. Must discard {0} cards".format(self.rules.Discard_Size))
         for card in card_list:
             self.hand_cards.remove(card)
 
