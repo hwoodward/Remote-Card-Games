@@ -4,46 +4,36 @@ from PodSixNet.Connection import connection, ConnectionListener
 import client.UIConstants as UIC
 from common.Card import Card
 
-
 class TableView(ConnectionListener):
-    """This class handles letting players actualy input information
-
-    It handles the entire turn cycle
+    """ This displays publicly available info on all the players.
     """
 
     def __init__(self, display):
-        """This currently does nothing"""
-        # TODO: set up any member variables here
         self.display = display
+        self.player_names = []
+        self.visible_cards = []
+        self.hand_status = []
         self.compressed_info = {}
-        self.notification = "Beginning game, it is someone's turn"
-        # TODO: replace example values with data from server.
-        # TODO:  currently have wrong format for visible_cards both here and in compressSets method.
-        self.visible_cards = (('Ted', {1: ((1, 'Hearts'), (1, 'Hearts'), (1, 'Spades'), (0, 'None')),
-                                       4: ((4, 'Diamonds'), (4, 'Clubs'), (4, 'Clubs')),
-                                       13: ((13, 'Hearts'), (13, 'Hearts'), (2, 'Hearts'))}),
-                              ('Sheri', {}),
-                              ('Helen', {}),
-                              ('Miriam', {}))
-        self.hand_stats = [('Ted', [12, True]), ('Sheri', [20, False]), ('Helen', [10, False]),
-                           ('Miriam', [15, False])]
-        print(self.visible_cards)
-        print(self.hand_stats)
         self.playerByPlayer()
 
     def playerByPlayer(self):
         self.compressSets(self.visible_cards)
-        num_players = len(self.hand_stats)
+        num_players = len(self.player_names)
         # currently set-up with one player per column. May need to change that for more players.
-        players_sp_w = UIC.Disp_Width / num_players
+        if num_players > 1:
+            players_sp_w = UIC.Disp_Width / num_players
+        else:
+            players_sp_w = UIC.Disp_Width
         players_sp_top = UIC.Disp_Height / 5
         players_sp_h = UIC.Disp_Height / 2
         color_index = 0
         bk_grd_rect = (0, players_sp_top, players_sp_w, players_sp_h)
-        for card_holder in self.hand_stats:
+        for idx in range(len(self.hand_status)):
+            player_name = self.player_names[idx]
             # plan to move below to a helper function...
-            player_name = card_holder[0]
             melded_summary = self.compressed_info[player_name]
+            print(melded_summary)
+            print(self.player_names)
             pygame.draw.rect(self.display, UIC.table_grid_colors[color_index], bk_grd_rect, 0)
             player_text = player_name + '\n'
             # TODO: get carriage return working
@@ -60,10 +50,10 @@ class TableView(ConnectionListener):
         """ Don't have space to display every card. Summarize sets here. """
 
         self.compressed_info = {}
-        for element in v_cards:
+        for idx in range(len(v_cards)):
             summary = {}
-            key_player = element[0]
-            melded = dict(element[1])
+            key_player = self.player_names[idx]
+            melded = dict(v_cards[idx])
             for key in melded:
                 set = melded[key]
                 length_set = len(set)
@@ -84,12 +74,13 @@ class TableView(ConnectionListener):
     #######################################
 
     def Network_publicInfo(self, data):
-        print("Recieved an update about cards on the table")
-        print("Raw info recieved for testing:")
-        print(data)
-        # TODO either:
-        # a) copy the data to the internal save you are keeping and
-        #    i) rerender immediately
-        #    ii) rerender when explicitly told to
-        # b) call Render with the provided data and only ever rerender on new broadcast
 
+        #Todo update example below.  False should be a play state, not True/False
+        '''
+        example of data (json structure) with two players, 'hhh' and 'sss' : 
+        {'action': 'publicInfo', 'player_names': ['hhh', 'sss'], 'visible_cards': [{}, {}], 'hand_status': [[False, 12, 1], [True, 14, 1]]}
+        '''
+        self.player_names = data["player_names"]
+        self.visible_cards = data["visible_cards"]
+        self.hand_status = data["hand_status"]
+        self.playerByPlayer()
