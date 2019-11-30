@@ -55,7 +55,10 @@ class Controller(ConnectionListener):
         if self._state.turn_phase != Turn_Phases[1]:
             self.note = "You can only pick up the pile at the start of your turn"
             return
-        #TODO: call clientstate to confirm legality of pickup
+        try:
+            self._state.pickupPileRuleCheck(self.prepared_cards)
+        except Exception as err:
+            self.note = "{0}".format(err)
         #TODO: call server to get new cards
         self.turn_phase = Turn_Phases[2] #Set turn phase to reflect forced action
         self.note = "Waiting for new cards to make required play"
@@ -63,8 +66,10 @@ class Controller(ConnectionListener):
     def makeForcedPlay(self, top_card):
         """Complete the required play for picking up the pile"""
         self.note = "Performing the play required to pick up the pile"
-        #TODO: add top_card to prepared cards (it should be able to be automatically given a key)
+        #TODO: get key for top_card (we know it can be auto-keyed)
+        #TODO: add top_card to prepared cards with its key
         self.play()
+        #Network_newCards, which called this, will handle turn phase transition and publicInfo update
 
     def automaticallyPrepareCards(self, selected_cards):
         """Prepare selected cards to be played
