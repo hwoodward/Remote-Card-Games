@@ -54,7 +54,7 @@ def canPlayGroup(key, card_group):
     if key == 3:
         raise Exception("Illegal key - cannot play 3s")
     if len(card_group) < 3: 
-        raise Exception("Too few careds in group - minimum is 3");
+        raise Exception("Too few cards in group - minimum is 3");
     typeDiff = 0
     for card in card_group:
         if isWild(card):

@@ -2,7 +2,7 @@ from common.Card import Card
 import common.HandAndFoot as Rules
 import unittest
 
-class TestCardMethods(unittest.TestCase):
+class TestHandAndFoot(unittest.TestCase):
             
     def test_PickupCheck(self):
         """Confirm that canPickup works"""
@@ -28,26 +28,19 @@ class TestCardMethods(unittest.TestCase):
         prepared_cards[5] = [Card(5, 'Clubs'), Card(5, 'Clubs')]
         played_cards = {}
         with self.assertRaises(Exception):
-            Rules.canPickupPile(discard_info, prepared_cards, played_cards, 0)
+            Rules.canPickupPile(Card(5, 'Hearts'), prepared_cards, played_cards, 0)
 
         #confirm meld requirement can INCLUDE top card
         prepared_cards[6] = [Card(2, 'Clubs'), Card(6, 'Diamonds'), Card(6, 'Diamonds'), Card(6, 'Diamonds')]
-        self.assertTrue(Rules.canPickupPile(discard_info, prepared_cards, played_cards, 0))
-
-        #confirm too small pile disallowed
-        discard_info = (Card(5, 'Hearts'), 6)
-        with self.assertRaises(Exception):
-            Rules.canPickupPile(discard_info, prepared_cards, played_cards, 0)
+        self.assertTrue(Rules.canPickupPile(Card(5, 'Hearts'), prepared_cards, played_cards, 0))
 
         #confirm 3s can't be picked up
-        discard_info = (Card(3, 'Hearts'), 8)
         with self.assertRaises(Exception):
-            Rules.canPickupPile(discard_info, prepared_cards, played_cards, 0)
+            Rules.canPickupPile(Card(3, 'Hearts'), prepared_cards, played_cards, 0)
 
         #confirm wilds can't be picked up
-        discard_info = (Card(0, None), 8)
         with self.assertRaises(Exception):
-            Rules.canPickupPile(discard_info, prepared_cards, played_cards, 0)
+            Rules.canPickupPile(Card(0, None), prepared_cards, played_cards, 0)
       
     def test_PlayCheck(self):
         """Confirm canPlay works"""

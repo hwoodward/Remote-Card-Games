@@ -1,4 +1,5 @@
 import importlib
+from common.Card import Card
 
 class ClientState():
     """ This class store client state for access by different listeners
@@ -37,6 +38,14 @@ class ClientState():
 
     def playCards(self, prepared_cards):
         """Move cards from hand to visible"""
+        #First check that all the cards are in your hand
+        tempHand = [x for x in self.hand_cards]
+        try:
+            for card_group in prepared_cards.values():
+                for card in card_group:
+                    tempHand.remove(card)
+        except ValueError as err:
+            raise Exception("Attempted to play cards that are not in your hand")
         self.rules.canPlay(prepared_cards, self.played_cards, 0) #TODO: hard coding round index needs to be fixed
         for key, card_group in prepared_cards.items():
             for card in card_group:
