@@ -16,30 +16,23 @@ class HandView:
     def __init__(self, controller, display):
         self.controller = controller
         self.display = display
-        '''
-        # initialize pygame modules
-        pygame.init()
-        # initialize variables
-        self.Notification = "It is someone's turn."
-        '''
         self.current_hand = []
         self.last_hand = []
         self.hand_info = []          # will contain UICardWrapped elements of current_hand
         self.discards = []
         self.discard_confirm = False
-        '''
-        # Set up user display.
-        self.display = pygame.display.set_mode((UIC.Disp_Width, UIC.Disp_Height))
-        pygame.display.set_caption(self.controller.getName() + " View")
-        self.display.fill(UIC.White)
-        '''
+        # TODO: verify that self.discard_confirm is still needed.
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
+        self.displayPile(Card(3,'Hearts'))
         # Buttons to cause actions -- e.g. cards will be sorted by selection status or by number.
         # will move hard coded numbers to UIC constants once I've worked them out a bit more.
         self.mv_selected_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='move selected cards')
         self.mv_selected_btn.outline_color = UIC.Gray
-        self.sort_btn = Btn.Button(UIC.Bright_Blue, 1000, 75, 100, 25, text='sort')
-        self.discard_action_btn = Btn.Button(UIC.Bright_Red, (UIC.Disp_Width/2)-50, 25, 100, 25, text='discard')
+        self.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort')
+        self.prepare_card_btn = Btn.Button(UIC.Bright_Blue, 300, 25, 225, 25, text='Prepare selected cards')
+        self.clear_prepared_cards_btn = Btn.Button(UIC.Bright_Blue, 300, 75, 225, 25, text='Clear prepared cards')
+        self.play_prepared_cards_btn = Btn.Button(UIC.Bright_Blue, 600, 75, 225, 25, text='Play prepared cards')
+        self.discard_action_btn = Btn.Button(UIC.Bright_Red, 190, 25, 100, 25, text='discard')
 
     def update(self):
         """This updates the view of the hand """
@@ -52,8 +45,12 @@ class HandView:
         # display draw pile and various action buttons
         loc_xy = (self.draw_pile.x, self.draw_pile.y)
         self.draw_pile.draw(self.display, loc_xy, self.draw_pile.outline_color)
+        self.displayPile(Card(3,'Hearts'))
         self.mv_selected_btn.draw(self.display, self.mv_selected_btn.outline_color)
         self.sort_btn.draw(self.display, self.sort_btn.outline_color)
+        self.prepare_card_btn.draw(self.display, self.prepare_card_btn.outline_color)
+        self.clear_prepared_cards_btn.draw(self.display, self.clear_prepared_cards_btn.outline_color)
+        self.play_prepared_cards_btn.draw(self.display, self.play_prepared_cards_btn.outline_color)
         self.discard_action_btn.draw(self.display, self.discard_action_btn.outline_color)
 
     def nextEvent(self):
@@ -84,7 +81,7 @@ class HandView:
                         )
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.discard_action_btn.isOver(pos):
-                    self.discard_confirm = self.discardLogic(self.discard_confirm, self.gatherSelected())
+                    self.discard_confirm = self.discardConfirmation(self.discard_confirm, self.gatherSelected())
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
                 else:
@@ -180,8 +177,18 @@ class HandView:
                 self.selected_list.append(element.card)
         return self.selected_list
 
+    # Draw top card of discard pile and make it a clickable image, to trigger picking up the pile.
+    def displayPile(self, top_discard):
+        # TODO: get top_discard from server, for now use 3 of Hearts.
+        # Put in check if size of pile is 0, if so, then don't display the pile.
+        #
+        top_of_pile = UICardWrapper(top_discard, (100,25))
+        loc_xy = (top_of_pile.img_clickable.x, top_of_pile.img_clickable.y)
+        top_of_pile.img_clickable.draw(self.display, loc_xy, UIC.White)
+        # TODO: Need to stop hard-coding positions (instead of 60,25 should scale with screen and card size)
+
     # Confirm a user is sure about a discard and then perform it once confirmed
-    def discardLogic(self, confirmed, discards):
+    def discardConfirmation(self, confirmed, discards):
         if self.discards != discards:
             confirmed = False
             self.discards = discards

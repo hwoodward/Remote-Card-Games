@@ -32,8 +32,6 @@ class TableView(ConnectionListener):
             player_name = self.player_names[idx]
             # plan to move below to a helper function...
             melded_summary = self.compressed_info[player_name]
-            print(melded_summary)
-            print(self.player_names)
             pygame.draw.rect(self.display, UIC.table_grid_colors[color_index], bk_grd_rect, 0)
             player_text = player_name + '\n'
             # TODO: get carriage return working
