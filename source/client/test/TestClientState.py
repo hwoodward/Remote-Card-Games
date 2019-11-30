@@ -82,12 +82,20 @@ class TestClientState(unittest.TestCase):
     def testDiscardCards(self):
         """Confirm discardCards removes cards without playing them"""
         test_state = ClientState(ruleset=None)
-        hand = [Card(1, 'Spades'), Card(1, 'Spades'), Card(2, 'Clubs'), Card(3, 'Diamonds'), Card(4, 'Hearts'), Card(0, None)]
+        hand = [Card(1, 'Spades'), Card(2, 'Clubs'), Card(3, 'Diamonds'), Card(4, 'Hearts'), Card(0, None)]
         test_state.newCards(hand)
         test_state.discardCards([Card(1, 'Spades')])
         self.assertEqual(test_state.played_cards, {})
         hand.remove(Card(1, 'Spades'))
         self.assertEqual(test_state.hand_cards, hand)
+        
+        #Confirm can only discard cards actually in your hand
+        with self.assertRaises(Exception):
+            test_state.discardCards([Card(1, 'Spades')])
+        
+        #Confirm can only discard correct number of cards
+        with self.assertRaises(Exception):
+            test_state.discardCards([Card(2, 'Clubs'), Card(3, 'Diamonds')])
 
     def testHandStatus(self):
         """Confirm that hand status information is ordered correctly"""

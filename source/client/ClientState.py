@@ -44,7 +44,7 @@ class ClientState():
             for card_group in prepared_cards.values():
                 for card in card_group:
                     tempHand.remove(card)
-        except ValueError as err:
+        except ValueError:
             raise Exception("Attempted to play cards that are not in your hand")
         self.rules.canPlay(prepared_cards, self.played_cards, 0) #TODO: hard coding round index needs to be fixed
         for key, card_group in prepared_cards.items():
@@ -68,6 +68,13 @@ class ClientState():
         """Discard cards from hand"""
         if len(card_list) != self.rules.Discard_Size:
             raise Exception("Wrong discard size. Must discard {0} cards".format(self.rules.Discard_Size))
+        #check that all the cards are in your hand
+        tempHand = [x for x in self.hand_cards]
+        try:
+            for card in card_list:
+                tempHand.remove(card)
+        except ValueError:
+            raise Exception("Attempted to discard cards that are not in your hand")
         for card in card_list:
             self.hand_cards.remove(card)
 
