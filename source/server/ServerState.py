@@ -36,10 +36,17 @@ class ServerState():
         self.draw_pile = deck
 
     def drawCards(self):
-        """Return the next numCards from the draw pile"""
+        """Return the next Draw_Size cards from the draw pile"""
         result = []
         for _ in range(self.rules.Draw_Size):
             result.append(self.draw_pile.pop())
+        return result
+    
+    def pickUpPile(self):
+        """Return the top Pickup_Size cards from the discard pile"""
+        result = []
+        for _ in range(self.rules.Pickup_Size):
+            result.append(self.discard_pile.pop())
         return result
 
     def discardCards(self, discard_list):

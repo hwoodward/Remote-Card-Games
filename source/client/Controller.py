@@ -59,7 +59,7 @@ class Controller(ConnectionListener):
             self._state.pickupPileRuleCheck(self.prepared_cards)
         except Exception as err:
             self.note = "{0}".format(err)
-        #TODO: call server to get new cards
+        connection.Send({"action": "pickUpPile"})
         self.turn_phase = Turn_Phases[2] #Set turn phase to reflect forced action
         self.note = "Waiting for new cards to make required play"
 
