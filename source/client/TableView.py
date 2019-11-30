@@ -5,14 +5,10 @@ import client.UIConstants as UIC
 from common.Card import Card
 
 class TableView(ConnectionListener):
-    """This class handles letting players actualy input information
-
-    It handles the entire turn cycle
+    """ This displays publicly available info on all the players.
     """
 
     def __init__(self, display):
-        """This currently does nothing"""
-        # TODO: set up any member variables here
         self.display = display
         self.player_names = []
         self.visible_cards = []
