@@ -19,11 +19,14 @@ class HandView:
         self.current_hand = []
         self.last_hand = []
         self.hand_info = []          # will contain UICardWrapped elements of current_hand
+        self.prepared_cards = []     # will contain list of prepared cards from controller
         self.discards = []
         self.discard_confirm = False
         # TODO: verify that self.discard_confirm is still needed.
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
-        self.displayPile(Card(3,'Hearts'))
+        self.top_discard = Card(0, None)  #to do  -- get this from controller & update as needed.
+        self.pickup_pile_sz = 42 # to do -- get this from controller and update as needed.
+        self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25))
         # Buttons to cause actions -- e.g. cards will be sorted by selection status or by number.
         # will move hard coded numbers to UIC constants once I've worked them out a bit more.
         self.mv_selected_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='move selected cards')
@@ -45,7 +48,17 @@ class HandView:
         # display draw pile and various action buttons
         loc_xy = (self.draw_pile.x, self.draw_pile.y)
         self.draw_pile.draw(self.display, loc_xy, self.draw_pile.outline_color)
-        self.displayPile(Card(3,'Hearts'))
+        if self.pickup_pile_sz > 0:
+            ''' if top card of pile has changed -- which happens at the start of each turn
+             (unless zaephod, but still OK to update) then will need to do the routine below...
+            Probably makes more sense to update top_discard at start of turn, rather than at each update!!
+            self.top_discard = Card(0, None)  
+            self.tdw = UICardWrapper(self.top_discard, (100, 25))
+            self.pickup_pile = ClickImg(self.tdw.img_clickable, 100, 25, UIC.Back_Img.get_width(),
+                                        UIC.Back_Img.get_height(), 0)
+            '''
+            loc_xy = (self.pickup_pile.x, self.pickup_pile.y)
+            self.pickup_pile.draw(self.display, loc_xy, self.pickup_pile.outline_color)
         self.mv_selected_btn.draw(self.display, self.mv_selected_btn.outline_color)
         self.sort_btn.draw(self.display, self.sort_btn.outline_color)
         self.prepare_card_btn.draw(self.display, self.prepare_card_btn.outline_color)
@@ -69,6 +82,8 @@ class HandView:
                 if event.key == pygame.K_9:
                     self.controller.draw()
                     UIC.debugflag = 0
+                    # this is a leftover appendage from earlier phase.
+                    # Keep for now so I have example of keydown.
                     
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.sort_btn.isOver(pos):
@@ -97,7 +112,7 @@ class HandView:
                 if self.mv_selected_btn.isOver(pos):
                     self.mv_selected_btn.outline_color = UIC.Black  # set outline color
                 else:
-                    self.mv_selected_btn.outline_color = UIC.Gray  # remove outline
+                    self.mv_selected_btn.outline_color = UIC.Gray  # change outline
                 if self.sort_btn.isOver(pos):
                     self.sort_btn.outline_color = UIC.Blue  # set outline color
                 else:
@@ -110,6 +125,10 @@ class HandView:
                     self.draw_pile.changeOutline(1)
                 else:
                     self.draw_pile.changeOutline(0)
+                if self.pickup_pile.isOver(pos):
+                    self.pickup_pile.changeOutline(1)
+                else:
+                    self.pickup_pile.changeOutline(0)
                     for element in self.hand_info:
                         color_index = element.img_clickable.outline_index
                         if element.img_clickable.isOver(pos):
@@ -176,16 +195,6 @@ class HandView:
             if element.selected:
                 self.selected_list.append(element.card)
         return self.selected_list
-
-    # Draw top card of discard pile and make it a clickable image, to trigger picking up the pile.
-    def displayPile(self, top_discard):
-        # TODO: get top_discard from server, for now use 3 of Hearts.
-        # Put in check if size of pile is 0, if so, then don't display the pile.
-        #
-        top_of_pile = UICardWrapper(top_discard, (100,25))
-        loc_xy = (top_of_pile.img_clickable.x, top_of_pile.img_clickable.y)
-        top_of_pile.img_clickable.draw(self.display, loc_xy, UIC.White)
-        # TODO: Need to stop hard-coding positions (instead of 60,25 should scale with screen and card size)
 
     # Confirm a user is sure about a discard and then perform it once confirmed
     def discardConfirmation(self, confirmed, discards):
