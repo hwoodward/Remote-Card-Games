@@ -18,20 +18,6 @@ class TableView(ConnectionListener):
         self.visible_cards = []
         self.hand_status = []
         self.compressed_info = {}
-        '''
-        # TODO: replace example values with data from server.
-        # TODO:  currently have wrong format for visible_cards both here and in compressSets method.
-        self.visible_cards = (('Ted', {1: ((1, 'Hearts'), (1, 'Hearts'), (1, 'Spades'), (0, 'None')),
-                                       4: ((4, 'Diamonds'), (4, 'Clubs'), (4, 'Clubs')),
-                                       13: ((13, 'Hearts'), (13, 'Hearts'), (2, 'Hearts'))}),
-                              ('Sheri', {}),
-                              ('Helen', {}),
-                              ('Miriam', {}))
-        self.hand_stats = [('Ted', [12, True]), ('Sheri', [20, False]), ('Helen', [10, False]),
-                           ('Miriam', [15, False])]
-        print(self.visible_cards)
-        print(self.hand_stats)
-        '''
         self.playerByPlayer()
 
     def playerByPlayer(self):
@@ -102,10 +88,3 @@ class TableView(ConnectionListener):
         self.visible_cards = data["visible_cards"]
         self.hand_status = data["hand_status"]
         self.playerByPlayer()
-
-        # TODO either:  <<  Done -- chose option b
-        # a) copy the data to the internal save you are keeping and
-        #    i) rerender immediately
-        #    ii) rerender when explicitly told to
-        # b) call Render with the provided data and only ever rerender on new broadcast
-
