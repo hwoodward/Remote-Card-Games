@@ -61,6 +61,45 @@ class Controller(ConnectionListener):
         self.note = "Performing the play required to pick up the pile"
         #TODO: add top_card to prepared cards (it should be able to be automatically given a key)
         self.play()
+
+    def automaticallyPrepareCards(self, selected_cards):
+        """Prepare selected cards to be played
+        
+        Fully prepares natural cards
+        Returns options for where to play wild cards
+        Returns message that you can't play 3s
+        """
+        if self._state.turn_phase == Turn_Phases[2]:
+            self.note = "You can't change prepared cards while waiting to finish picking up the pile"
+            return
+
+        user_input_cards = []
+        for card in selected_cards:
+            key_opts = []
+            try:
+                key_opts = self._state.getValidKeys()
+            except Exception as err:
+                self.note = "Did not prepare card: {0}".format(err) #I don't think we ever show this note
+            else:
+                if len(key_opts) == 1:
+                    self.prepareCard(key_opts[0], card) #Automatically prepare as much as possible
+                else:
+                    user_input_cards.append([card, key_opts])
+        return user_input_cards
+        
+    def prepareCard(self, card, key):
+        """Prepare the selected card with the specified key"""
+        if self._state.turn_phase == Turn_Phases[2]:
+            self.note = "You can't change prepared cards while waiting to finish picking up the pile"
+            return
+        self._state.prepared_cards.setdefault(key, []).append(card)
+        
+    def clearPreparedCards(self):
+        """Clears prepared cards"""
+        if self._state.turn_phase == Turn_Phases[2]:
+            self.note = "You can't change prepared cards while waiting to finish picking up the pile"
+            return
+        self._state.prepared_cards = {}
         
     def play(self):
         """Send the server the current set of visible cards"""

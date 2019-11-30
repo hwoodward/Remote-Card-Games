@@ -42,6 +42,10 @@ class ClientState():
             for card in card_group:
                 self.hand_cards.remove(card)
                 self.played_cards.setdefault(key, []).append(card)
+    
+    def getValidKeys(self, card):
+        """Get the keys that this card can be prepared with"""
+        return self.rules.getKeyOptions(card)
 
     def discardCards(self, card_list):
         """Discard cards from hand"""
