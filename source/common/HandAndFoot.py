@@ -79,14 +79,8 @@ def canMeld(prepared_cards, round_index):
     return True
 
 
-def canPickupPile(discard_info, prepared_cards, played_cards, round_index):
+def canPickupPile(top_card, prepared_cards, played_cards, round_index):
     """Determines if the player can pick up the pile with their suggested play"""
-    #check there are enough cards
-    if discard_info[1] < 8:
-        raise Exception("Cannot pickup the pile until there are 8 cards")
-    
-    #check top card is legal to pick up at all
-    top_card = discard_info[0]
     top_key = None
     try:
         key_opts = getKeyOptions(top_card)

@@ -113,9 +113,13 @@ class Controller(ConnectionListener):
         if self._state.turn_phase != Turn_Phases[3]:
             self.note = "You can only play on your turn after you draw"
             return
-        self._state.playCards(self.prepared_cards)
-        self.clearPreparedCards()
-        #TODO: Check for turn transition due to out or zephod
+        try:
+            self._state.playCards(self.prepared_cards)
+            self.clearPreparedCards()
+        except Exception as err:
+            self.note = "{0}".format(err)
+            return
+        #TODO: Check for turn transition due to out or zaephod
         self.sendPublicInfo()
 
     def getName(self):

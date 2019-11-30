@@ -37,7 +37,7 @@ class ClientState():
 
     def playCards(self, prepared_cards):
         """Move cards from hand to visible"""
-        #TODO: verify this is a legal move
+        self.rules.canPlay(prepared_cards, self.played_cards, 0) #TODO: hard coding round index needs to be fixed
         for key, card_group in prepared_cards.items():
             for card in card_group:
                 self.hand_cards.remove(card)
@@ -46,6 +46,14 @@ class ClientState():
     def getValidKeys(self, card):
         """Get the keys that this card can be prepared with"""
         return self.rules.getKeyOptions(card)
+
+    def pickupPileRuleCheck(self, prepared_cards):
+        """Confirm a player can pick up the pile with the prepared cards"""
+        # check there are enough cards
+        if self.discard_info[1] < self.rules.Pickup_Size:
+            raise Exception("Cannot pickup the pile until there are 8 cards")
+        # check prepared cards meet the forced play requirements
+        return self.rules.canPickupPile(self.discard_info[0], prepared_cards, self.played_cards, 0) #TODO: hard coding round index needs to be fixed
 
     def discardCards(self, card_list):
         """Discard cards from hand"""

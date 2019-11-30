@@ -6,7 +6,6 @@ class TestCardMethods(unittest.TestCase):
             
     def test_PickupCheck(self):
         """Confirm that canPickup works"""
-        discard_info = (Card(5, 'Hearts'), 8)
         played_cards = {}
         prepared_cards = {}
         
@@ -14,16 +13,16 @@ class TestCardMethods(unittest.TestCase):
         played_cards[1] = [Card(1, 'Clubs'), Card(1, 'Clubs'), Card(1, 'Clubs')]
         played_cards[4] = [Card(4, 'Clubs'), Card(4, 'Clubs'), Card(0, None)]
         prepared_cards[5] = [Card(5, 'Clubs'), Card(5, 'Clubs')]
-        self.assertTrue(Rules.canPickupPile(discard_info, prepared_cards, played_cards, 0))
+        self.assertTrue(Rules.canPickupPile(Card(5, 'Hearts'), prepared_cards, played_cards, 0))
         
         #confirm without valid cards, fails
         prepared_cards[5] = [Card(5, 'Clubs')]
         with self.assertRaises(Exception):
-            Rules.canPickupPile(discard_info, prepared_cards, played_cards, 0)
+            Rules.canPickupPile(Card(5, 'Hearts'), prepared_cards, played_cards, 0)
         
         prepared_cards[5] = [Card(5, 'Clubs'), Card(2, 'Clubs')]
         with self.assertRaises(Exception):
-            Rules.canPickupPile(discard_info, prepared_cards, played_cards, 0)
+            Rules.canPickupPile(Card(5, 'Hearts'), prepared_cards, played_cards, 0)
         
         #confirm without meld, need to meet meld requirement
         prepared_cards[5] = [Card(5, 'Clubs'), Card(5, 'Clubs')]
