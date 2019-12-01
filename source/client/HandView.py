@@ -22,7 +22,6 @@ class HandView:
         self.prepared_cards = []     # will contain list of prepared cards from controller
         self.discards = []
         self.discard_confirm = False
-        # TODO: verify that self.discard_confirm is still needed.
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
         self.top_discard = Card(0, None)  #todo  -- get this from controller & update as needed.
         self.pickup_pile_sz = 42 # todo -- get this from controller and update as needed.
