@@ -24,17 +24,17 @@ class HandView:
         self.discard_confirm = False
         # TODO: verify that self.discard_confirm is still needed.
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
-        self.top_discard = Card(0, None)  #to do  -- get this from controller & update as needed.
-        self.pickup_pile_sz = 42 # to do -- get this from controller and update as needed.
+        self.top_discard = Card(0, None)  #todo  -- get this from controller & update as needed.
+        self.pickup_pile_sz = 42 # todo -- get this from controller and update as needed.
         self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25))
+        self.pickup_pile = self.top_discard_wrapped.img_clickable
         # Buttons to cause actions -- e.g. cards will be sorted by selection status or by number.
         # will move hard coded numbers to UIC constants once I've worked them out a bit more.
         self.mv_selected_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='move selected cards')
-        self.mv_selected_btn.outline_color = UIC.Gray
-        self.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort')
-        self.prepare_card_btn = Btn.Button(UIC.Bright_Blue, 300, 25, 225, 25, text='Prepare selected cards')
-        self.clear_prepared_cards_btn = Btn.Button(UIC.Bright_Blue, 300, 75, 225, 25, text='Clear prepared cards')
-        self.play_prepared_cards_btn = Btn.Button(UIC.Bright_Blue, 600, 75, 225, 25, text='Play prepared cards')
+        self.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort all cards')
+        self.prepare_card_btn = Btn.Button(UIC.White, 320, 25, 225, 25, text='Prepare selected cards')
+        self.clear_prepared_cards_btn = Btn.Button(UIC.White, 320, 75, 225, 25, text='Clear prepared cards')
+        self.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 75, 225, 25, text='Play prepared cards')
         self.discard_action_btn = Btn.Button(UIC.Bright_Red, 190, 25, 100, 25, text='discard')
 
     def update(self):
@@ -51,11 +51,11 @@ class HandView:
         if self.pickup_pile_sz > 0:
             ''' if top card of pile has changed -- which happens at the start of each turn
              (unless zaephod, but still OK to update) then will need to do the routine below...
-            Probably makes more sense to update top_discard at start of turn, rather than at each update!!
-            self.top_discard = Card(0, None)  
-            self.tdw = UICardWrapper(self.top_discard, (100, 25))
-            self.pickup_pile = ClickImg(self.tdw.img_clickable, 100, 25, UIC.Back_Img.get_width(),
-                                        UIC.Back_Img.get_height(), 0)
+            if it's players turn and phase is start of turn (pick-up) then:
+                self.top_discard = value from controller
+                self.tdw = UICardWrapper(self.top_discard, (100, 25))
+                self.pickup_pile = ClickImg(self.tdw.img_clickable, 100, 25, UIC.Back_Img.get_width(),
+                                            UIC.Back_Img.get_height(), 0)
             '''
             loc_xy = (self.pickup_pile.x, self.pickup_pile.y)
             self.pickup_pile.draw(self.display, loc_xy, self.pickup_pile.outline_color)
@@ -86,6 +86,11 @@ class HandView:
                     # Keep for now so I have example of keydown.
                     
             if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.draw_pile.isOver(pos):
+                    self.controller.draw()
+                if self.pickup_pile.isOver(pos):
+                    # todo for Helen -
+                    print("Tried to pickup pile, but not yet implemented")
                 if self.sort_btn.isOver(pos):
                     self.hand_info.sort(key=lambda wc: wc.key)
                     self.hand_info = self.refreshXY(self.hand_info)
@@ -95,10 +100,19 @@ class HandView:
                         if wc.selected else wc.img_clickable.x
                         )
                     self.hand_info = self.refreshXY(self.hand_info)
+                if self.prepare_card_btn.isOver(pos):
+                    # todo for Helen -
+                    print("Tried to prepare card, but not yet implemented")
+                    # todo for Sheri - need to update display so that prepared cards are obvious...
+                    # will probably move them vertically and might change outline color.
+                if self.clear_prepared_cards_btn.isOver(pos):
+                    # todo for Helen -
+                    print("Tried to clear prepared cards, but not yet implemented")
+                if self.play_prepared_cards_btn.isOver(pos):
+                    # todo for Helen -
+                    print("Tried to play prepared cards but not yet implemented")
                 if self.discard_action_btn.isOver(pos):
                     self.discard_confirm = self.discardConfirmation(self.discard_confirm, self.gatherSelected())
-                if self.draw_pile.isOver(pos):
-                    self.controller.draw()
                 else:
                     for element in self.hand_info:
                         if element.img_clickable.isOver(pos):
@@ -109,18 +123,6 @@ class HandView:
                                 element.img_clickable.changeOutline(0)
 
             if event.type == pygame.MOUSEMOTION:
-                if self.mv_selected_btn.isOver(pos):
-                    self.mv_selected_btn.outline_color = UIC.Black  # set outline color
-                else:
-                    self.mv_selected_btn.outline_color = UIC.Gray  # change outline
-                if self.sort_btn.isOver(pos):
-                    self.sort_btn.outline_color = UIC.Blue  # set outline color
-                else:
-                    self.sort_btn.outline_color = UIC.Bright_Blue  # remove highlighted outline
-                if self.discard_action_btn.isOver(pos):
-                    self.discard_action_btn.outline_color = UIC.Black  # set outline color
-                else:
-                    self.discard_action_btn.outline_color = UIC.Bright_Red  # remove highlighted outline
                 if self.draw_pile.isOver(pos):
                     self.draw_pile.changeOutline(1)
                 else:
@@ -129,6 +131,30 @@ class HandView:
                     self.pickup_pile.changeOutline(1)
                 else:
                     self.pickup_pile.changeOutline(0)
+                if self.mv_selected_btn.isOver(pos):
+                    self.mv_selected_btn.outline_color = UIC.Black  # set outline color
+                else:
+                    self.mv_selected_btn.outline_color = UIC.Gray  # change outline
+                if self.sort_btn.isOver(pos):
+                    self.sort_btn.outline_color = UIC.Black  # set outline color
+                else:
+                    self.sort_btn.outline_color = UIC.Gray  # remove highlighted outline
+                if self.prepare_card_btn.isOver(pos):
+                    self.prepare_card_btn.outline_color = UIC.Bright_Blue  # set outline color
+                else:
+                    self.prepare_card_btn.outline_color = UIC.Blue  # remove highlighted outline
+                if self.clear_prepared_cards_btn.isOver(pos):
+                    self.clear_prepared_cards_btn.outline_color = UIC.Bright_Red  # set outline color
+                else:
+                    self.clear_prepared_cards_btn.outline_color = UIC.Red  # remove highlighted outline
+                if self.play_prepared_cards_btn.isOver(pos):
+                    self.play_prepared_cards_btn.outline_color = UIC.Bright_Green  # set outline color
+                else:
+                    self.play_prepared_cards_btn.outline_color = UIC.Green  # remove highlighted outline
+                if self.discard_action_btn.isOver(pos):
+                    self.discard_action_btn.outline_color = UIC.Black  # set outline color
+                else:
+                    self.discard_action_btn.outline_color = UIC.Bright_Red  # remove highlighted outline
                     for element in self.hand_info:
                         color_index = element.img_clickable.outline_index
                         if element.img_clickable.isOver(pos):
