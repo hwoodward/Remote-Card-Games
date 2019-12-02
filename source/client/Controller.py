@@ -79,7 +79,8 @@ class Controller(ConnectionListener):
             try:
                 key_opts = self._state.getValidKeys()
             except Exception as err:
-                self.note = "Did not prepare card: {0}".format(err) #I don't think we ever show this note
+                #This note will probably be overwritten before the user sees it, unless they try to prepare only 3s
+                self.note = "Did not prepare card: {0}".format(err) 
             else:
                 if len(key_opts) == 1:
                     self.prepareCard(key_opts[0], card) #Automatically prepare as much as possible
@@ -92,14 +93,16 @@ class Controller(ConnectionListener):
         if self._state.turn_phase == Turn_Phases[2]:
             self.note = "You can't change prepared cards while waiting to finish picking up the pile"
             return
-        self._state.prepared_cards.setdefault(key, []).append(card)
+        self.prepared_cards.setdefault(key, []).append(card)
+        self.note = "You have the following cards prepared to play: {0}".format(self.prepared_cards) #Is this format readable enough?
         
     def clearPreparedCards(self):
         """Clears prepared cards"""
         if self._state.turn_phase == Turn_Phases[2]:
             self.note = "You can't change prepared cards while waiting to finish picking up the pile"
             return
-        self._state.prepared_cards = {}
+        self.prepared_cards = {}
+        self.note = "You have no cards prepared to play"
         
     def play(self):
         """Send the server the current set of visible cards"""
@@ -117,6 +120,11 @@ class Controller(ConnectionListener):
     def getHand(self):
         """sends _state to UI"""
         return self._state.hand_cards.copy()
+
+    def getPreparedCards(self):
+        """lets the UI fetch prepared cards"""
+        #TODO: Sheri - should this information be returned in getHand or is a separate method best?
+        return self.prepared_cards.copy()
 
     def getTurnPhase(self):
         """return if the player should be active"""

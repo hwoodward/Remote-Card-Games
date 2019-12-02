@@ -23,8 +23,8 @@ class HandView:
         self.discards = []
         self.discard_confirm = False
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
-        self.top_discard = Card(0, None)  #todo  -- get this from controller & update as needed.
-        self.pickup_pile_sz = 42 # todo -- get this from controller and update as needed.
+        self.top_discard = Card(0, None)  #TODO:  -- get this from controller & update as needed.
+        self.pickup_pile_sz = 42 # TODO: -- get this from controller and update as needed.
         self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25))
         self.pickup_pile = self.top_discard_wrapped.img_clickable
         # Buttons to cause actions -- e.g. cards will be sorted by selection status or by number.
@@ -88,8 +88,7 @@ class HandView:
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
                 if self.pickup_pile.isOver(pos):
-                    # todo for Helen -
-                    print("Tried to pickup pile, but not yet implemented")
+                    self.controller.pickUpPile()
                 if self.sort_btn.isOver(pos):
                     self.hand_info.sort(key=lambda wc: wc.key)
                     self.hand_info = self.refreshXY(self.hand_info)
@@ -100,16 +99,17 @@ class HandView:
                         )
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.prepare_card_btn.isOver(pos):
-                    # todo for Helen -
-                    print("Tried to prepare card, but not yet implemented")
-                    # todo for Sheri - need to update display so that prepared cards are obvious...
+                    user_input_cards = self.controller.automaticallyPrepareCards(self.gatherSelected())
+                    # The user_input_cards are a list of card/key option pairs ex. [[(0, None), [1,4,5,6,7,8,9,10,11,12,13]], [(2, 'Hearts'), [1,4,5,6,7,8,9,10,11,12,13]]]
+                    # TODO: for Sheri - need to get user input on what key to prepare user_input_cards (wild cards) in.
+                    # To prepare them when ready call self.controller.prepareCard(card, key)
+                    #
+                    # TODO: for Sheri - need to update display so that prepared cards are obvious...
                     # will probably move them vertically and might change outline color.
                 if self.clear_prepared_cards_btn.isOver(pos):
-                    # todo for Helen -
-                    print("Tried to clear prepared cards, but not yet implemented")
+                    self.controller.clearPreparedCards()
                 if self.play_prepared_cards_btn.isOver(pos):
-                    # todo for Helen -
-                    print("Tried to play prepared cards but not yet implemented")
+                    self.controller.play()
                 if self.discard_action_btn.isOver(pos):
                     self.discard_confirm = self.discardConfirmation(self.discard_confirm, self.gatherSelected())
                 else:
