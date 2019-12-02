@@ -2,7 +2,6 @@ from common.Card import Card
 
 from PodSixNet.Connection import connection, ConnectionListener
 
-#TODO: figure out where this should actually live
 Turn_Phases = ['inactive', 'draw', 'forcedAction', 'play']
 
 class Controller(ConnectionListener):
@@ -66,8 +65,9 @@ class Controller(ConnectionListener):
     def makeForcedPlay(self, top_card):
         """Complete the required play for picking up the pile"""
         self.note = "Performing the play required to pick up the pile"
-        #TODO: get key for top_card (we know it can be auto-keyed)
-        #TODO: add top_card to prepared cards with its key
+        #Get key for top_card (we know it can be auto-keyed), and then prepare it
+        key = self._state.getValidKeys(top_card)[0]
+        self.setdefault(key, []).append(top_card) #Can't just call prepared card b/c of turn phase checking
         self.play()
         #Network_newCards, which called this, will handle turn phase transition and publicInfo update
 
