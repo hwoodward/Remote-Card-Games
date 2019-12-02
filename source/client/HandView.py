@@ -23,8 +23,10 @@ class HandView:
         self.discards = []
         self.discard_confirm = False
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
-        self.top_discard = Card(0, None)  #TODO:  -- get this from controller & update as needed.
-        self.pickup_pile_sz = 42 # TODO: -- get this from controller and update as needed.
+        #discard info
+        discard_info = self.controller.getDiscardInfo()
+        self.top_discard = discard_info[0]  
+        self.pickup_pile_sz = discard_info[1]
         self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25))
         self.pickup_pile = self.top_discard_wrapped.img_clickable
         # Buttons to cause actions -- e.g. cards will be sorted by selection status or by number.
@@ -47,15 +49,13 @@ class HandView:
         # display draw pile and various action buttons
         loc_xy = (self.draw_pile.x, self.draw_pile.y)
         self.draw_pile.draw(self.display, loc_xy, self.draw_pile.outline_color)
+        #update discard info and redraw
+        discard_info = self.controller.getDiscardInfo()
+        self.top_discard = discard_info[0]
+        self.pickup_pile_sz = discard_info[1]
+        self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25))
+        self.pickup_pile = self.top_discard_wrapped.img_clickable
         if self.pickup_pile_sz > 0:
-            ''' if top card of pile has changed -- which happens at the start of each turn
-             (unless zaephod, but still OK to update) then will need to do the routine below...
-            if it's players turn and phase is start of turn (pick-up) then:
-                self.top_discard = value from controller
-                self.tdw = UICardWrapper(self.top_discard, (100, 25))
-                self.pickup_pile = ClickImg(self.tdw.img_clickable, 100, 25, UIC.Back_Img.get_width(),
-                                            UIC.Back_Img.get_height(), 0)
-            '''
             loc_xy = (self.pickup_pile.x, self.pickup_pile.y)
             self.pickup_pile.draw(self.display, loc_xy, self.pickup_pile.outline_color)
         self.mv_selected_btn.draw(self.display, self.mv_selected_btn.outline_color)
