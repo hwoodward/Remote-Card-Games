@@ -48,6 +48,8 @@ class Controller(ConnectionListener):
             self.note = "You can only draw at the start of your turn"
             return
         connection.Send({"action": "draw"})
+        #Transition phase immediately to avoid double draw
+        self._state.turn_phase = Turn_Phases[3]
     
     def pickUpPile(self):
         """Attempt to pick up the pile"""
@@ -69,7 +71,8 @@ class Controller(ConnectionListener):
         key = self._state.getValidKeys(top_card)[0]
         self.setdefault(key, []).append(top_card) #Can't just call prepared card b/c of turn phase checking
         self.play()
-        #Network_newCards, which called this, will handle turn phase transition and publicInfo update
+        #Now ready to be in play turn phase
+        self._state.turn_phase = Turn_Phases[3]
 
     def automaticallyPrepareCards(self, selected_cards):
         """Prepare selected cards to be played
@@ -195,8 +198,6 @@ class Controller(ConnectionListener):
         if self._state.turn_phase == Turn_Phases[2]:
             #This is the result of a pickup and we have a forced action
             self.makeForcedPlay(card_list[0])
-        #Now ready to be in play turn phase
-        self._state.turn_phase = Turn_Phases[3]
         self.note = "You can now play cards or discard"
         self.sendPublicInfo() #More cards in hand now, need to update public information
     
