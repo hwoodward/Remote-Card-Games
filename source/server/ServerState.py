@@ -49,7 +49,7 @@ class ServerState():
 
     def getDiscardInfo(self):
         """Provides the top card and size of the discard pile as a tuple"""
-        return (self.discard_pile[-1], len(self.discard_pile))
+        return [self.discard_pile[-1], len(self.discard_pile)]
 
     def dealHands(self):
         """Return all hands to deal to a single player at the start of a round"""
