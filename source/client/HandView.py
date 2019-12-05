@@ -27,8 +27,9 @@ class HandView:
         discard_info = self.controller.getDiscardInfo()
         self.top_discard = discard_info[0]  
         self.pickup_pile_sz = discard_info[1]
-        self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25))
-        self.pickup_pile = self.top_discard_wrapped.img_clickable
+        if self.pickup_pile_sz > 0:
+            self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25))
+            self.pickup_pile = self.top_discard_wrapped.img_clickable
         # Buttons to cause actions -- e.g. cards will be sorted by selection status or by number.
         # will move hard coded numbers to UIC constants once I've worked them out a bit more.
         self.mv_selected_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='move selected cards')
@@ -53,9 +54,9 @@ class HandView:
         discard_info = self.controller.getDiscardInfo()
         self.top_discard = discard_info[0]
         self.pickup_pile_sz = discard_info[1]
-        self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25))
-        self.pickup_pile = self.top_discard_wrapped.img_clickable
         if self.pickup_pile_sz > 0:
+            self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25))
+            self.pickup_pile = self.top_discard_wrapped.img_clickable
             loc_xy = (self.pickup_pile.x, self.pickup_pile.y)
             self.pickup_pile.draw(self.display, loc_xy, self.pickup_pile.outline_color)
         self.mv_selected_btn.draw(self.display, self.mv_selected_btn.outline_color)
@@ -87,8 +88,9 @@ class HandView:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
-                if self.pickup_pile.isOver(pos):
-                    self.controller.pickUpPile()
+                if self.pickup_pile_sz > 0:
+                    if self.pickup_pile.isOver(pos):
+                        self.controller.pickUpPile()
                 if self.sort_btn.isOver(pos):
                     self.hand_info.sort(key=lambda wc: wc.key)
                     self.hand_info = self.refreshXY(self.hand_info)
@@ -126,10 +128,11 @@ class HandView:
                     self.draw_pile.changeOutline(1)
                 else:
                     self.draw_pile.changeOutline(0)
-                if self.pickup_pile.isOver(pos):
-                    self.pickup_pile.changeOutline(1)
-                else:
-                    self.pickup_pile.changeOutline(0)
+                if self.pickup_pile_sz > 0:
+                    if self.pickup_pile.isOver(pos):
+                       self.pickup_pile.changeOutline(1)
+                    else:
+                       self.pickup_pile.changeOutline(0)
                 if self.mv_selected_btn.isOver(pos):
                     self.mv_selected_btn.outline_color = UIC.Black  # set outline color
                 else:
