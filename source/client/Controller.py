@@ -77,7 +77,7 @@ class Controller(ConnectionListener):
         for card in selected_cards:
             key_opts = []
             try:
-                key_opts = self._state.getValidKeys()
+                key_opts = self._state.getValidKeys(card)
             except Exception as err:
                 #This note will probably be overwritten before the user sees it, unless they try to prepare only 3s
                 self.note = "Did not prepare card: {0}".format(err) 
@@ -88,7 +88,7 @@ class Controller(ConnectionListener):
                     user_input_cards.append([card, key_opts])
         return user_input_cards
         
-    def prepareCard(self, card, key):
+    def prepareCard(self, key, card):
         """Prepare the selected card with the specified key"""
         if self._state.turn_phase == Turn_Phases[2]:
             self.note = "You can't change prepared cards while waiting to finish picking up the pile"
@@ -110,6 +110,7 @@ class Controller(ConnectionListener):
             self.note = "You can only play on your turn after you draw"
             return
         self._state.playCards(self.prepared_cards)
+        self.clearPreparedCards()
         #TODO: Check for turn transition due to out or zephod
         self.sendPublicInfo()
 
