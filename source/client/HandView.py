@@ -96,8 +96,9 @@ class HandView:
                 if self.mv_selected_btn.isOver(pos):
                     self.hand_info.sort(
                         key=lambda wc: (wc.img_clickable.x + UIC.Disp_Width)
-                        if wc.selected else wc.img_clickable.x
+                        if wc.status == 1 else wc.img_clickable.x
                         )
+                    # TODO: for sheri - move prepared even further to the right.
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.prepare_card_btn.isOver(pos):
                     # todo for Helen -
@@ -115,11 +116,13 @@ class HandView:
                 else:
                     for element in self.hand_info:
                         if element.img_clickable.isOver(pos):
-                            element.selected = not element.selected
-                            if element.selected:
-                                element.img_clickable.changeOutline(2)
-                            else:
-                                element.img_clickable.changeOutline(0)
+                            if not element.status == 2:
+                                if element.status == 1:
+                                    element.status = 0
+                                    element.img_clickable.changeOutline(0)
+                                else:
+                                    element.status = 1
+                                    element.img_clickable.changeOutline(2)
 
             if event.type == pygame.MOUSEMOTION:
                 if self.draw_pile.isOver(pos):
@@ -158,7 +161,7 @@ class HandView:
                         color_index = element.img_clickable.outline_index
                         if element.img_clickable.isOver(pos):
                             # Brighten colors that mouse is over.
-                            # Odd colors are bright, even show selected status.
+                            # Odd colors are bright, even show status.
                             if (color_index % 2) == 0:
                                 color_index = element.img_clickable.outline_index + 1
                                 element.img_clickable.changeOutline(color_index)
@@ -217,7 +220,7 @@ class HandView:
     def gatherSelected(self):
         self.selected_list = []
         for element in self.hand_info:
-            if element.selected:
+            if element.status == 1:
                 self.selected_list.append(element.card)
         return self.selected_list
 
