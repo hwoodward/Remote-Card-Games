@@ -38,7 +38,7 @@ class Controller(ConnectionListener):
             self.note = "{0}".format(err)
             return
         connection.Send({"action": "discard", "cards": [c.serialize() for c in discard_list]})
-        self.turn_phase = Turn_Phases[0] #end turn after discard
+        self._state.turn_phase = Turn_Phases[0] #end turn after discard
         self.note = "Discard completed. Your turn is over."
         self.sendPublicInfo()
 
@@ -60,19 +60,20 @@ class Controller(ConnectionListener):
             self._state.pickupPileRuleCheck(self.prepared_cards)
         except Exception as err:
             self.note = "{0}".format(err)
-        connection.Send({"action": "pickUpPile"})
-        self.turn_phase = Turn_Phases[2] #Set turn phase to reflect forced action
-        self.note = "Waiting for new cards to make required play"
+        else:
+            self._state.turn_phase = Turn_Phases[2] #Set turn phase to reflect forced action
+            self.note = "Waiting for new cards to make required play"
+            connection.Send({"action": "pickUpPile"})
 
     def makeForcedPlay(self, top_card):
         """Complete the required play for picking up the pile"""
         self.note = "Performing the play required to pick up the pile"
         #Get key for top_card (we know it can be auto-keyed), and then prepare it
         key = self._state.getValidKeys(top_card)[0]
-        self.setdefault(key, []).append(top_card) #Can't just call prepared card b/c of turn phase checking
-        self.play()
-        #Now ready to be in play turn phase
+        self.prepared_cards.setdefault(key, []).append(top_card) #Can't just call prepared card b/c of turn phase checking
+        #Set turn phase to allow play and then immediately make play
         self._state.turn_phase = Turn_Phases[3]
+        self.play()
 
     def automaticallyPrepareCards(self, selected_cards):
         """Prepare selected cards to be played

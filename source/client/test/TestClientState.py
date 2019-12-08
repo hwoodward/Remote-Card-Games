@@ -77,7 +77,7 @@ class TestClientState(unittest.TestCase):
         #confirm too small pile disallowed
         test_state.discard_info = (Card(5, 'Hearts'), 6)
         with self.assertRaises(Exception):
-            test_state.pickupPileRuleCheck( prepared_cards)
+            test_state.pickupPileRuleCheck(prepared_cards)
 
     def testDiscardCards(self):
         """Confirm discardCards removes cards without playing them"""

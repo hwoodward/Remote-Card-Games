@@ -91,7 +91,7 @@ def canPickupPile(top_card, prepared_cards, played_cards, round_index):
             raise Exception("Cannot pickup the pile on wilds")
         top_key = key_opts[0]
     #check suggested play contains 2 cards matching the top card
-    top_group = prepared_cards[top_key]
+    top_group = prepared_cards.setdefault(top_key, [])
     total = 0
     for card in top_group:
         if not isWild(card):
