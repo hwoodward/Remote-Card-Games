@@ -23,7 +23,7 @@ class HandView:
         self.discards = []
         self.discard_confirm = False
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
-        #discard info
+        # discard info
         discard_info = self.controller.getDiscardInfo()
         self.top_discard = discard_info[0]  
         self.pickup_pile_sz = discard_info[1]
@@ -50,7 +50,7 @@ class HandView:
         # display draw pile and various action buttons
         loc_xy = (self.draw_pile.x, self.draw_pile.y)
         self.draw_pile.draw(self.display, loc_xy, self.draw_pile.outline_color)
-        #update discard info and redraw
+        # update discard info and redraw
         discard_info = self.controller.getDiscardInfo()
         self.top_discard = discard_info[0]
         self.pickup_pile_sz = discard_info[1]
@@ -108,8 +108,10 @@ class HandView:
                     user_input_cards = self.controller.automaticallyPrepareCards(self.cards_to_prep)
                     if (len(user_input_cards)>0):
                         print("We still need to handle wild cards.")
-                    # The user_input_cards are a list of card/key option pairs ex. [[(0, None), [1,4,5,6,7,8,9,10,11,12,13]], [(2, 'Hearts'), [1,4,5,6,7,8,9,10,11,12,13]]]
-                    # TODO: for Sheri - need to get user input on what key to prepare user_input_cards (wild cards) in.
+                    # The user_input_cards are a list of card/key option pairs
+                    # ex. [[(0, None), [1,4,5,6,7,8,9,10,11,12,13]], [(2, 'Hearts'), [1,4,5,6,7,8,9,10,11,12,13]]]
+                    # TODO: for Sheri - need to get user input on what key to prepare
+                    #  user_input_cards (wild cards) in.
                     # To prepare them when ready call self.controller.prepareCard(card, key)
                     #
                     # newly_prepped_cards = all prepared cards minus already_prepared_cards
@@ -152,9 +154,9 @@ class HandView:
                     self.draw_pile.changeOutline(0)
                 if self.pickup_pile_sz > 0:
                     if self.pickup_pile.isOver(pos):
-                       self.pickup_pile.changeOutline(1)
+                        self.pickup_pile.changeOutline(1)
                     else:
-                       self.pickup_pile.changeOutline(0)
+                        self.pickup_pile.changeOutline(0)
                 if self.mv_selected_btn.isOver(pos):
                     self.mv_selected_btn.outline_color = UIC.Black  # set outline color
                 else:
