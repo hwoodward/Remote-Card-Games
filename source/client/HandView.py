@@ -102,9 +102,14 @@ class HandView:
                     # TODO: for sheri - move prepared even further to the right.
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.prepare_card_btn.isOver(pos):
-                    already_prepared_cards = controller.getPreparedCards
-                    cardsToPrep = self.gatherSelected()
-                    user_input_cards = self.controller.automaticallyPrepareCards(cardsToPrep)
+                    self.already_prepared_cards = self.controller.getPreparedCards()
+                    self.wrapped_cards_to_prep = self.gatherSelected()
+                    self.cards_to_prep = []
+                    for element in self.wrapped_cards_to_prep:
+                        self.cards_to_prep.append(element.card)
+                    user_input_cards = self.controller.automaticallyPrepareCards(self.cards_to_prep)
+                    if (len(user_input_cards)>0):
+                        print("We still need to handle wild cards.")
                     # The user_input_cards are a list of card/key option pairs ex. [[(0, None), [1,4,5,6,7,8,9,10,11,12,13]], [(2, 'Hearts'), [1,4,5,6,7,8,9,10,11,12,13]]]
                     # TODO: for Sheri - need to get user input on what key to prepare user_input_cards (wild cards) in.
                     # To prepare them when ready call self.controller.prepareCard(card, key)
@@ -113,19 +118,28 @@ class HandView:
                     # will probably move them vertically and might change outline color.
                     #
                     # newly_prepped_cards = all prepared cards minus already_prepared_cards
-                    newly_prepped_cards = controller.getPreparedCards
-                    for element in already_prepared_cards:
-                        newly_prepped_cards.remove(element)
-                    for wrappedcard in cardsToPrep:
+                    self.newly_prepped_cards = self.controller.getPreparedCards()
+                    for element in self.already_prepared_cards:
+                        self.newly_prepped_cards.remove(element)
+                    for wrappedcard in self.wrapped_cards_to_prep:
                         if wrappedcard.card in self.newly_prepped_cards:
                             self.newly_prepped_cards.remove(wrappedcard.card)
-                            element.status == 2
+                            wrappedcard.status == 2
+                            wrappedcard.img_clickable.changeOutline(4)
                 if self.clear_prepared_cards_btn.isOver(pos):
                     self.controller.clearPreparedCards()
+                    for element in self.hand_info:
+                        if element.status > 1:
+                            # todo:  Sheri - understand why ==2  didn't work.
+                            element.status = 0
+                            element.img_clickable.changeOutline(0)
                 if self.play_prepared_cards_btn.isOver(pos):
                     self.controller.play()
                 if self.discard_action_btn.isOver(pos):
-                    self.discard_confirm = self.discardConfirmation(self.discard_confirm, self.gatherSelected())
+                    card_list = []
+                    for element in self.gatherSelected():
+                        card_list.append(element.card)
+                    self.discard_confirm = self.discardConfirmation(self.discard_confirm, card_list)
                 else:
                     for element in self.hand_info:
                         if element.img_clickable.isOver(pos):
@@ -239,7 +253,8 @@ class HandView:
         self.selected_list = []
         for element in self.hand_info:
             if element.status == 1:
-                self.selected_list.append(element.card)
+                self.selected_list.append(element)
+                #todo: from Sheri for Sheri verify that changing this from element.card to element OK
         return self.selected_list
 
     # Confirm a user is sure about a discard and then perform it once confirmed
