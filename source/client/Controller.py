@@ -2,7 +2,6 @@ from common.Card import Card
 
 from PodSixNet.Connection import connection, ConnectionListener
 
-#TODO: figure out where this should actually live
 Turn_Phases = ['inactive', 'draw', 'forcedAction', 'play']
 
 class Controller(ConnectionListener):
@@ -33,9 +32,13 @@ class Controller(ConnectionListener):
         if self._state.turn_phase != Turn_Phases[3]:
             self.note = "You can only discard at the end of your turn (after having drawn)"
             return
-        self._state.discardCards(discard_list)
+        try:
+            self._state.discardCards(discard_list)
+        except Exception as err:
+            self.note = "{0}".format(err)
+            return
         connection.Send({"action": "discard", "cards": [c.serialize() for c in discard_list]})
-        self.turn_phase = Turn_Phases[0] #end turn after discard
+        self._state.turn_phase = Turn_Phases[0] #end turn after discard
         self.note = "Discard completed. Your turn is over."
         self.sendPublicInfo()
 
@@ -45,21 +48,31 @@ class Controller(ConnectionListener):
             self.note = "You can only draw at the start of your turn"
             return
         connection.Send({"action": "draw"})
+        #Transition phase immediately to avoid double draw
+        self._state.turn_phase = Turn_Phases[3]
     
     def pickUpPile(self):
         """Attempt to pick up the pile"""
         if self._state.turn_phase != Turn_Phases[1]:
             self.note = "You can only pick up the pile at the start of your turn"
             return
-        #TODO: call clientstate to confirm legality of pickup
-        #TODO: call server to get new cards
-        self.turn_phase = Turn_Phases[2] #Set turn phase to reflect forced action
-        self.note = "Waiting for new cards to make required play"
+        try:
+            self._state.pickupPileRuleCheck(self.prepared_cards)
+        except Exception as err:
+            self.note = "{0}".format(err)
+        else:
+            self._state.turn_phase = Turn_Phases[2] #Set turn phase to reflect forced action
+            self.note = "Waiting for new cards to make required play"
+            connection.Send({"action": "pickUpPile"})
 
     def makeForcedPlay(self, top_card):
         """Complete the required play for picking up the pile"""
         self.note = "Performing the play required to pick up the pile"
-        #TODO: add top_card to prepared cards (it should be able to be automatically given a key)
+        #Get key for top_card (we know it can be auto-keyed), and then prepare it
+        key = self._state.getValidKeys(top_card)[0]
+        self.prepared_cards.setdefault(key, []).append(top_card) #Can't just call prepared card b/c of turn phase checking
+        #Set turn phase to allow play and then immediately make play
+        self._state.turn_phase = Turn_Phases[3]
         self.play()
 
     def automaticallyPrepareCards(self, selected_cards):
@@ -109,9 +122,13 @@ class Controller(ConnectionListener):
         if self._state.turn_phase != Turn_Phases[3]:
             self.note = "You can only play on your turn after you draw"
             return
-        self._state.playCards(self.prepared_cards)
-        self.clearPreparedCards()
-        #TODO: Check for turn transition due to out or zephod
+        try:
+            self._state.playCards(self.prepared_cards)
+            self.clearPreparedCards()
+        except Exception as err:
+            self.note = "{0}".format(err)
+            return
+        #TODO: Check for turn transition due to out or zaephod
         self.sendPublicInfo()
 
     def getName(self):
@@ -182,8 +199,6 @@ class Controller(ConnectionListener):
         if self._state.turn_phase == Turn_Phases[2]:
             #This is the result of a pickup and we have a forced action
             self.makeForcedPlay(card_list[0])
-        #Now ready to be in play turn phase
-        self._state.turn_phase = Turn_Phases[3]
         self.note = "You can now play cards or discard"
         self.sendPublicInfo() #More cards in hand now, need to update public information
     

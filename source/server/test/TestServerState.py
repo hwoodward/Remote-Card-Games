@@ -37,6 +37,15 @@ class TestServerState(unittest.TestCase):
         self.assertEqual(topCard, drawResult[0])
         self.assertEqual(secondCard, drawResult[1])
 
+    def testPickupPile(self):
+        """Confirm that picking up the pile works as it should"""
+        test_state = ServerState()
+        discardList = [Card(0,None), Card(3,'Spades'), Card(2, 'Clubs'), Card(4, 'Hearts'), Card(4, 'Hearts'), Card(4, 'Hearts'), Card(4, 'Hearts'), Card(8, 'Hearts')]
+        test_state.discardCards(discardList)
+        pickup = test_state.pickUpPile()
+        self.assertEqual(len(test_state.discard_pile), 0)
+        self.assertEqual(pickup[0], Card(8, 'Hearts'))
+        
     def testDiscard(self):
         """Confirm that discarCards adds all cards to discard pile in order"""
         testState = ServerState()

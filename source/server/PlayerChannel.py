@@ -55,7 +55,10 @@ class PlayerChannel(Channel):
         cards = self._server.drawCards()
         self.Send_newCards(cards)
 
-    #TODO: add pickup pile action
+    def Network_pickUpPile(self, data):
+        cards = self._server.pickUpPile()
+        self.Send_newCards(cards)
+        self._server.Send_discardInfo()
     
     ### Visible card updates ###
     def Network_publicInfo(self, data):

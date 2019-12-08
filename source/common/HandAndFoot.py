@@ -54,7 +54,7 @@ def canPlayGroup(key, card_group):
     if key == 3:
         raise Exception("Illegal key - cannot play 3s")
     if len(card_group) < 3: 
-        raise Exception("Too few careds in group - minimum is 3");
+        raise Exception("Too few cards in group - minimum is 3");
     typeDiff = 0
     for card in card_group:
         if isWild(card):
@@ -79,14 +79,8 @@ def canMeld(prepared_cards, round_index):
     return True
 
 
-def canPickupPile(discard_info, prepared_cards, played_cards, round_index):
+def canPickupPile(top_card, prepared_cards, played_cards, round_index):
     """Determines if the player can pick up the pile with their suggested play"""
-    #check there are enough cards
-    if discard_info[1] < 8:
-        raise Exception("Cannot pickup the pile until there are 8 cards")
-    
-    #check top card is legal to pick up at all
-    top_card = discard_info[0]
     top_key = None
     try:
         key_opts = getKeyOptions(top_card)
@@ -97,7 +91,7 @@ def canPickupPile(discard_info, prepared_cards, played_cards, round_index):
             raise Exception("Cannot pickup the pile on wilds")
         top_key = key_opts[0]
     #check suggested play contains 2 cards matching the top card
-    top_group = prepared_cards[top_key]
+    top_group = prepared_cards.setdefault(top_key, [])
     total = 0
     for card in top_group:
         if not isWild(card):
