@@ -23,7 +23,7 @@ class ClientState():
         self.hand_list = []
         self.hand_cards = []
         self.played_cards = {}
-        self.discard_info = (None, 0) #This is top_card and then size
+        self.discard_info = [None, 0] #This is top_card and then size
 
     def dealtHands(self, hands):
         """Store the extra hands dealt to player for use after first hand is cleared"""
@@ -55,7 +55,7 @@ class ClientState():
 
     def updateDiscardInfo(self, top_card, size):
         """Update the discard information"""
-        self.discard_info = (top_card, size)
+        self.discard_info = [top_card, size]
     
     def getHandStatus(self):
         """Bundles public information in the format needed for sending to the server"""
