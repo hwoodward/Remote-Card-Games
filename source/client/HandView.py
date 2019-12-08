@@ -96,10 +96,8 @@ class HandView:
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.mv_selected_btn.isOver(pos):
                     self.hand_info.sort(
-                        key=lambda wc: (wc.img_clickable.x + UIC.Disp_Width)
-                        if wc.status == 1 else wc.img_clickable.x
+                        key=lambda wc: (wc.img_clickable.x + (wc.status * UIC.Disp_Width))
                         )
-                    # TODO: for sheri - move prepared even further to the right.
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.prepare_card_btn.isOver(pos):
                     self.already_prepared_cards = self.controller.getPreparedCards()
@@ -114,9 +112,6 @@ class HandView:
                     # TODO: for Sheri - need to get user input on what key to prepare user_input_cards (wild cards) in.
                     # To prepare them when ready call self.controller.prepareCard(card, key)
                     #
-                    # TODO: for Sheri - need to update display so that prepared cards are obvious...
-                    # will probably move them vertically and might change outline color.
-                    #
                     # newly_prepped_cards = all prepared cards minus already_prepared_cards
                     self.newly_prepped_cards = self.controller.getPreparedCards()
                     for element in self.already_prepared_cards:
@@ -124,13 +119,12 @@ class HandView:
                     for wrappedcard in self.wrapped_cards_to_prep:
                         if wrappedcard.card in self.newly_prepped_cards:
                             self.newly_prepped_cards.remove(wrappedcard.card)
-                            wrappedcard.status == 2
+                            wrappedcard.status = 2
                             wrappedcard.img_clickable.changeOutline(4)
                 if self.clear_prepared_cards_btn.isOver(pos):
                     self.controller.clearPreparedCards()
                     for element in self.hand_info:
-                        if element.status > 1:
-                            # todo:  Sheri - understand why ==2  didn't work.
+                        if element.status == 2:
                             element.status = 0
                             element.img_clickable.changeOutline(0)
                 if self.play_prepared_cards_btn.isOver(pos):
@@ -142,18 +136,14 @@ class HandView:
                     self.discard_confirm = self.discardConfirmation(self.discard_confirm, card_list)
                 else:
                     for element in self.hand_info:
+                        # cannot select prepared cards, so not included in logic below.
                         if element.img_clickable.isOver(pos):
-                            if element.status == 2:
-                                element.img_clickable.changeOutline(4)
-                                # prepared cards (status = 2) managed by controller.
-                                # to change prepared card's status must clear prepared cards.
+                            if element.status == 1:
+                                element.status = 0
+                                element.img_clickable.changeOutline(0)
                             else:
-                                if element.status == 1:
-                                    element.status = 0
-                                    element.img_clickable.changeOutline(0)
-                                else:
-                                    element.status = 1
-                                    element.img_clickable.changeOutline(2)
+                                element.status = 1
+                                element.img_clickable.changeOutline(2)
 
             if event.type == pygame.MOUSEMOTION:
                 if self.draw_pile.isOver(pos):
