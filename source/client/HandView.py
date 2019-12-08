@@ -23,7 +23,7 @@ class HandView:
         self.discards = []
         self.discard_confirm = False
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
-        #discard info
+        # discard info
         discard_info = self.controller.getDiscardInfo()
         self.top_discard = discard_info[0]  
         self.pickup_pile_sz = discard_info[1]
@@ -50,7 +50,7 @@ class HandView:
         # display draw pile and various action buttons
         loc_xy = (self.draw_pile.x, self.draw_pile.y)
         self.draw_pile.draw(self.display, loc_xy, self.draw_pile.outline_color)
-        #update discard info and redraw
+        # update discard info and redraw
         discard_info = self.controller.getDiscardInfo()
         self.top_discard = discard_info[0]
         self.pickup_pile_sz = discard_info[1]

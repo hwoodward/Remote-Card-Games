@@ -33,13 +33,31 @@ class TableView(ConnectionListener):
             # plan to move below to a helper function...
             melded_summary = self.compressed_info[player_name]
             pygame.draw.rect(self.display, UIC.table_grid_colors[color_index], bk_grd_rect, 0)
-            player_text = player_name + '\n'
-            # TODO: get carriage return working
-            for key in melded_summary:
-                player_text = player_text + ' ' + str(key) + ': ' + str(melded_summary[key]) + '\n'
-            text_surface, text_rect = self.textObjects(player_text, UIC.Small_Text)
-            text_rect.center = ((bk_grd_rect[0] + 0.5 * players_sp_w), (bk_grd_rect[1] + 0.05 * UIC.Disp_Height))
+            player_text = player_name
+            text_surface, text_rect = self.textObjects(player_text, UIC.Medium_Text)
+            y_coord =  0.05 * UIC.Disp_Height
+            text_rect.center = ((bk_grd_rect[0] + 0.5 * players_sp_w), (bk_grd_rect[1] + y_coord))
+            y_coord = y_coord + UIC.Medium_Text_Feed
             self.display.blit(text_surface, text_rect)
+            for key in melded_summary:
+                # player_text = player_text + ' ' + str(key) + ': ' + str(melded_summary[key]) + '\n'
+                i_key=int(key)
+                #todo sheri - see if I need to have variable i_key, or if key will work.
+                if i_key == 1:
+                    player_text = 'Aces: ' + str(melded_summary[key])
+                    ykey = y_coord + (UIC.Small_Text_Feed * 11)
+                else:
+                    ykey = y_coord + (UIC.Small_Text_Feed * (i_key - 3))
+                    player_text = str(key) + ': ' + str(melded_summary[key])
+                    if i_key == 11:
+                        player_text = 'Jacks: ' + str(melded_summary[key])
+                    if i_key == 12:
+                        player_text = 'Queens: ' + str(melded_summary[key])
+                    if i_key == 13:
+                        player_text = 'Kings: ' + str(melded_summary[key])
+                text_surface, text_rect = self.textObjects(player_text, UIC.Small_Text)
+                text_rect.center = ((bk_grd_rect[0] + 0.5 * players_sp_w), (bk_grd_rect[1] + ykey))
+                self.display.blit(text_surface, text_rect)
             # Move to next players rectangle and color:
             bk_grd_rect = (bk_grd_rect[0] + players_sp_w, bk_grd_rect[1], bk_grd_rect[2], bk_grd_rect[3])
             color_index = (color_index + 1) % len(UIC.table_grid_colors)
