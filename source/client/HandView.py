@@ -102,12 +102,7 @@ class HandView:
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.prepare_card_btn.isOver(pos):
                     user_input_cards = self.controller.automaticallyPrepareCards(self.gatherSelected())
-                    # The user_input_cards are a list of card/key option pairs ex. [[(0, None), [1,4,5,6,7,8,9,10,11,12,13]], [(2, 'Hearts'), [1,4,5,6,7,8,9,10,11,12,13]]]
-                    # TODO: for Sheri - need to get user input on what key to prepare user_input_cards (wild cards) in.
-                    # To prepare them when ready call self.controller.prepareCard(card, key)
-                    #
-                    # TODO: for Sheri - need to update display so that prepared cards are obvious...
-                    # will probably move them vertically and might change outline color.
+                    self.wildDesignation(user_input_cards)
                 if self.clear_prepared_cards_btn.isOver(pos):
                     self.controller.clearPreparedCards()
                 if self.play_prepared_cards_btn.isOver(pos):
@@ -237,3 +232,39 @@ class HandView:
             # confirmed is True, performing discard
             self.controller.discard(self.discards)
             return False # now that this is done, we don't have anything waiting on confirmation
+
+    def wildDesignation(self,wild_cards):
+        # Ask user for values to use for keys for prepared wild cards.
+        # The user_input_cards are a list of card/key option pairs ex. [[(0, None), [1,4,5,6,7,8,9,10,11,12,13]],
+        # [(2, 'Hearts'), [1,4,5,6,7,8,9,10,11,12,13]]]
+        # To prepare them when ready call self.controller.prepareCard(card, key)
+        wild_key = []
+        wildcount = len(wild_cards)
+        for idx in range(wildcount):
+            textnote = "Designate " + str(idx + 1) + " of " + str(wildcount) + "  wildcard(s)"
+            textnote = textnote + " by typing: A, 1-9, 0 (for ten), J, Q, or K. "
+            self.controller.note = textnote
+            print(wild_cards[idx][0])
+            this_wild = input(textnote)
+            print(this_wild)
+            if this_wild == 'A' or this_wild == 'a':
+                wild_key = 1
+            else:
+                if this_wild =='0':
+                    wild_key = 10
+                else:
+                    if this_wild == 'J' or this_wild == 'j':
+                        wild_key = 11
+                    else:
+                        if this_wild =='Q' or this_wild == 'q':
+                            wild_key == 12
+                        else:
+                            if this_wild =='K' or this_wild == 'k':
+                                wild_key == 13
+                            else:
+                                wild_key == int(this_wild)
+            print(this_wild,wild_key)
+            self.controller.prepareCard(wild_cards[idx][0], wild_key)
+            # todo for sheri write method reading input -- don't put in event loop, but use old fashioned
+            # todo input reading technique.  After input call
+        return
