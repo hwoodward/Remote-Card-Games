@@ -242,7 +242,8 @@ class HandView:
         wildcount = len(wild_cards)
         for idx in range(wildcount):
             textnote = "Designate " + str(idx + 1) + " of " + str(wildcount) + "  wildcard(s)"
-            textnote = textnote + " by typing: A, 1-9, 0 (for ten), J, Q, or K. "
+            textnote = textnote + " enter values by typing:  A, 1-9, 0 (for ten), J, Q, or K. "
+            # textnote = textnote + "(eligible values are: " + str(wild_cards[idx][1]) + ")"
             self.controller.note = textnote
             print(wild_cards[idx][0])
             this_wild = input(textnote)
@@ -264,7 +265,7 @@ class HandView:
                             else:
                                 wild_key == int(this_wild)
             print(this_wild,wild_key)
-            self.controller.prepareCard(wild_cards[idx][0], wild_key)
+            self.controller.prepareCard(wild_key, wild_cards[idx][0])
             # todo for sheri write method reading input -- don't put in event loop, but use old fashioned
             # todo input reading technique.  After input call
         return
