@@ -78,12 +78,14 @@ class HandView:
                 pygame.quit()
                 quit()
 
+            '''
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_9:
                     self.controller.draw()
                     UIC.debugflag = 0
                     # this is a leftover appendage from earlier phase.
                     # Keep for now so I have example of keydown.
+            '''
                     
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.draw_pile.isOver(pos):
@@ -240,32 +242,44 @@ class HandView:
         # To prepare them when ready call self.controller.prepareCard(card, key)
         wild_key = []
         wildcount = len(wild_cards)
+        idx = 0
+        # while idx < wildcount:
         for idx in range(wildcount):
             textnote = "Designate " + str(idx + 1) + " of " + str(wildcount) + "  wildcard(s)"
-            textnote = textnote + " enter values by typing:  A, 1-9, 0 (for ten), J, Q, or K. "
+            textnote = textnote + " enter values by typing:  a, 1-9, 0 (for ten), j, q, or k. "
+            acceptablekeys = wild_cards[idx][1]
+            print(acceptablekeys)
             # textnote = textnote + "(eligible values are: " + str(wild_cards[idx][1]) + ")"
             self.controller.note = textnote
             print(wild_cards[idx][0])
-            this_wild = input(textnote)
-            print(this_wild)
-            if this_wild == 'A' or this_wild == 'a':
-                wild_key = 1
-            else:
-                if this_wild =='0':
-                    wild_key = 10
-                else:
-                    if this_wild == 'J' or this_wild == 'j':
+            # this_wild = input(textnote)
+            # for event in pygame.event.get():  test if this is what's screwing stuff up.
+            # will this help?? while True: pygame.event.pump()
+            debugtest = True
+            if debugtest:
+                print('in wilddesignation loop')
+                if event.type == pygame.KEYDOWN:
+                    print(event.text)
+                    if event.key == pygame.K_a:
+                        wild_key = 1
+                    elif event.key == pygame.K_0:
+                        wild_key = 10
+                    elif event.key == pygame.K_j:
                         wild_key = 11
+                    elif event.key == pygame.K_q:
+                        wild_key = 12
+                    elif event.key == pygame.K_k:
+                        wild_key = 13
                     else:
-                        if this_wild =='Q' or this_wild == 'q':
-                            wild_key == 12
-                        else:
-                            if this_wild =='K' or this_wild == 'k':
-                                wild_key == 13
-                            else:
-                                wild_key == int(this_wild)
-            print(this_wild,wild_key)
-            self.controller.prepareCard(wild_key, wild_cards[idx][0])
+                        wild_key = int(event.text)
+                    if wild_key in acceptablekeys:
+                        print('got here')
+                    else:
+                        print('invalid key')
+                    print(this_wild,wild_key)
+                else:
+                    print("use keyboard to enter wild card value")
+                # self.controller.prepareCard(wild_key, wild_cards[idx][0])
             # todo for sheri write method reading input -- don't put in event loop, but use old fashioned
             # todo input reading technique.  After input call
         return
