@@ -26,7 +26,6 @@ Disp_Height = 600
 Hand_Row_Fraction = 0.3
 Hand_Col_Fraction = 1.0
 Table_Hand_Border = Disp_Height * (1 - Hand_Row_Fraction)
-Card_Spacing = 50
 
 # fonts
 pygame.font.init()
@@ -39,13 +38,16 @@ table_grid_colors = ((180,199,231),(255,242,204),(197,224,180),(255,197,216),(19
 
 # card display
 scale = 0.7
-outline_width = 6
+Card_Spacing = 70 * scale
+outline_width = 8 * scale
 no_outline_color = (-1, -1, -1)  # flags there is no outline.
-outline_colors = (no_outline_color, Yellow, Green, Bright_Green)
-# no_outline_color indicates clickable image (usually a card) not selected,
+outline_colors = (no_outline_color, Yellow, Green, Bright_Green, Bright_Blue, Bright_Blue)
+# Since cannot change prepared cards status with mouse, don't highlight those cards when mouse is over them...
+# no_outline_color indicates clickable image (usually a card) not selected or prepared.
 # Yellow indicates not selected, but mouse is over clickable image.
 # green elements indicate card is 'selected'
 # bright green indicates mouse is over card.
+# blue indicates card is prepared (for play).
 
 # load image of back of card, and scale it.
 Back_Img = pygame.image.load(os.path.join('client', 'cardimages', 'cardBack.png'))

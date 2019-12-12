@@ -23,7 +23,7 @@ class HandView:
         self.discards = []
         self.discard_confirm = False
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
-        #discard info
+        # discard info
         discard_info = self.controller.getDiscardInfo()
         self.top_discard = discard_info[0]  
         self.pickup_pile_sz = discard_info[1]
@@ -50,7 +50,7 @@ class HandView:
         # display draw pile and various action buttons
         loc_xy = (self.draw_pile.x, self.draw_pile.y)
         self.draw_pile.draw(self.display, loc_xy, self.draw_pile.outline_color)
-        #update discard info and redraw
+        # update discard info and redraw
         discard_info = self.controller.getDiscardInfo()
         self.top_discard = discard_info[0]
         self.pickup_pile_sz = discard_info[1]
@@ -98,8 +98,7 @@ class HandView:
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.mv_selected_btn.isOver(pos):
                     self.hand_info.sort(
-                        key=lambda wc: (wc.img_clickable.x + UIC.Disp_Width)
-                        if wc.selected else wc.img_clickable.x
+                        key=lambda wc: (wc.img_clickable.x + (wc.status * UIC.Disp_Width))
                         )
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.prepare_card_btn.isOver(pos):
@@ -107,18 +106,27 @@ class HandView:
                     self.wildDesignation(user_input_cards)
                 if self.clear_prepared_cards_btn.isOver(pos):
                     self.controller.clearPreparedCards()
+                    for element in self.hand_info:
+                        if element.status == 2:
+                            element.status = 0
+                            element.img_clickable.changeOutline(0)
                 if self.play_prepared_cards_btn.isOver(pos):
                     self.controller.play()
                 if self.discard_action_btn.isOver(pos):
-                    self.discard_confirm = self.discardConfirmation(self.discard_confirm, self.gatherSelected())
+                    card_list = []
+                    for element in self.gatherSelected():
+                        card_list.append(element.card)
+                    self.discard_confirm = self.discardConfirmation(self.discard_confirm, card_list)
                 else:
                     for element in self.hand_info:
+                        # cannot select prepared cards, so not included in logic below.
                         if element.img_clickable.isOver(pos):
-                            element.selected = not element.selected
-                            if element.selected:
-                                element.img_clickable.changeOutline(2)
-                            else:
+                            if element.status == 1:
+                                element.status = 0
                                 element.img_clickable.changeOutline(0)
+                            else:
+                                element.status = 1
+                                element.img_clickable.changeOutline(2)
 
             if event.type == pygame.MOUSEMOTION:
                 if self.draw_pile.isOver(pos):
@@ -158,7 +166,7 @@ class HandView:
                         color_index = element.img_clickable.outline_index
                         if element.img_clickable.isOver(pos):
                             # Brighten colors that mouse is over.
-                            # Odd colors are bright, even show selected status.
+                            # Odd colors are bright, even show status.
                             if (color_index % 2) == 0:
                                 color_index = element.img_clickable.outline_index + 1
                                 element.img_clickable.changeOutline(color_index)
@@ -217,8 +225,8 @@ class HandView:
     def gatherSelected(self):
         self.selected_list = []
         for element in self.hand_info:
-            if element.selected:
-                self.selected_list.append(element.card)
+            if element.status == 1:
+                self.selected_list.append(element)
         return self.selected_list
 
     # Confirm a user is sure about a discard and then perform it once confirmed

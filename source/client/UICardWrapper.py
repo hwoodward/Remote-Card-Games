@@ -11,7 +11,7 @@ class UICardWrapper:
         self.card = this_card
         self.img = UICardWrapper.getImage(self.card)
         self.img_clickable = ClickImg(self.img, loc_xy[0], loc_xy[1], self.img.get_width(), self.img.get_height(), 0)
-        self.selected = False
+        self.status = 0     # 0 = not selected or prepared, 1 = selected, 2 = prepared (ready for play)
         self.key = UICardWrapper.sortKey(this_card)
 
     @staticmethod
