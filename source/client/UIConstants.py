@@ -30,6 +30,9 @@ Table_Hand_Border = Disp_Height * (1 - Hand_Row_Fraction)
 # fonts
 pygame.font.init()
 Small_Text = pygame.font.Font("freesansbold.ttf", 14)
+Small_Text_Feed = int(14* 1.3)
+Medium_Text = pygame.font.Font("freesansbold.ttf", 16)
+Medium_Text_Feed = int(16* 1.3)
 Big_Font_Sz = 20
 Big_Text = pygame.font.Font("freesansbold.ttf", Big_Font_Sz)
 Text_Feed = int(Big_Font_Sz * 1.5)

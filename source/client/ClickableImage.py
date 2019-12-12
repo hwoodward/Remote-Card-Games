@@ -19,12 +19,8 @@ class ClickableImage:
         self.outline_color = UIC.outline_colors[outline_index]
 
     def draw(self, display, loc_xy, outline_choice):
-        """ Call this method to draw the ClickableImage on the screen,
-        
-        Future debug -- do I really need loc_xy in this?  Wrappedcard has a loc_xy already!
-        Could replace this with new routine called clickableCard that uses fact that Image
-        and location from same object.
-        """
+        # Call this method to draw the ClickableImage on the screen
+
         if not outline_choice[0] == -1:
             pygame.draw.rect(display, outline_choice,
                              (self.x - UIC.outline_width, self.y - UIC.outline_width,
