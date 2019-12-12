@@ -280,6 +280,6 @@ class HandView:
                 else:
                     print("use keyboard to enter wild card value")
                 # self.controller.prepareCard(wild_key, wild_cards[idx][0])
-            # todo for sheri write method reading input -- don't put in event loop, but use old fashioned
-            # todo input reading technique.  After input call
+            # TODO: for sheri write method reading input -- don't put in event loop, but use old fashioned
+            # TODO: input reading technique.  After input call
         return
