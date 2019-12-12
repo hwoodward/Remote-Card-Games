@@ -102,8 +102,31 @@ class HandView:
                         )
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.prepare_card_btn.isOver(pos):
-                    user_input_cards = self.controller.automaticallyPrepareCards(self.gatherSelected())
-                    self.wildDesignation(user_input_cards)
+                    self.already_prepared_cards = self.controller.getPreparedCards()
+                    self.wrapped_cards_to_prep = self.gatherSelected()
+                    user_input_wrappedcards = self.controller.automaticallyPrepareCards(self.wrapped_cards_to_prep)
+                    ''' replaced the lines below with ones above.
+                    following lines, and altered controller so that conversion from 
+                    card to wrapped card is done in controller.automaticallyPrepareCards 
+                    (that way only go through list returned by gatherSelected once)
+                    self.cards_to_prep = []
+                    for element in self.wrapped_cards_to_prep:
+                        self.cards_to_prep.append(element.card)
+                    user_input_cards = self.controller.automaticallyPrepareCards(self.cards_to_prep)
+                    if (len(user_input_cards)>0):
+                        print("We still need to handle wild cards.")
+                    '''
+                    self.wildDesignation(user_input_wrappedcards)
+                    # newly_prepped_cards = all prepared cards minus already_prepared_cards
+                    self.newly_prepped_cards = self.controller.getPreparedCards()
+                    for element in self.already_prepared_cards:
+                        self.newly_prepped_cards.remove(element)
+                    for wrappedcard in self.wrapped_cards_to_prep:
+                        if wrappedcard.card in self.newly_prepped_cards:
+                            self.newly_prepped_cards.remove(wrappedcard.card)
+                            wrappedcard.status = 2
+                            wrappedcard.img_clickable.changeOutline(4)
+
                 if self.clear_prepared_cards_btn.isOver(pos):
                     self.controller.clearPreparedCards()
                     for element in self.hand_info:
