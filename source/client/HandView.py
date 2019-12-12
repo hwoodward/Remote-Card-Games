@@ -105,17 +105,6 @@ class HandView:
                     self.already_prepared_cards = self.controller.getPreparedCards()
                     self.wrapped_cards_to_prep = self.gatherSelected()
                     user_input_wrappedcards = self.controller.automaticallyPrepareCards(self.wrapped_cards_to_prep)
-                    ''' replaced the lines below with ones above.
-                    following lines, and altered controller so that conversion from 
-                    card to wrapped card is done in controller.automaticallyPrepareCards 
-                    (that way only go through list returned by gatherSelected once)
-                    self.cards_to_prep = []
-                    for element in self.wrapped_cards_to_prep:
-                        self.cards_to_prep.append(element.card)
-                    user_input_cards = self.controller.automaticallyPrepareCards(self.cards_to_prep)
-                    if (len(user_input_cards)>0):
-                        print("We still need to handle wild cards.")
-                    '''
                     self.wildDesignation(user_input_wrappedcards)
                     # newly_prepped_cards = all prepared cards minus already_prepared_cards
                     self.newly_prepped_cards = self.controller.getPreparedCards()
@@ -266,7 +255,10 @@ class HandView:
             self.controller.discard(self.discards)
             return False # now that this is done, we don't have anything waiting on confirmation
 
-    def wildDesignation(self,wild_cards):
+    def wildDesignation(self, wild_cards):
+        # TODO: crashes if prepare a wild card at start of game before drawing. << FIX
+        # TODO: notifications not printing properly (should print on self.update() )
+        # TODO: Debug call to self.controller.prepareCard
         # Ask user for values to use for keys for prepared wild cards.
         # The user_input_cards are a list of card/key option pairs ex. [[(0, None), [1,4,5,6,7,8,9,10,11,12,13]],
         # [(2, 'Hearts'), [1,4,5,6,7,8,9,10,11,12,13]]]
@@ -277,40 +269,54 @@ class HandView:
         # while idx < wildcount:
         for idx in range(wildcount):
             textnote = "Designate " + str(idx + 1) + " of " + str(wildcount) + "  wildcard(s)"
-            textnote = textnote + " enter values by typing:  a, 1-9, 0 (for ten), j, q, or k. "
+            textnote = textnote + " enter values by typing:  1-9, 0 (for ten), j, q, k or a. "
             acceptablekeys = wild_cards[idx][1]
+            this_wild = wild_cards[idx][0]
+            print(textnote)
             print(acceptablekeys)
             # textnote = textnote + "(eligible values are: " + str(wild_cards[idx][1]) + ")"
             self.controller.note = textnote
-            print(wild_cards[idx][0])
-            # this_wild = input(textnote)
-            # for event in pygame.event.get():  test if this is what's screwing stuff up.
-            # will this help?? while True: pygame.event.pump()
-            debugtest = True
-            if debugtest:
-                print('in wilddesignation loop')
-                if event.type == pygame.KEYDOWN:
-                    print(event.text)
-                    if event.key == pygame.K_a:
-                        wild_key = 1
-                    elif event.key == pygame.K_0:
-                        wild_key = 10
-                    elif event.key == pygame.K_j:
-                        wild_key = 11
-                    elif event.key == pygame.K_q:
-                        wild_key = 12
-                    elif event.key == pygame.K_k:
-                        wild_key = 13
-                    else:
-                        wild_key = int(event.text)
-                    if wild_key in acceptablekeys:
-                        print('got here')
-                    else:
-                        print('invalid key')
-                    print(this_wild,wild_key)
-                else:
-                    print("use keyboard to enter wild card value")
-                # self.controller.prepareCard(wild_key, wild_cards[idx][0])
-            # TODO: for sheri write method reading input -- don't put in event loop, but use old fashioned
-            # TODO: input reading technique.  After input call
-        return
+            self.update()
+            print(this_wild)
+            wild_card_loop = True
+            while wild_card_loop:
+                # game ignores other events until wild cards have been given keys.
+                for event in pygame.event.get():
+                    # print('in wilddesignation loop')
+                    self.update()
+                    if event.type == pygame.QUIT:
+                        # The window crashed, we should handle this
+                        print("pygame crashed in wildDesignation, AAAHHH")
+                        pygame.quit()
+                        quit()
+
+                    if event.type == pygame.KEYDOWN:
+                        print(event.unicode)
+                        if event.key == pygame.K_a:
+                            wild_key = 1
+                        elif event.key == pygame.K_0:
+                            wild_key = 10
+                        elif event.key == pygame.K_j:
+                            wild_key = 11
+                        elif event.key == pygame.K_q:
+                            wild_key = 12
+                        elif event.key == pygame.K_k:
+                            wild_key = 13
+                        elif event.unicode in ['0','1','2','3','4','5','6','7','8','9','0']:
+                            wild_key = int(event.unicode)
+                        self.controller.note = 'wild_key = ' + str(wild_key)
+                        self.update()
+                        if wild_key in acceptablekeys:
+                            print('got here')
+                            self.controller.note = str(this_wild) + ' will be a ' + str(wild_key)
+                            self.update()
+                            # self.controller.prepareCard(this_wild, wild_key) < error -- line 110 unhashable type Card
+                            wild_card_loop = False
+                        else:
+                            print('invalid key')
+                            self.controller.note = 'invalid key:' + textnote
+                            self.update()
+                        print(this_wild,wild_key)
+                    # else:
+                    # print("use keyboard to enter wild card value")
+                    # self.controller.prepareCard(wild_key, wild_cards[idx][0])
