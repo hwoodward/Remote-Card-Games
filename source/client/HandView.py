@@ -2,6 +2,7 @@ import pygame
 import textwrap
 import client.Button as Btn
 from client.ClickableImage import ClickableImage as ClickImg
+from client.CreateDisplay import CreateDisplay
 from client.UICardWrapper import UICardWrapper
 import client.UIConstants as UIC
 from common.Card import Card
@@ -22,6 +23,9 @@ class HandView:
         self.prepared_cards = []     # will contain list of prepared cards from controller
         self.discards = []
         self.discard_confirm = False
+        # self.wilds_designated = True # All prepared wilds have been designated.
+        self.num_wilds = 0
+        self.wild_cards = []
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
         # discard info
         discard_info = self.controller.getDiscardInfo()
@@ -67,7 +71,10 @@ class HandView:
         self.discard_action_btn.draw(self.display, self.discard_action_btn.outline_color)
 
     def nextEvent(self):
-        """This submits the next user input to the controller"""
+        """This submits the next user input to the controller,
+
+        key strokes don't do anything unless designating values for prepared wild cards,
+        at which time the mouse is ignored unless you want to clear the prepared cards."""
 
         for event in pygame.event.get():
             pos = pygame.mouse.get_pos()
@@ -78,34 +85,27 @@ class HandView:
                 pygame.quit()
                 quit()
 
-            '''
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_9:
-                    self.controller.draw()
-                    UIC.debugflag = 0
-                    # this is a leftover appendage from earlier phase.
-                    # Keep for now so I have example of keydown.
-            '''
-                    
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if self.draw_pile.isOver(pos):
-                    self.controller.draw()
                 if self.pickup_pile_sz > 0:
                     if self.pickup_pile.isOver(pos):
                         self.controller.pickUpPile()
-                if self.sort_btn.isOver(pos):
+                if self.draw_pile.isOver(pos):
+                    self.controller.draw()
+                elif self.sort_btn.isOver(pos):
                     self.hand_info.sort(key=lambda wc: wc.key)
                     self.hand_info = self.refreshXY(self.hand_info)
-                if self.mv_selected_btn.isOver(pos):
+                elif self.mv_selected_btn.isOver(pos):
                     self.hand_info.sort(
                         key=lambda wc: (wc.img_clickable.x + (wc.status * UIC.Disp_Width))
                         )
                     self.hand_info = self.refreshXY(self.hand_info)
-                if self.prepare_card_btn.isOver(pos):
+                elif self.prepare_card_btn.isOver(pos):
                     self.already_prepared_cards = self.controller.getPreparedCards()
                     self.wrapped_cards_to_prep = self.gatherSelected()
-                    user_input_wrappedcards = self.controller.automaticallyPrepareCards(self.wrapped_cards_to_prep)
-                    self.wildDesignation(user_input_wrappedcards)
+                    self.wild_cards = self.controller.automaticallyPrepareCards(self.wrapped_cards_to_prep)
+                    print(self.wild_cards)
+                    # ***************
+                    self.num_wilds = len(self.wild_cards)
                     # newly_prepped_cards = all prepared cards minus already_prepared_cards
                     self.newly_prepped_cards = self.controller.getPreparedCards()
                     for element in self.already_prepared_cards:
@@ -115,16 +115,16 @@ class HandView:
                             self.newly_prepped_cards.remove(wrappedcard.card)
                             wrappedcard.status = 2
                             wrappedcard.img_clickable.changeOutline(4)
-
-                if self.clear_prepared_cards_btn.isOver(pos):
+                            #TODO: do this for wild cards, too. < won't work until other todo's completed.
+                elif self.play_prepared_cards_btn.isOver(pos):
+                    self.controller.play()
+                elif self.clear_prepared_cards_btn.isOver(pos):
                     self.controller.clearPreparedCards()
                     for element in self.hand_info:
                         if element.status == 2:
                             element.status = 0
                             element.img_clickable.changeOutline(0)
-                if self.play_prepared_cards_btn.isOver(pos):
-                    self.controller.play()
-                if self.discard_action_btn.isOver(pos):
+                elif self.discard_action_btn.isOver(pos):
                     card_list = []
                     for element in self.gatherSelected():
                         card_list.append(element.card)
@@ -140,7 +140,7 @@ class HandView:
                                 element.status = 1
                                 element.img_clickable.changeOutline(2)
 
-            if event.type == pygame.MOUSEMOTION:
+            elif event.type == pygame.MOUSEMOTION:
                 if self.draw_pile.isOver(pos):
                     self.draw_pile.changeOutline(1)
                 else:
@@ -187,6 +187,57 @@ class HandView:
                             if (color_index % 2) == 1:
                                 color_index = color_index - 1
                                 element.img_clickable.changeOutline(color_index)
+            # else:
+            # This next section has player enter desired values for wild cards.
+            elif event.type == pygame.KEYDOWN and self.num_wilds > 0:
+                print('at point B in program')
+                # TODO: crashes if prepare a wild card at start of game before drawing. << FIX
+                # TODO: notifications not printing properly (should print on self.update() )
+                # TODO: Debug call to self.controller.prepareCard  <<< MUST DO THIS FIRST
+                # Ask user for values to use for keys for prepared wild cards.
+                # The user_input_cards are a list of card/key option pairs ex. [[(0, None), [1,4,5,6,7,8,9,10,11,12,13]],
+                # [(2, 'Hearts'), [1,4,5,6,7,8,9,10,11,12,13]]]
+                # To prepare them when ready call self.controller.prepareCard(card, key)
+                textnote = "Designate one of " + str(self.num_wilds) + "  wildcard(s)"
+                textnote = textnote + " enter value by typing:  1-9, 0 (for ten), j, q, k or a. "
+                acceptable_keys = self.wild_cards[0][1]
+                self.controller.note = textnote
+                this_wild = self.wild_cards[0][0]
+                print(textnote)
+                print(acceptable_keys)
+                print('at point a in code')
+                print(this_wild)
+                print(event.unicode)
+                if event.key == pygame.K_a:
+                    wild_key = 1
+                elif event.key == pygame.K_0:
+                    wild_key = 10
+                elif event.key == pygame.K_j:
+                    wild_key = 11
+                elif event.key == pygame.K_q:
+                    wild_key = 12
+                elif event.key == pygame.K_k:
+                    wild_key = 13
+                elif event.unicode in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0']:
+                    wild_key = int(event.unicode)
+                    self.controller.note = "This wild will be included with set of " + str(wild_key) +'s'
+                    self.update()
+                else:
+                    print('invalid key')
+                    self.controller.note = 'invalid key:' + textnote
+                    self.update()
+                    wild_key = 666
+                if wild_key in acceptable_keys:
+                    print('got here -- YAY ')
+                    self.controller.note = str(this_wild) + ' will be a ' + str(wild_key)
+                    #TODO: fix  self.wild_cards.remove(this_wild)
+                    # it doesn't work because wild_cards is not a simple list.
+                    # Need to get next command working, then can either update prepared list or figure out how
+                    # to remove this_wild from entries in wild_cards.
+                    # self.controller.prepareCard(this_wild, wild_key) < error -- line 110 unhashable type Card
+                    self.num_wilds = len(self.wild_cards)
+                    print(self.num_wilds)
+                print(this_wild, wild_key)
 
     def wrapHand(self, updated_hand, wrapped_hand):
         """Associate each card in updated_hand with a UICardWrapper
@@ -254,69 +305,3 @@ class HandView:
             # confirmed is True, performing discard
             self.controller.discard(self.discards)
             return False # now that this is done, we don't have anything waiting on confirmation
-
-    def wildDesignation(self, wild_cards):
-        # TODO: crashes if prepare a wild card at start of game before drawing. << FIX
-        # TODO: notifications not printing properly (should print on self.update() )
-        # TODO: Debug call to self.controller.prepareCard
-        # Ask user for values to use for keys for prepared wild cards.
-        # The user_input_cards are a list of card/key option pairs ex. [[(0, None), [1,4,5,6,7,8,9,10,11,12,13]],
-        # [(2, 'Hearts'), [1,4,5,6,7,8,9,10,11,12,13]]]
-        # To prepare them when ready call self.controller.prepareCard(card, key)
-        wild_key = []
-        wildcount = len(wild_cards)
-        idx = 0
-        # while idx < wildcount:
-        for idx in range(wildcount):
-            textnote = "Designate " + str(idx + 1) + " of " + str(wildcount) + "  wildcard(s)"
-            textnote = textnote + " enter values by typing:  1-9, 0 (for ten), j, q, k or a. "
-            acceptablekeys = wild_cards[idx][1]
-            this_wild = wild_cards[idx][0]
-            print(textnote)
-            print(acceptablekeys)
-            # textnote = textnote + "(eligible values are: " + str(wild_cards[idx][1]) + ")"
-            self.controller.note = textnote
-            self.update()
-            print(this_wild)
-            wild_card_loop = True
-            while wild_card_loop:
-                # game ignores other events until wild cards have been given keys.
-                for event in pygame.event.get():
-                    # print('in wilddesignation loop')
-                    self.update()
-                    if event.type == pygame.QUIT:
-                        # The window crashed, we should handle this
-                        print("pygame crashed in wildDesignation, AAAHHH")
-                        pygame.quit()
-                        quit()
-
-                    if event.type == pygame.KEYDOWN:
-                        print(event.unicode)
-                        if event.key == pygame.K_a:
-                            wild_key = 1
-                        elif event.key == pygame.K_0:
-                            wild_key = 10
-                        elif event.key == pygame.K_j:
-                            wild_key = 11
-                        elif event.key == pygame.K_q:
-                            wild_key = 12
-                        elif event.key == pygame.K_k:
-                            wild_key = 13
-                        elif event.unicode in ['0','1','2','3','4','5','6','7','8','9','0']:
-                            wild_key = int(event.unicode)
-                        self.controller.note = 'wild_key = ' + str(wild_key)
-                        self.update()
-                        if wild_key in acceptablekeys:
-                            print('got here')
-                            self.controller.note = str(this_wild) + ' will be a ' + str(wild_key)
-                            self.update()
-                            # self.controller.prepareCard(this_wild, wild_key) < error -- line 110 unhashable type Card
-                            wild_card_loop = False
-                        else:
-                            print('invalid key')
-                            self.controller.note = 'invalid key:' + textnote
-                            self.update()
-                        print(this_wild,wild_key)
-                    # else:
-                    # print("use keyboard to enter wild card value")
-                    # self.controller.prepareCard(wild_key, wild_cards[idx][0])
