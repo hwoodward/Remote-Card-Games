@@ -96,32 +96,54 @@ class HandView:
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.mv_selected_btn.isOver(pos):
                     self.hand_info.sort(
-                        key=lambda wc: (wc.img_clickable.x + UIC.Disp_Width)
-                        if wc.selected else wc.img_clickable.x
+                        key=lambda wc: (wc.img_clickable.x + (wc.status * UIC.Disp_Width))
                         )
                     self.hand_info = self.refreshXY(self.hand_info)
                 if self.prepare_card_btn.isOver(pos):
-                    user_input_cards = self.controller.automaticallyPrepareCards(self.gatherSelected())
+                    self.already_prepared_cards = self.controller.getPreparedCards()
+                    self.wrapped_cards_to_prep = self.gatherSelected()
+                    self.cards_to_prep = []
+                    for element in self.wrapped_cards_to_prep:
+                        self.cards_to_prep.append(element.card)
+                    user_input_cards = self.controller.automaticallyPrepareCards(self.cards_to_prep)
+                    if (len(user_input_cards)>0):
+                        print("We still need to handle wild cards.")
                     # The user_input_cards are a list of card/key option pairs ex. [[(0, None), [1,4,5,6,7,8,9,10,11,12,13]], [(2, 'Hearts'), [1,4,5,6,7,8,9,10,11,12,13]]]
                     # TODO: for Sheri - need to get user input on what key to prepare user_input_cards (wild cards) in.
                     # To prepare them when ready call self.controller.prepareCard(card, key)
                     #
-                    # TODO: for Sheri - need to update display so that prepared cards are obvious...
-                    # will probably move them vertically and might change outline color.
+                    # newly_prepped_cards = all prepared cards minus already_prepared_cards
+                    self.newly_prepped_cards = self.controller.getPreparedCards()
+                    for element in self.already_prepared_cards:
+                        self.newly_prepped_cards.remove(element)
+                    for wrappedcard in self.wrapped_cards_to_prep:
+                        if wrappedcard.card in self.newly_prepped_cards:
+                            self.newly_prepped_cards.remove(wrappedcard.card)
+                            wrappedcard.status = 2
+                            wrappedcard.img_clickable.changeOutline(4)
                 if self.clear_prepared_cards_btn.isOver(pos):
                     self.controller.clearPreparedCards()
+                    for element in self.hand_info:
+                        if element.status == 2:
+                            element.status = 0
+                            element.img_clickable.changeOutline(0)
                 if self.play_prepared_cards_btn.isOver(pos):
                     self.controller.play()
                 if self.discard_action_btn.isOver(pos):
-                    self.discard_confirm = self.discardConfirmation(self.discard_confirm, self.gatherSelected())
+                    card_list = []
+                    for element in self.gatherSelected():
+                        card_list.append(element.card)
+                    self.discard_confirm = self.discardConfirmation(self.discard_confirm, card_list)
                 else:
                     for element in self.hand_info:
+                        # cannot select prepared cards, so not included in logic below.
                         if element.img_clickable.isOver(pos):
-                            element.selected = not element.selected
-                            if element.selected:
-                                element.img_clickable.changeOutline(2)
-                            else:
+                            if element.status == 1:
+                                element.status = 0
                                 element.img_clickable.changeOutline(0)
+                            else:
+                                element.status = 1
+                                element.img_clickable.changeOutline(2)
 
             if event.type == pygame.MOUSEMOTION:
                 if self.draw_pile.isOver(pos):
@@ -161,7 +183,7 @@ class HandView:
                         color_index = element.img_clickable.outline_index
                         if element.img_clickable.isOver(pos):
                             # Brighten colors that mouse is over.
-                            # Odd colors are bright, even show selected status.
+                            # Odd colors are bright, even show status.
                             if (color_index % 2) == 0:
                                 color_index = element.img_clickable.outline_index + 1
                                 element.img_clickable.changeOutline(color_index)
@@ -220,8 +242,8 @@ class HandView:
     def gatherSelected(self):
         self.selected_list = []
         for element in self.hand_info:
-            if element.selected:
-                self.selected_list.append(element.card)
+            if element.status == 1:
+                self.selected_list.append(element)
         return self.selected_list
 
     # Confirm a user is sure about a discard and then perform it once confirmed
