@@ -66,8 +66,8 @@ class TableView(ConnectionListener):
                     if key == 13:
                         player_text = 'Kings: ' + str(melded_summary[key])
                 text_surface, text_rect = self.textObjects(player_text, UIC.Small_Text, UIC.Black)
-                # todo: Sheri -- put in check on wilds, and make font red if clean and black if dirty.
-                # todo: Sheri -- denote canistas (additional text if melded summary shows >6 cards)
+                #TODO: Sheri -- put in check on wilds, and make font red if clean and black if dirty.
+                #TODO: Sheri -- denote canistas (additional text if melded summary shows >6 cards)
                 text_rect.center = ((bk_grd_rect[0] + 0.5 * players_sp_w), (bk_grd_rect[1] + ykey))
                 self.display.blit(text_surface, text_rect)
             # Move to next players rectangle and color:
@@ -75,7 +75,7 @@ class TableView(ConnectionListener):
             color_index = (color_index + 1) % len(UIC.table_grid_colors)
 
     def compressSets(self, v_cards):
-        """ Don't have space to display every card. Summarize sets here. """
+        """ Don't have space to display every card. Summarize sets of cards here. """
 
         self.compressed_info = {}
         for idx in range(len(v_cards)):
@@ -109,7 +109,7 @@ class TableView(ConnectionListener):
 
     def Network_publicInfo(self, data):
 
-        #Todo update example below.  False should be a play state, not True/False
+        #TODO update example below.  False should be a play state, not True/False
         '''
         example of data (json structure) with two players, 'hhh' and 'sss' : 
         {'action': 'publicInfo', 'player_names': ['hhh', 'sss'], 'visible_cards': [{}, {}], 'hand_status': [[False, 12, 1], [True, 14, 1]]}
