@@ -77,6 +77,8 @@ class HandView:
         at which time the mouse is ignored unless you want to clear the prepared cards."""
 
         for event in pygame.event.get():
+            if self.num_wilds > 0:
+                self.controller.note = 'You need to designate your prepared wild cards.'
             pos = pygame.mouse.get_pos()
 
             if event.type == pygame.QUIT:
@@ -103,8 +105,6 @@ class HandView:
                     self.already_prepared_cards = self.controller.getPreparedCards()
                     self.wrapped_cards_to_prep = self.gatherSelected()
                     self.wild_cards = self.controller.automaticallyPrepareCards(self.wrapped_cards_to_prep)
-                    print(self.wild_cards)
-                    # ***************
                     self.num_wilds = len(self.wild_cards)
                     # newly_prepped_cards = all prepared cards minus already_prepared_cards
                     self.newly_prepped_cards = self.controller.getPreparedCards()
@@ -115,7 +115,6 @@ class HandView:
                             self.newly_prepped_cards.remove(wrappedcard.card)
                             wrappedcard.status = 2
                             wrappedcard.img_clickable.changeOutline(4)
-                            #TODO: do this for wild cards, too. < won't work until other todo's completed.
                 elif self.play_prepared_cards_btn.isOver(pos):
                     self.controller.play()
                 elif self.clear_prepared_cards_btn.isOver(pos):
@@ -190,24 +189,11 @@ class HandView:
             # else:
             # This next section has player enter desired values for wild cards.
             elif event.type == pygame.KEYDOWN and self.num_wilds > 0:
-                print('at point B in program')
-                # TODO: crashes if prepare a wild card at start of game before drawing. << FIX
-                # TODO: notifications not printing properly (should print on self.update() )
-                # TODO: Debug call to self.controller.prepareCard  <<< MUST DO THIS FIRST
-                # Ask user for values to use for keys for prepared wild cards.
-                # The user_input_cards are a list of card/key option pairs ex. [[(0, None), [1,4,5,6,7,8,9,10,11,12,13]],
-                # [(2, 'Hearts'), [1,4,5,6,7,8,9,10,11,12,13]]]
-                # To prepare them when ready call self.controller.prepareCard(card, key)
                 textnote = "Designate one of " + str(self.num_wilds) + "  wildcard(s)"
                 textnote = textnote + " enter value by typing:  1-9, 0 (for ten), j, q, k or a. "
                 acceptable_keys = self.wild_cards[0][1]
                 self.controller.note = textnote
                 this_wild = self.wild_cards[0][0]
-                print(textnote)
-                print(acceptable_keys)
-                print('at point a in code')
-                print(this_wild)
-                print(event.unicode)
                 if event.key == pygame.K_a:
                     wild_key = 1
                 elif event.key == pygame.K_0:
@@ -221,23 +207,21 @@ class HandView:
                 elif event.unicode in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0']:
                     wild_key = int(event.unicode)
                     self.controller.note = "This wild will be included with set of " + str(wild_key) +'s'
-                    self.update()
                 else:
-                    print('invalid key')
                     self.controller.note = 'invalid key:' + textnote
-                    self.update()
                     wild_key = 666
                 if wild_key in acceptable_keys:
-                    print('got here -- YAY ')
                     self.controller.note = str(this_wild) + ' will be a ' + str(wild_key)
-                    #TODO: fix  self.wild_cards.remove(this_wild)
-                    # it doesn't work because wild_cards is not a simple list.
-                    # Need to get next command working, then can either update prepared list or figure out how
-                    # to remove this_wild from entries in wild_cards.
-                    # self.controller.prepareCard(this_wild, wild_key) < error -- line 110 unhashable type Card
+                    icount = 0
+                    for wrappedcard in self.wrapped_cards_to_prep:
+                        if wrappedcard.card == this_wild and icount == 0:
+                            icount = 1
+                            wrappedcard.status = 2
+                            wrappedcard.img_clickable.changeOutline(4)
+                    self.controller.prepareCard(wild_key, this_wild)
+                    if self.num_wilds > 0:
+                        self.wild_cards = self.wild_cards[1:]
                     self.num_wilds = len(self.wild_cards)
-                    print(self.num_wilds)
-                print(this_wild, wild_key)
 
     def wrapHand(self, updated_hand, wrapped_hand):
         """Associate each card in updated_hand with a UICardWrapper
