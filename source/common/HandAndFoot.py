@@ -152,7 +152,7 @@ def cardValue(card):
 def goneOut(played_cards):
     """Returns true if the played set of cards meets the requirements to go out
     
-    This DOES NOT confim that a player has no cards, that is the controllers job
+    This DOES NOT confirm that a player has no cards, that is the controllers job
     Needs to have 1 clean and 1 dirty caniesta (set of 7)
     """
     clean = False

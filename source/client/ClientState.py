@@ -31,6 +31,20 @@ class ClientState():
         self.newCards(hands[0])
         self.hand_list = hands[1:]
         
+    def nextHand(self):
+        """Transition to the next hand in the hand_list"""
+        if len(self.hand_cards) > 0:
+            raise Exception("You can't pick up your foot while you have cards left in your hand.")
+        self.hand_cards = self.hand_list.pop()
+        
+    def checkGoneOut(self):
+        """Check if a player has gone out"""
+        if len(self.hand_cards) > 0:
+            return False
+        if len(self.hand_list) > 0:
+            return False
+        return self.rules.goneOut(self.played_cards)
+
     def newCards(self, card_list):
         """Update the cards in hand"""
         for card in card_list:

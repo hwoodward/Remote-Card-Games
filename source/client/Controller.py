@@ -1,6 +1,7 @@
 from common.Card import Card
 
 from PodSixNet.Connection import connection, ConnectionListener
+from builtins import False
 
 Turn_Phases = ['inactive', 'draw', 'forcedAction', 'play']
 
@@ -34,13 +35,13 @@ class Controller(ConnectionListener):
             return
         try:
             self._state.discardCards(discard_list)
+            connection.Send({"action": "discard", "cards": [c.serialize() for c in discard_list]})
+            self.checkForEmptyHand()
+            self._state.turn_phase = Turn_Phases[0] #end turn after discard
+            self.note = "Discard completed. Your turn is over."
+            self.sendPublicInfo()
         except Exception as err:
             self.note = "{0}".format(err)
-            return
-        connection.Send({"action": "discard", "cards": [c.serialize() for c in discard_list]})
-        self._state.turn_phase = Turn_Phases[0] #end turn after discard
-        self.note = "Discard completed. Your turn is over."
-        self.sendPublicInfo()
 
     def draw(self):
         """Request a draw from the server"""
@@ -85,7 +86,6 @@ class Controller(ConnectionListener):
         if self._state.turn_phase == Turn_Phases[2]:
             self.note = "You can't change prepared cards while waiting to finish picking up the pile"
             return
-
         user_input_cards = []
         for card in selected_cards:
             key_opts = []
@@ -125,12 +125,28 @@ class Controller(ConnectionListener):
         try:
             self._state.playCards(self.prepared_cards)
             self.clearPreparedCards()
+            self.checkForEmptyHand()
+            self.sendPublicInfo()
         except Exception as err:
             self.note = "{0}".format(err)
             return
-        #TODO: Check for turn transition due to out or zaephod
-        self.sendPublicInfo()
 
+    def checkForEmptyHand(self):
+        """Checks for and handles emptying your hand"""
+        if len(self._state.hand_cards) > 0:
+            return False
+        elif len(self._state.hand_list) > 0:
+            self._state.nextHand()
+            return False
+        elif self._state.checkGoneOut():
+            self.note = "You went out to end the round!"
+            #TODO: handle going out and round ending!
+            return True
+        else:
+            self.note = "You have no cards left but aren't out, you have gone zaphod."
+            self._state.turn_phase = Turn_Phases[0]
+            return True
+        
     def getName(self):
         """return player name for labeling"""
         return self._state.name
