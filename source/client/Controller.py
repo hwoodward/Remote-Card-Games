@@ -1,7 +1,6 @@
 from common.Card import Card
 
 from PodSixNet.Connection import connection, ConnectionListener
-from builtins import False
 
 Turn_Phases = ['inactive', 'draw', 'forcedAction', 'play']
 
@@ -146,6 +145,7 @@ class Controller(ConnectionListener):
         else:
             self.note = "You have no cards left but aren't out, you have gone zaphod."
             self._state.turn_phase = Turn_Phases[0]
+            connection.Send({"action": "discard", "cards": []}) #Need to let server know your turn is over
             return True
         
     def getName(self):
