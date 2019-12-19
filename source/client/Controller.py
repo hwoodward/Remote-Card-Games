@@ -87,7 +87,8 @@ class Controller(ConnectionListener):
             return
 
         user_input_cards = []
-        for card in selected_cards:
+        for wrappedcard in selected_cards:
+            card = wrappedcard.card
             key_opts = []
             try:
                 key_opts = self._state.getValidKeys(card)
