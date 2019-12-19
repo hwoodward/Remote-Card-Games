@@ -141,7 +141,6 @@ class Controller(ConnectionListener):
 
     def getPreparedCards(self):
         """lets the UI fetch prepared cards"""
-        #TODO: Sheri - should this information be returned in getHand or is a separate method best?
         prepared_list = []
         for card_group in self.prepared_cards.values():
             prepared_list.extend(card_group)
