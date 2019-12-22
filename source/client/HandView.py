@@ -36,9 +36,9 @@ class HandView:
             self.pickup_pile = self.top_discard_wrapped.img_clickable
         # Buttons to cause actions -- e.g. cards will be sorted by selection status or by number.
         # will move hard coded numbers to UIC constants once I've worked them out a bit more.
-        self.mv_selected_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='move selected cards')
-        self.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort all cards')
-        self.prepare_card_btn = Btn.Button(UIC.White, 320, 25, 225, 25, text='Prepare selected cards')
+        self.mv_selected_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='sort by status')
+        self.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort by number')
+        self.prepare_card_btn = Btn.Button(UIC.White, 400, 25, 345, 25, text='Selected cards -> prepared cards')
         self.clear_prepared_cards_btn = Btn.Button(UIC.White, 320, 75, 225, 25, text='Clear prepared cards')
         self.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 75, 225, 25, text='Play prepared cards')
         self.discard_action_btn = Btn.Button(UIC.Bright_Red, 190, 25, 100, 25, text='discard')
@@ -135,7 +135,7 @@ class HandView:
                             if element.status == 1:
                                 element.status = 0
                                 element.img_clickable.changeOutline(0)
-                            else:
+                            elif element.status == 0:
                                 element.status = 1
                                 element.img_clickable.changeOutline(2)
 
