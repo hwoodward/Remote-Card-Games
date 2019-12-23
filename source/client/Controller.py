@@ -31,7 +31,7 @@ class Controller(ConnectionListener):
         """Send discard to server"""
         if self._state.turn_phase != Turn_Phases[3]:
             self.note = "You can only discard at the end of your turn (after having drawn)"
-            return
+            return False
         try:
             self._state.discardCards(discard_list)
             connection.Send({"action": "discard", "cards": [c.serialize() for c in discard_list]})
@@ -39,8 +39,10 @@ class Controller(ConnectionListener):
             self._state.turn_phase = Turn_Phases[0] #end turn after discard
             self.note = "Discard completed. Your turn is over."
             self.sendPublicInfo()
+            return True
         except Exception as err:
             self.note = "{0}".format(err)
+        return False
 
     def draw(self):
         """Request a draw from the server"""

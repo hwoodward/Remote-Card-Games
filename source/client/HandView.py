@@ -48,10 +48,7 @@ class HandView:
 
         self.last_hand = self.current_hand
         self.current_hand = self.controller.getHand()
-        if  self.last_hand < self.current_hand:
-            self.hand_info = self.wrapHand(self.current_hand, self.hand_info)
-        elif self.last_hand > self.current_hand:
-            print('discrepancy in length of hand, possible that wrong card of same value was played or discarded')
+        if not self.last_hand == self.current_hand:
             self.hand_info = self.wrapHand(self.current_hand, self.hand_info)
         self.showHolding(self.hand_info)               # displays hand
         # display draw pile and various action buttons
@@ -120,11 +117,6 @@ class HandView:
                             wrappedcard.img_clickable.changeOutline(4)
                 elif self.play_prepared_cards_btn.isOver(pos):
                     self.controller.play()
-                    for wrappedcard in self.hand_info :
-                        if self.hand_info.status == 2:
-                            self.hand_info.remove(wrappedcard)
-                            # remove wrappedcards as they're played, so
-                            # that correct WRAPPEDcard is removed from hand_info
                 elif self.clear_prepared_cards_btn.isOver(pos):
                     self.controller.clearPreparedCards()
                     for element in self.hand_info:
@@ -132,12 +124,10 @@ class HandView:
                             element.status = 0
                             element.img_clickable.changeOutline(0)
                 elif self.discard_action_btn.isOver(pos):
-                    card_list = []
                     wc_list = []
                     for element in self.gatherSelected():
-                        card_list.append(element.card)
                         wc_list.append(element)
-                    self.discard_confirm = self.discardConfirmation(self.discard_confirm, card_list)
+                    self.discard_confirm = self.discardConfirmation(self.discard_confirm, wc_list)
                 else:
                     for element in self.hand_info:
                         # cannot select prepared cards, so not included in logic below.
@@ -236,17 +226,16 @@ class HandView:
     def wrapHand(self, updated_hand, wrapped_hand):
         """Associate each card in updated_hand with a UICardWrapper
 
-        Only update new cards so that location and image not lost.
         if change is that new cards were added, then want to preserve location and status for cards that were
         already in hand.
-        If prepared cards were played, then they should have been removed immediately after playing.
-        If selected card(s) were discarded, should have been removed immediately.
-        If glitch caused those cards to still be in place, then this should remove that wrapped card,
-        or a card of equal value (though it might be a different wrapped card in a different location and status).
-        If card is eliminated that should not have been, this should add it back to hand and rewrap it.
+        If cards were played, then the wrapped cards that are removed should to those cards with status = 2
+        (prepared cards).
+        Note that discards are removed immediately after controller confirms discard legal.
         """
         card_xy = (10, UIC.Table_Hand_Border + 40)
-        old_wrapped_hand = wrapped_hand
+        old_wrapped_hand = sorted(wrapped_hand, key = lambda x: x.status)
+        # old_wrapped_hand = sorted(wrapped_hand, key = lambda x: x.card.number + (x.status/10))
+        # sort cards so that if prepared cards were played, those are the instances of the cards that are removed.
         updated_wrapped_hand = []
         if not updated_hand == []:
             for card in updated_hand:
@@ -296,19 +285,19 @@ class HandView:
     # Confirm a user is sure about a discard and then perform it once confirmed.
     def discardConfirmation(self, confirmed, wrapped_discards):
         discards = []
-        for element in wrapped_discards.
+        for element in wrapped_discards:
             discards.append(element.card)
         if self.discards != discards:
             confirmed = False
             self.discards = discards
         if not confirmed:
             self.controller.note = "Please confirm - discard  " + "{0}".format(self.discards)
-            self.discards_to_confirm = self.discards
             return True  # ask for confirmation
         else:
-            # confirmed is True, performing discard and removing discard from hand_info.
+            # confirmed is True, performing discard and removing discarded wrapped cards from hand_info.
             if self.discard_confirm:
-                for element in wrapped_discards:
-                    self.hand_info.remove(element)
-            self.controller.discard(self.discards)
+                controller_response = self.controller.discard(self.discards)
+                if controller_response:
+                    for element in wrapped_discards:
+                        self.hand_info.remove(element)
             return False # now that this is done, we don't have anything waiting on confirmation
