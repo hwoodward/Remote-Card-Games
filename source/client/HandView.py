@@ -233,9 +233,8 @@ class HandView:
         Note that discards are removed immediately after controller confirms discard legal.
         """
         card_xy = (10, UIC.Table_Hand_Border + 40)
-        old_wrapped_hand = sorted(wrapped_hand, key = lambda x: x.status)
-        # old_wrapped_hand = sorted(wrapped_hand, key = lambda x: x.card.number + (x.status/10))
         # sort cards so that if prepared cards were played, those are the instances of the cards that are removed.
+        old_wrapped_hand = sorted(wrapped_hand, key = lambda x: x.status)
         updated_wrapped_hand = []
         if not updated_hand == []:
             for card in updated_hand:

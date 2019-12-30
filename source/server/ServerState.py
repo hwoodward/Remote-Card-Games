@@ -56,7 +56,10 @@ class ServerState():
 
     def getDiscardInfo(self):
         """Provides the top card and size of the discard pile as a tuple"""
-        return [self.discard_pile[-1], len(self.discard_pile)]
+        top_card = Card(0, None) #If pile is empty we need a default card since None doesn't serialize
+        if len(self.discard_pile) > 0:
+            top_card = self.discard_pile[-1]
+        return [top_card, len(self.discard_pile)]
 
     def dealHands(self):
         """Return all hands to deal to a single player at the start of a round"""
