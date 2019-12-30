@@ -36,9 +36,9 @@ class HandView:
             self.pickup_pile = self.top_discard_wrapped.img_clickable
         # Buttons to cause actions -- e.g. cards will be sorted by selection status or by number.
         # will move hard coded numbers to UIC constants once I've worked them out a bit more.
-        self.mv_selected_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='move selected cards')
-        self.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort all cards')
-        self.prepare_card_btn = Btn.Button(UIC.White, 320, 25, 225, 25, text='Prepare selected cards')
+        self.mv_selected_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='sort by status')
+        self.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort by number')
+        self.prepare_card_btn = Btn.Button(UIC.White, 400, 25, 345, 25, text='Selected cards -> prepared cards')
         self.clear_prepared_cards_btn = Btn.Button(UIC.White, 320, 75, 225, 25, text='Clear prepared cards')
         self.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 75, 225, 25, text='Play prepared cards')
         self.discard_action_btn = Btn.Button(UIC.Bright_Red, 190, 25, 100, 25, text='discard')
@@ -124,10 +124,10 @@ class HandView:
                             element.status = 0
                             element.img_clickable.changeOutline(0)
                 elif self.discard_action_btn.isOver(pos):
-                    card_list = []
+                    wc_list = []
                     for element in self.gatherSelected():
-                        card_list.append(element.card)
-                    self.discard_confirm = self.discardConfirmation(self.discard_confirm, card_list)
+                        wc_list.append(element)
+                    self.discard_confirm = self.discardConfirmation(self.discard_confirm, wc_list)
                 else:
                     for element in self.hand_info:
                         # cannot select prepared cards, so not included in logic below.
@@ -135,7 +135,7 @@ class HandView:
                             if element.status == 1:
                                 element.status = 0
                                 element.img_clickable.changeOutline(0)
-                            else:
+                            elif element.status == 0:
                                 element.status = 1
                                 element.img_clickable.changeOutline(2)
 
@@ -226,10 +226,15 @@ class HandView:
     def wrapHand(self, updated_hand, wrapped_hand):
         """Associate each card in updated_hand with a UICardWrapper
 
-        Only update new cards so that location and image not lost
+        if change is that new cards were added, then want to preserve location and status for cards that were
+        already in hand.
+        If cards were played, then the wrapped cards that are removed should to those cards with status = 2
+        (prepared cards).
+        Note that discards are removed immediately after controller confirms discard legal.
         """
         card_xy = (10, UIC.Table_Hand_Border + 40)
-        old_wrapped_hand = wrapped_hand
+        # sort cards so that if prepared cards were played, those are the instances of the cards that are removed.
+        old_wrapped_hand = sorted(wrapped_hand, key = lambda x: x.status)
         updated_wrapped_hand = []
         if not updated_hand == []:
             for card in updated_hand:
@@ -276,16 +281,22 @@ class HandView:
                 self.selected_list.append(element)
         return self.selected_list
 
-    # Confirm a user is sure about a discard and then perform it once confirmed
-    def discardConfirmation(self, confirmed, discards):
+    # Confirm a user is sure about a discard and then perform it once confirmed.
+    def discardConfirmation(self, confirmed, wrapped_discards):
+        discards = []
+        for element in wrapped_discards:
+            discards.append(element.card)
         if self.discards != discards:
             confirmed = False
             self.discards = discards
         if not confirmed:
             self.controller.note = "Please confirm - discard  " + "{0}".format(self.discards)
-            self.discards_to_confirm = self.discards
             return True  # ask for confirmation
         else:
-            # confirmed is True, performing discard
-            self.controller.discard(self.discards)
+            # confirmed is True, performing discard and removing discarded wrapped cards from hand_info.
+            if self.discard_confirm:
+                controller_response = self.controller.discard(self.discards)
+                if controller_response:
+                    for element in wrapped_discards:
+                        self.hand_info.remove(element)
             return False # now that this is done, we don't have anything waiting on confirmation
