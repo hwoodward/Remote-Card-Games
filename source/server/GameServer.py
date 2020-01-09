@@ -37,8 +37,8 @@ class GameServer(Server, ServerState):
         self.round += 1
         self.constructDeck(len(self.players))
         for player in self.players:
-            player.Send_deal(self.dealHands())
-                    
+            player.Send_deal(self.dealHands(), self.round)
+
     def delPlayer(self, player):
         """Remove a player from the turn order"""
         self.players.remove(player)
@@ -58,11 +58,13 @@ class GameServer(Server, ServerState):
         """Adds a player to the end of the turn order"""
         self.Send_broadcast({"action": "turnOrder", "players": [p.name for p in self.players]})
 
-    def Send_dealtCards(self):
-        """Sends each player their dealt hand(s)"""
-        for player in self.players:
-            dealtCards = self.dealHands()
-            player.Send_deal(dealtCards)
+    def Send_endRound(self, player_name):
+        """Notifies players that player_name has gone out and the round is over"""
+        self.Send_broadcast({"action": "endRound", "player": player_name})
+        
+    def Send_scores(self):
+        """Send the scores to all players"""
+        #TODO: implement me!
 
     def Send_publicInfo(self):
         """Send the update to the melded cards on the table"""
