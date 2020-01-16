@@ -106,6 +106,9 @@ class TestClientState(unittest.TestCase):
         hand = [Card(1, 'Spades'), Card(2, 'Clubs'), Card(3, 'Diamonds'), Card(4, 'Hearts'), Card(0, None)]
         test_state.dealtHands([hand, hand])
         self.assertEqual(test_state.getHandStatus(), ['TestPhase', 5, 1])
+    
+    #TODO: write test for going out
+    #TODO: write test for score calculation/clearing for next round
 
 if __name__ == '__main__':
     unittest.main()

@@ -75,7 +75,9 @@ class PlayerChannel(Channel):
     def Network_reportScore(self, data):
         score = data["score"]
         self.scores.append(score)
-        self._server.sendScores()
+        self._server.Send_scores()
+        #Clear out visible cards since the round is over
+        self.visible_cards = {}
         
     ### Visible card updates ###
     def Network_publicInfo(self, data):

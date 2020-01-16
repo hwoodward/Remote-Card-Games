@@ -1,6 +1,5 @@
 import importlib
 from common.Card import Card
-from builtins import False
 
 class ClientState():
     """ This class store client state for access by different listeners
@@ -59,7 +58,9 @@ class ClientState():
         # Clear out round-specific state.
         self.hand_list = []
         self.hand_cards = []
+        self.played_cards = {}
         self.went_out = False
+        self.discard_info = [None, 0]
         
         return score
         
