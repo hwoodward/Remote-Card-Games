@@ -118,3 +118,11 @@ class TableView(ConnectionListener):
         self.visible_cards = data["visible_cards"]
         self.hand_status = data["hand_status"]
         self.playerByPlayer()
+    
+    def Network_scores(self, data):
+        """Notification from the server of the scores, in turn order"""
+        round_scores = data["round_scores"]
+        total_scores = data["total_scores"]
+        #TODO: eventually we should display these actually in the window instead of printing to terminal
+        for idx in range(len(self.player_names)):
+            print("{0} scored {1} this round, and has {2} total".format(self.player_names[idx], round_scores[idx], total_scores[idx]))

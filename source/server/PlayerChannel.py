@@ -12,8 +12,16 @@ class PlayerChannel(Channel):
         #visible cards and hand status are public info
         self.visible_cards = {}
         self.hand_status = [] #order of information in this is specified by the ruleset
+        self.scores = []
         Channel.__init__(self, *args, **kwargs)
 
+    def scoreForRound(self, round):
+        """Handles getting score for round so we don't error if this player hasn't reported yet"""
+        try:
+            return self.scores[round]
+        except:
+            return None
+        
     def Close(self):
         """Called when a player disconnects
         Removes player from the turn order
@@ -60,8 +68,14 @@ class PlayerChannel(Channel):
         self.Send_newCards(cards)
         self._server.Send_discardInfo()
     
-    def Network_goOut(self,data):
+    def Network_goOut(self, data):
         self._server.Send_endRound(self.name)
+        
+    ### Score reports ###
+    def Network_reportScore(self, data):
+        score = data["score"]
+        self.scores.append(score)
+        self._server.sendScores()
         
     ### Visible card updates ###
     def Network_publicInfo(self, data):

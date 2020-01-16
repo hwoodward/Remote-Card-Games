@@ -148,6 +148,7 @@ class Controller(ConnectionListener):
         elif self._state.checkGoneOut():
             self.note = "You went out to end the round!"
             connection.Send({"action": "goOut"})
+            self._state.went_out = True
             return True
         else:
             self.note = "You have no cards left but aren't out, you have gone zaphod."
@@ -248,8 +249,5 @@ class Controller(ConnectionListener):
         out_player = data["player"]
         self.note = "{0} has gone out to end the round!".format(out_player)
         self._state.round = -1
-        #TODO: calculate and report score
-        
-    def Network_scores(self, data):
-        """Notification from the server of the scores, in turn order"""
-        #TODO: implement me!
+        score = self._state.scoreRound()
+        connection.Send({"action": "reportScore", "score": score})

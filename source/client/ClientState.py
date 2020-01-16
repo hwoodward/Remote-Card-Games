@@ -1,5 +1,6 @@
 import importlib
 from common.Card import Card
+from builtins import False
 
 class ClientState():
     """ This class store client state for access by different listeners
@@ -21,6 +22,7 @@ class ClientState():
         #Turn phase handled by controller
         self.turn_phase = 'inactive' #hard coded start phase as 'not my turn'
         self.round = -1 #Start with the 'no current round value
+        self.went_out = False #Boolean to track if you went out.
         self.name = "guest"
         self.hand_list = []
         self.hand_cards = []
@@ -46,6 +48,21 @@ class ClientState():
             return False
         return self.rules.goneOut(self.played_cards)
 
+    def scoreRound(self):
+        """Get score for round and clears round specific state in preparation for next round to start"""
+        # Need to combine hand an foot for cancellation with played cards
+        unplayed_cards = self.hand_cards
+        for hand in self.hand_list:
+            unplayed_cards += hand
+        score = self.rules.scoreRound(self.played_cards, unplayed_cards, self.went_out)
+        
+        # Clear out round-specific state.
+        self.hand_list = []
+        self.hand_cards = []
+        self.went_out = False
+        
+        return score
+        
     def newCards(self, card_list):
         """Update the cards in hand"""
         for card in card_list:

@@ -35,6 +35,10 @@ class GameServer(Server, ServerState):
     def nextRound(self):
         """Start the next round of play"""
         self.round += 1
+        if self.round > self.rules.Number_Rounds:
+            #Game is over
+            print("GAME OVER - CHECK LAST SCORE REPORT FOR FINAL RESULT")
+            #TODO: make this better!
         self.constructDeck(len(self.players))
         for player in self.players:
             player.Send_deal(self.dealHands(), self.round)
@@ -64,7 +68,16 @@ class GameServer(Server, ServerState):
         
     def Send_scores(self):
         """Send the scores to all players"""
-        #TODO: implement me!
+        round_scores = [p.scoreForRound(self.round) for p in self.players]
+        total_scores = [sum(p.scores) for p in self.players]
+        self.Send_broadcast({"action": "scores", "round_scores": round_scores, "total_scores": total_scores})
+        #As a temporary measure we are immediately starting the next round when all scores are reported.
+        #This will be changed when we implement consensus transitioning.
+        if None not in round_scores:
+            self.nextRound()
+            #set turn index to the dealer then start play
+            self.turn_index = self.round
+            self.nextTurn()
 
     def Send_publicInfo(self):
         """Send the update to the melded cards on the table"""
