@@ -34,7 +34,7 @@ class Controller(ConnectionListener):
             return False
         try:
             self._state.discardCards(discard_list)
-            self.handleEmptyHand()
+            self.handleEmptyHand(True)
             connection.Send({"action": "discard", "cards": [c.serialize() for c in discard_list]})
             self._state.turn_phase = Turn_Phases[0] #end turn after discard
             self.note = "Discard completed. Your turn is over."
@@ -127,13 +127,13 @@ class Controller(ConnectionListener):
         try:
             self._state.playCards(self.prepared_cards)
             self.clearPreparedCards()
-            self.handleEmptyHand()
+            self.handleEmptyHand(False)
             self.sendPublicInfo()
         except Exception as err:
             self.note = "{0}".format(err)
             return
 
-    def handleEmptyHand(self):
+    def handleEmptyHand(self, isDiscard):
         """Checks for and handles empty hand. 
         
         If they are out of their hand, transitions to the next hand.
@@ -151,8 +151,10 @@ class Controller(ConnectionListener):
             return True
         else:
             self.note = "You have no cards left but aren't out, you have gone zaphod."
-            self._state.turn_phase = Turn_Phases[0]
-            connection.Send({"action": "discard", "cards": []}) #Need to let server know your turn is over
+            if not isDiscard:
+                #If you played to zaphod we need to let the server know your turn is over
+                self._state.turn_phase = Turn_Phases[0]
+                connection.Send({"action": "discard", "cards": []})
             return False
         
     def getName(self):
