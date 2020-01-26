@@ -12,8 +12,16 @@ class PlayerChannel(Channel):
         #visible cards and hand status are public info
         self.visible_cards = {}
         self.hand_status = [] #order of information in this is specified by the ruleset
+        self.scores = []
         Channel.__init__(self, *args, **kwargs)
 
+    def scoreForRound(self, round):
+        """Handles getting score for round so we don't error if this player hasn't reported yet"""
+        try:
+            return self.scores[round]
+        except:
+            return None
+        
     def Close(self):
         """Called when a player disconnects
         Removes player from the turn order
@@ -29,10 +37,10 @@ class PlayerChannel(Channel):
         serialized = [c.serialize() for c in cards]
         self.Send({"action": "newCards", "cards": serialized})
 
-    def Send_deal(self, dealtCards):
+    def Send_deal(self, dealtCards, round):
         """Serialize and format json to send deal at start of round"""
         serializedDeal = [[c.serialize() for c in hand] for hand in dealtCards]
-        self.Send({"action": "deal", "hands": serializedDeal})
+        self.Send({"action": "deal", "hands": serializedDeal, "round": round})
 
     ##################################
     ### Network callbacks          ###
@@ -60,6 +68,17 @@ class PlayerChannel(Channel):
         self.Send_newCards(cards)
         self._server.Send_discardInfo()
     
+    def Network_goOut(self, data):
+        self._server.Send_endRound(self.name)
+        
+    ### Score reports ###
+    def Network_reportScore(self, data):
+        score = data["score"]
+        self.scores.append(score)
+        self._server.Send_scores()
+        #Clear out visible cards since the round is over
+        self.visible_cards = {}
+        
     ### Visible card updates ###
     def Network_publicInfo(self, data):
         """This is refreshed public information data from the client"""

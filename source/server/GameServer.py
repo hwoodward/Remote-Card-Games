@@ -35,10 +35,14 @@ class GameServer(Server, ServerState):
     def nextRound(self):
         """Start the next round of play"""
         self.round += 1
+        if self.round > self.rules.Number_Rounds:
+            #Game is over
+            print("GAME OVER - CHECK LAST SCORE REPORT FOR FINAL RESULT")
+            #TODO: make this better!
         self.constructDeck(len(self.players))
         for player in self.players:
-            player.Send_deal(self.dealHands())
-                    
+            player.Send_deal(self.dealHands(), self.round)
+
     def delPlayer(self, player):
         """Remove a player from the turn order"""
         self.players.remove(player)
@@ -58,11 +62,22 @@ class GameServer(Server, ServerState):
         """Adds a player to the end of the turn order"""
         self.Send_broadcast({"action": "turnOrder", "players": [p.name for p in self.players]})
 
-    def Send_dealtCards(self):
-        """Sends each player their dealt hand(s)"""
-        for player in self.players:
-            dealtCards = self.dealHands()
-            player.Send_deal(dealtCards)
+    def Send_endRound(self, player_name):
+        """Notifies players that player_name has gone out and the round is over"""
+        self.Send_broadcast({"action": "endRound", "player": player_name})
+        
+    def Send_scores(self):
+        """Send the scores to all players"""
+        round_scores = [p.scoreForRound(self.round) for p in self.players]
+        total_scores = [sum(p.scores) for p in self.players]
+        self.Send_broadcast({"action": "scores", "round_scores": round_scores, "total_scores": total_scores})
+        #As a temporary measure we are immediately starting the next round when all scores are reported.
+        #This will be changed when we implement consensus transitioning.
+        if None not in round_scores:
+            self.nextRound()
+            #set turn index to the dealer then start play
+            self.turn_index = self.round
+            self.nextTurn()
 
     def Send_publicInfo(self):
         """Send the update to the melded cards on the table"""
