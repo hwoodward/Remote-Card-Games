@@ -36,6 +36,8 @@ class HandView:
             self.pickup_pile = self.top_discard_wrapped.img_clickable
         # Buttons to cause actions -- e.g. cards will be sorted by selection status or by number.
         # will move hard coded numbers to UIC constants once I've worked them out a bit more.
+        self.ready_btn = Btn.Button(UIC.White, 10, (UIC.Disp_Height-30), 225, 25, text='ready to play')
+        # FUTURE: may wish to only display ready button only when relevant.
         self.mv_selected_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='sort by status')
         self.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort by number')
         self.prepare_card_btn = Btn.Button(UIC.White, 400, 25, 345, 25, text='Selected cards -> prepared cards')
@@ -63,6 +65,7 @@ class HandView:
             self.pickup_pile = self.top_discard_wrapped.img_clickable
             loc_xy = (self.pickup_pile.x, self.pickup_pile.y)
             self.pickup_pile.draw(self.display, loc_xy, self.pickup_pile.outline_color)
+        self.ready_btn.draw(self.display, self.ready_btn.outline_color)
         self.mv_selected_btn.draw(self.display, self.mv_selected_btn.outline_color)
         self.sort_btn.draw(self.display, self.sort_btn.outline_color)
         self.prepare_card_btn.draw(self.display, self.prepare_card_btn.outline_color)
@@ -96,6 +99,8 @@ class HandView:
                 elif self.sort_btn.isOver(pos):
                     self.hand_info.sort(key=lambda wc: wc.key)
                     self.hand_info = self.refreshXY(self.hand_info)
+                elif self.ready_btn.isOver(pos):
+                    print('clicked on ready button')
                 elif self.mv_selected_btn.isOver(pos):
                     self.hand_info.sort(
                         key=lambda wc: (wc.img_clickable.x + (wc.status * UIC.Disp_Width))
@@ -149,6 +154,10 @@ class HandView:
                        self.pickup_pile.changeOutline(1)
                     else:
                        self.pickup_pile.changeOutline(0)
+                if self.ready_btn.isOver(pos):
+                    self.ready_btn.outline_color = UIC.Bright_Green # set outline color
+                else:
+                    self.ready_btn.outline_color = UIC.Gray # change outline
                 if self.mv_selected_btn.isOver(pos):
                     self.mv_selected_btn.outline_color = UIC.Black  # set outline color
                 else:
