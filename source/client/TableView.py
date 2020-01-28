@@ -53,21 +53,27 @@ class TableView(ConnectionListener):
             y_coord = y_coord + UIC.Medium_Text_Feed
             self.display.blit(text_surface, text_rect)
             for key in melded_summary:
-                if key == 1:
-                    player_text = 'Aces: ' + str(melded_summary[key])
-                    ykey = y_coord + (UIC.Small_Text_Feed * 11)
+                detail_str = str(melded_summary[key][0])
+                detail_str = detail_str + ': (' + str(melded_summary[key][1]) + ', ' + str(melded_summary[key][2]) +')'
+                if (melded_summary[key][0] > 6):
+                    detail_str = detail_str + '<<<'
+                if (melded_summary[key][2] == 0):
+                    text_color = UIC.Red
                 else:
-                    ykey = y_coord + (UIC.Small_Text_Feed * (key - 3))
-                    player_text = str(key) + ': ' + str(melded_summary[key])
-                    if key == 11:
-                        player_text = 'Jacks: ' + str(melded_summary[key])
-                    if key == 12:
-                        player_text = 'Queens: ' + str(melded_summary[key])
-                    if key == 13:
-                        player_text = 'Kings: ' + str(melded_summary[key])
-                text_surface, text_rect = self.textObjects(player_text, UIC.Small_Text, UIC.Black)
-                #TODO: Sheri -- put in check on wilds, and make font red if clean and black if dirty.
-                #TODO: Sheri -- denote canistas (additional text if melded summary shows >6 cards)
+                    text_color = UIC.Black
+                ykey = y_coord + (UIC.Small_Text_Feed * (key - 3))
+                if key == 1:
+                    player_text = 'Aces' + detail_str
+                    ykey = y_coord + (UIC.Small_Text_Feed * 11)
+                elif key == 11:
+                    player_text = 'Jacks' + detail_str
+                elif key == 12:
+                    player_text = 'Queens' + detail_str
+                elif key == 13:
+                    player_text = 'Kings ' + detail_str
+                else:
+                    player_text =  str(key) + "'s " + detail_str
+                text_surface, text_rect = self.textObjects(player_text, UIC.Small_Text, text_color)
                 text_rect.center = ((bk_grd_rect[0] + 0.5 * players_sp_w), (bk_grd_rect[1] + ykey))
                 self.display.blit(text_surface, text_rect)
             # Move to next players rectangle and color:
@@ -90,7 +96,7 @@ class TableView(ConnectionListener):
                     # Need to change below to: if s_card.number == 0 or s_card.number == 2:
                     if s_card[0] == 0 or s_card[0] == 2:
                         wild_count = wild_count + 1
-                summary[key] = (length_set, wild_count)
+                summary[key] = (length_set, (length_set - wild_count), wild_count)
             self.compressed_info[key_player] = summary
 
     '''
