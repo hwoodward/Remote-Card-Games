@@ -1,7 +1,7 @@
 import pygame
 import os
-import client.UIConstants as UIC
-from client.ClickableImage import ClickableImage as ClickImg
+import UIConstants as UIC
+from ClickableImage import ClickableImage as ClickImg
 
 
 class UICardWrapper:
