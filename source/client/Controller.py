@@ -1,6 +1,7 @@
 from common.Card import Card
 
 from PodSixNet.Connection import connection, ConnectionListener
+from builtins import False
 
 Turn_Phases = ['inactive', 'draw', 'forcedAction', 'play']
 
@@ -263,4 +264,8 @@ class Controller(ConnectionListener):
         self.note = "{0} has gone out to end the round!".format(out_player)
         self._state.round = -1
         score = self._state.scoreRound()
+        self._state.reset()
         connection.Send({"action": "reportScore", "score": score})
+    
+    def Network_clearReady(self, data):
+        self.setReady(False)
