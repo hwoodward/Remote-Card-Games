@@ -50,11 +50,11 @@ class PlayerChannel(Channel):
     def Network_displayName(self, data):
         """Player submitted their display name"""
         self.name = data['name']
-        self._server.Send_turnOrder()
+        self._server.Send_publicInfo()
 
     def Network_ready(self, data):
         """Player changed their ready state"""
-        self.ready = data['ready']
+        self.ready = data['state']
         self._server.checkReady()
 
     ### Player Game Actions ###

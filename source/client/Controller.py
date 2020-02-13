@@ -1,7 +1,6 @@
 from common.Card import Card
 
 from PodSixNet.Connection import connection, ConnectionListener
-from builtins import False
 
 Turn_Phases = ['inactive', 'draw', 'forcedAction', 'play']
 
@@ -19,6 +18,7 @@ class Controller(ConnectionListener):
         self._state = clientState
         self.prepared_cards = {} #This is the dict of cards prepared to be played
         self.setName()
+        self.ready = False
         self.note = "Game is beginning."
 
     ### Player Actions ###
@@ -115,7 +115,7 @@ class Controller(ConnectionListener):
             self.note = "You can't change prepared cards while waiting to finish picking up the pile"
             return
         self.prepared_cards.setdefault(key, []).append(card)
-        self.note = "You have the following cards prepared to play: {0}".format(self.prepared_cards) #Is this format readable enough?
+        #self.note = "You have the following cards prepared to play: {0}".format(self.prepared_cards) #Is this format readable enough?
         
     def clearPreparedCards(self):
         """Clears prepared cards"""
@@ -224,10 +224,6 @@ class Controller(ConnectionListener):
         self.note = "Server denied connection request :("
         connection.Close()
 
-    def Network_turnOrder(self, data):
-        """Turn order changed"""
-        print('Turn order is', data['players'])
-
     ### Gameplay messages ###
     def Network_startTurn(self, data):
         if self._state.round == -1:
@@ -248,6 +244,7 @@ class Controller(ConnectionListener):
     
     def Network_deal(self, data):
         self._state.round = data["round"]
+        self._state.reset()
         hand_list = [[Card.deserialize(c) for c in hand] for hand in data["hands"]]
         #TODO: we want to allow the player to choose the order of the hands eventually
         self._state.dealtHands(hand_list)
@@ -264,7 +261,6 @@ class Controller(ConnectionListener):
         self.note = "{0} has gone out to end the round!".format(out_player)
         self._state.round = -1
         score = self._state.scoreRound()
-        self._state.reset()
         connection.Send({"action": "reportScore", "score": score})
     
     def Network_clearReady(self, data):

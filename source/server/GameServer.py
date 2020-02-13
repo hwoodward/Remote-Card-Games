@@ -23,20 +23,15 @@ class GameServer(Server, ServerState):
             channel.Send({"action": "connectionDenied"})
         else:
             self.players.append(channel)
-            self.Send_turnOrder()
+            self.Send_publicInfo()
             print(channel, "Client connected")
-
-    def startGame(self):
-        if len(self.players) == 0:
-            raise Exception("Can't start a game with no players")
-        self.nextRound()
-        self.nextTurn()
 
     def checkReady(self):
         """Confirm if all players are ready to move on to next round"""
         player_states = [p.ready for p in self.players]
         if False not in player_states:
             self.nextRound()
+            self.Send_broadcast({"action":"clearReady"}) #Reset in preparation for next round end
 
     def nextRound(self):
         """Start the next round of play"""
@@ -66,11 +61,6 @@ class GameServer(Server, ServerState):
     def Send_broadcast(self, data):
         """Send data to every connected player"""
         [p.Send(data) for p in self.players]
-
-    def Send_turnOrder(self):
-        """Adds a player to the end of the turn order"""
-        self.Send_broadcast({"action": "turnOrder", "players": [p.name for p in self.players]})
-        self.Send_publicInfo() #Currently a test ot see if we can remove the explicit turn order message and just use a stripped down public info
 
     def Send_endRound(self, player_name):
         """Notifies players that player_name has gone out and the round is over"""

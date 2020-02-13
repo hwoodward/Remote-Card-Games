@@ -133,8 +133,3 @@ class TableView(ConnectionListener):
         for idx in range(len(self.player_names)):
             print("{0} scored {1} this round, and has {2} total".format(self.player_names[idx], round_scores[idx], total_scores[idx]))
         
-        #Clear out round specific status for next round to start later
-        #When we set up consensus method and in window scoring we might want to clear these out later
-        self.visible_cards = []
-        self.hand_status = []
-        self.playerByPlayer()
