@@ -20,7 +20,6 @@ class ClickableImage:
 
     def draw(self, display, loc_xy, outline_choice):
         # Call this method to draw the ClickableImage on the screen
-        print('DEBUG: at point A in clickableImage')
         if not outline_choice[0] == -1:
             pygame.draw.rect(display, outline_choice,
                              (self.x - UIC.outline_width, self.y - UIC.outline_width,
