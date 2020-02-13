@@ -5,6 +5,7 @@ Has methods for importing and fetching images.
 """
 import pygame
 import os
+from common.Card import Card
 
 # define colors (#rgb on scale of 0 to 255)
 Black = (0,0,0)
@@ -57,3 +58,16 @@ outline_colors = (no_outline_color, Yellow, Green, Bright_Green, Bright_Blue, Br
 # Back_Img = pygame.image.load(os.path.join('client', 'cardimages', 'cardBack.png'))
 Back_Img = pygame.image.load(os.path.join('bundle_data', 'cardimages', 'cardBack.png'))
 Back_Img = pygame.transform.rotozoom(Back_Img, 0, scale)
+
+# Load images for full deck of cards:
+suit_letter = 'N'  # this doesn't distinguish between red & black Jokers
+temp_deck = Card.getStandardDeck()
+card_images = {}
+card_images['0N'] = pygame.image.load(os.path.join('bundle_data', 'cardimages', 'card0N.png'))
+for card in temp_deck:
+    suit_letter = card.suit[0]
+    image_index = str(card.number) + suit_letter
+    card_string = 'card' + image_index
+    image_file = os.path.join('bundle_data', 'cardimages', card_string + '.png')
+    card_images[image_index] = pygame.image.load(image_file)
+
