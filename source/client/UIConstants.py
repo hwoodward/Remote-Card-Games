@@ -70,4 +70,3 @@ for card in temp_deck:
     card_string = 'card' + image_index
     image_file = os.path.join('bundle_data', 'cardimages', card_string + '.png')
     card_images[image_index] = pygame.image.load(image_file)
-
