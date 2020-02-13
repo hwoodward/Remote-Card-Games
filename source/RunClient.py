@@ -14,8 +14,6 @@ import client.ClickableImage
 import client.UICardWrapper
 import client.UIConstants
 
-
-
 def RunClient():
     if getattr(sys, 'frozen', False):
         os.chdir(sys._MEIPASS)
@@ -50,9 +48,9 @@ def RunClient():
 
 if __name__ == "__main__":
     if len(sys.argv) != 1:
-        print("This version gets hardcoded host:port and RuleSet after starting.")
+        print("This version gets host:port and RuleSet after starting.")
         print("Do not include any arguments on command line")
-    else:
+   else:
         RunClient()
 else:
     print("RunServer should not be imported anywhere")
