@@ -22,6 +22,9 @@ class UICardWrapper:
             suit_letter = card.suit[0]
         image_index = str(card.number) + suit_letter
         img = UIC.card_images[image_index]
+        image_file = 'card' + str(card.number) + suit_letter + '.png'
+        print(image_file)
+        img = pygame.image.load(os.path.join('bundle_data', 'cardimages', 'cardBack.png'))
         img = pygame.transform.rotozoom(img, 0, UIC.scale)
         return img
 
