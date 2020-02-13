@@ -257,9 +257,7 @@ class HandView:
                         newcard = False
                 if newcard:
                     card_xy = (card_xy[0] + UIC.Card_Spacing, card_xy[1])
-                    print('debug: in handview right before call to UICardWrapper -2')
                     card_wrapped = UICardWrapper(card, card_xy)
-                    print('debug: in handview right after call to UICardWrapper -2')
                 updated_wrapped_hand.append(card_wrapped)
         return updated_wrapped_hand
 
