@@ -13,6 +13,7 @@ class PlayerChannel(Channel):
         self.visible_cards = {}
         self.hand_status = [] #order of information in this is specified by the ruleset
         self.scores = []
+        self.ready = False #for consensus transitions
         Channel.__init__(self, *args, **kwargs)
 
     def scoreForRound(self, round):

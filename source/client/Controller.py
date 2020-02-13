@@ -27,6 +27,11 @@ class Controller(ConnectionListener):
         self._state.name = displayName
         connection.Send({"action": "displayName", "name": displayName})
 
+    def setReady(self, readyState):
+        """Update the player's ready state with the server"""
+        self.ready = readyState
+        connection.Send({"action": "ready", "state": self.ready})
+
     def discard(self, discard_list):
         """Send discard to server"""
         if self._state.turn_phase != Turn_Phases[3]:
@@ -157,10 +162,16 @@ class Controller(ConnectionListener):
                 self._state.turn_phase = Turn_Phases[0]
                 connection.Send({"action": "discard", "cards": []})
             return False
-        
+    
+    
+    ### Fetchers for handView ###
     def getName(self):
         """return player name for labeling"""
         return self._state.name
+    
+    def isReady(self):
+        """return if the player is currently ready to move on"""
+        return self.ready
 
     def getHand(self):
         """sends _state to UI"""
