@@ -48,7 +48,6 @@ class HandView:
     def update(self):
         """This updates the view of the hand """
 
-        print('debug: at handview point a')
         self.last_hand = self.current_hand
         self.current_hand = self.controller.getHand()
         if not self.last_hand == self.current_hand:
@@ -61,16 +60,12 @@ class HandView:
         discard_info = self.controller.getDiscardInfo()
         self.top_discard = discard_info[0]
         self.pickup_pile_sz = discard_info[1]
-        print('debug: at handview point b')
         if self.pickup_pile_sz > 0:
-            print('debug: at handview point C')
             self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25))
             self.pickup_pile = self.top_discard_wrapped.img_clickable
             loc_xy = (self.pickup_pile.x, self.pickup_pile.y)
             self.pickup_pile.draw(self.display, loc_xy, self.pickup_pile.outline_color)
-        print('debug: at handview point d')
         self.ready_btn.draw(self.display, self.ready_btn.outline_color)
-        print('debug: at handview point e')
         self.mv_selected_btn.draw(self.display, self.mv_selected_btn.outline_color)
         self.sort_btn.draw(self.display, self.sort_btn.outline_color)
         self.prepare_card_btn.draw(self.display, self.prepare_card_btn.outline_color)
@@ -262,7 +257,9 @@ class HandView:
                         newcard = False
                 if newcard:
                     card_xy = (card_xy[0] + UIC.Card_Spacing, card_xy[1])
+                    print('debug: in handview right before call to UICardWrapper -2')
                     card_wrapped = UICardWrapper(card, card_xy)
+                    print('debug: in handview right after call to UICardWrapper -2')
                 updated_wrapped_hand.append(card_wrapped)
         return updated_wrapped_hand
 
