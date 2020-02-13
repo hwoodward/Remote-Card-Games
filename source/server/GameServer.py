@@ -32,6 +32,12 @@ class GameServer(Server, ServerState):
         self.nextRound()
         self.nextTurn()
 
+    def checkReady(self):
+        """Confirm if all players are ready to move on to next round"""
+        player_states = [p.ready for p in self.players]
+        if False not in player_states:
+            self.nextRound()
+
     def nextRound(self):
         """Start the next round of play"""
         self.round += 1
@@ -42,6 +48,9 @@ class GameServer(Server, ServerState):
         self.constructDeck(len(self.players))
         for player in self.players:
             player.Send_deal(self.dealHands(), self.round)
+        #set turn index to the dealer then start play
+        self.turn_index = self.round
+        self.nextTurn()
 
     def delPlayer(self, player):
         """Remove a player from the turn order"""
@@ -61,6 +70,7 @@ class GameServer(Server, ServerState):
     def Send_turnOrder(self):
         """Adds a player to the end of the turn order"""
         self.Send_broadcast({"action": "turnOrder", "players": [p.name for p in self.players]})
+        self.Send_publicInfo() #Currently a test ot see if we can remove the explicit turn order message and just use a stripped down public info
 
     def Send_endRound(self, player_name):
         """Notifies players that player_name has gone out and the round is over"""
@@ -70,14 +80,8 @@ class GameServer(Server, ServerState):
         """Send the scores to all players"""
         round_scores = [p.scoreForRound(self.round) for p in self.players]
         total_scores = [sum(p.scores) for p in self.players]
-        self.Send_broadcast({"action": "scores", "round_scores": round_scores, "total_scores": total_scores})
-        #As a temporary measure we are immediately starting the next round when all scores are reported.
-        #This will be changed when we implement consensus transitioning.
         if None not in round_scores:
-            self.nextRound()
-            #set turn index to the dealer then start play
-            self.turn_index = self.round
-            self.nextTurn()
+            self.Send_broadcast({"action": "scores", "round_scores": round_scores, "total_scores": total_scores})
 
     def Send_publicInfo(self):
         """Send the update to the melded cards on the table"""

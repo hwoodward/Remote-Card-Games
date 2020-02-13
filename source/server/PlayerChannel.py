@@ -52,8 +52,12 @@ class PlayerChannel(Channel):
         self.name = data['name']
         self._server.Send_turnOrder()
 
-    ### Player Game Actions ###
+    def Network_ready(self, data):
+        """Player changed their ready state"""
+        self.ready = data['ready']
+        self._server.checkReady()
 
+    ### Player Game Actions ###
     def Network_discard(self, data):
         card_list = [Card.deserialize(c) for c in data["cards"]]
         self._server.discardCards(card_list)
