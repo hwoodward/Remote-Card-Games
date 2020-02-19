@@ -13,6 +13,7 @@ class PlayerChannel(Channel):
         self.visible_cards = {}
         self.hand_status = [] #order of information in this is specified by the ruleset
         self.scores = []
+        self.ready = False #for consensus transitions
         Channel.__init__(self, *args, **kwargs)
 
     def scoreForRound(self, round):
@@ -49,10 +50,14 @@ class PlayerChannel(Channel):
     def Network_displayName(self, data):
         """Player submitted their display name"""
         self.name = data['name']
-        self._server.Send_turnOrder()
+        self._server.Send_publicInfo()
+
+    def Network_ready(self, data):
+        """Player changed their ready state"""
+        self.ready = data['state']
+        self._server.checkReady()
 
     ### Player Game Actions ###
-
     def Network_discard(self, data):
         card_list = [Card.deserialize(c) for c in data["cards"]]
         self._server.discardCards(card_list)

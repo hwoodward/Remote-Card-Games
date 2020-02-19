@@ -21,12 +21,8 @@ class ClientState():
         #Turn phase handled by controller
         self.turn_phase = 'inactive' #hard coded start phase as 'not my turn'
         self.round = -1 #Start with the 'no current round value
-        self.went_out = False #Boolean to track if you went out.
         self.name = "guest"
-        self.hand_list = []
-        self.hand_cards = []
-        self.played_cards = {}
-        self.discard_info = [None, 0] #This is top_card and then size
+        self.reset() #Start with state cleared for a fresh round
 
     def dealtHands(self, hands):
         """Store the extra hands dealt to player for use after first hand is cleared"""
@@ -48,21 +44,21 @@ class ClientState():
         return self.rules.goneOut(self.played_cards)
 
     def scoreRound(self):
-        """Get score for round and clears round specific state in preparation for next round to start"""
+        """Get score for round"""
         # Need to combine hand an foot for cancellation with played cards
         unplayed_cards = self.hand_cards
         for hand in self.hand_list:
             unplayed_cards += hand
         score = self.rules.scoreRound(self.played_cards, unplayed_cards, self.went_out)
-        
-        # Clear out round-specific state.
+        return score
+
+    def reset(self):
+        """Clear out round specific state to prepare for next round to start"""
         self.hand_list = []
         self.hand_cards = []
         self.played_cards = {}
         self.went_out = False
         self.discard_info = [None, 0]
-        
-        return score
         
     def newCards(self, card_list):
         """Update the cards in hand"""

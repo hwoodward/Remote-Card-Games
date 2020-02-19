@@ -100,7 +100,8 @@ class HandView:
                     self.hand_info.sort(key=lambda wc: wc.key)
                     self.hand_info = self.refreshXY(self.hand_info)
                 elif self.ready_btn.isOver(pos):
-                    print('clicked on ready button')
+                    tempReady = self.controller.isReady()
+                    self.controller.setReady(not tempReady) #want to eventually make this a checkbox so I won't have to do this check not thing
                 elif self.mv_selected_btn.isOver(pos):
                     self.hand_info.sort(
                         key=lambda wc: (wc.img_clickable.x + (wc.status * UIC.Disp_Width))
