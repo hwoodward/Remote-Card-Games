@@ -99,11 +99,6 @@ class TableView(ConnectionListener):
                 summary[key] = (length_set, (length_set - wild_count), wild_count)
             self.compressed_info[key_player] = summary
 
-    '''
-    def textObjects(self, text, font):
-        text_surface = font.render(text, True, UIC.Black)
-        return text_surface, text_surface.get_rect()
-    '''
 
     def textObjects(self, text, font, color):
         text_surface = font.render(text, True, color)
