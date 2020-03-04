@@ -15,6 +15,7 @@ class TableView(ConnectionListener):
         self.hand_status = []
         self.compressed_info = {}
         self.playerByPlayer()
+        self.results = ' test for now, make blank after debugging'
 
     def playerByPlayer(self):
         self.compressSets(self.visible_cards)
@@ -123,28 +124,15 @@ class TableView(ConnectionListener):
     
     def Network_scores(self, data):
         """Notification from the server of the scores, in turn order"""
+
         round_scores = data["round_scores"]
         total_scores = data["total_scores"]
-        results=''
-        '''
+        self.results=''
         for idx in range(len(self.player_names)):
-            results = "[" + self.player_names[idx] + ": " + str(0) + " " \
-                      + "test message" + "]" + "\r\n"
-        font = UIC.Big_Text
-        text_surface = font.render(results, True, UIC.Black)
-        text_rect = text_surface.get_rect()
-        text_rect.center = ((UIC.Disp_Width / 2), (UIC.Disp_Height * (1 - (UIC.Hand_Row_Fraction / 2))))
-        self.display.blit(text_surface, text_rect)
-        
-        for idx in range(len(self.player_names)):
-            results = results + "[" + self.player_names[idx] + ": " + str(round_scores[idx]) + " " \
-                      +  str(total_scores[idx]) +  "]" + " \r \n "
-            print("{0} scored {1} this round, and has {2} total".format(self.player_names[idx], round_scores[idx], total_scores[idx]))
-        text_surface, text_rect = self.textObjects(results, UIC.Big_Text, UIC.Black)
-        # text_rect.center = ((UIC.Disp_Width / 2 ), ( UIC.Disp_Height * (1 - (UIC.Hand_Row_Fraction/ 2) ) ))
-        text_rect.center = ((UIC.Disp_Width / 2), (UIC.Disp_Height * (100)))
-        self.display.blit(text_surface, text_rect)
-        #
-        self.controller.note = results
-        '''
+            self.results = self.results + "  [" + self.player_names[idx] + ": " + str(round_scores[idx]) + " " \
+                      +  str(total_scores[idx]) +  "]  " + " \r \n "
+        print("{0} scored {1} this round, and  has {2} total".format(self.player_names[idx], round_scores[idx], total_scores[idx]))
+        print(self.results)
+
+
 

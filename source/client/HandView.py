@@ -6,6 +6,7 @@ from client.CreateDisplay import CreateDisplay
 from client.UICardWrapper import UICardWrapper
 import client.UIConstants as UIC
 from common.Card import Card
+# import client.TableView as TableView  #ToDo: evaluate if I really need to import this...
 
 
 class HandView:
@@ -25,6 +26,9 @@ class HandView:
         self.discard_confirm = False
         self.num_wilds = 0
         self.wild_cards = []
+        self.betweenrounds = ['New game! When ready to start playing click on the button on the lower left ', \
+                       'to discard select ONE card and double click on discard button. ', \
+                       'To pick up pile prepare necessary cards and then click on discard pile.']
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
         # discard info
         discard_info = self.controller.getDiscardInfo()
@@ -35,7 +39,6 @@ class HandView:
             self.pickup_pile = self.top_discard_wrapped.img_clickable
         # Buttons to cause actions -- e.g. cards will be sorted by selection status or by number.
         self.ready_btn = Btn.Button(UIC.White, 10, (UIC.Disp_Height-30), 225, 25, text='ready to play')
-        # todo: should we only display ready button only when relevant?
         self.mv_selected_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='sort by status')
         self.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort by number')
         self.prepare_card_btn = Btn.Button(UIC.White, 400, 25, 345, 25, text='Selected cards -> prepared cards')
@@ -43,9 +46,18 @@ class HandView:
         self.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 75, 225, 25, text='Play prepared cards')
         self.discard_action_btn = Btn.Button(UIC.Bright_Red, 190, 25, 100, 25, text='discard')
 
+
     def update(self):
         """This updates the view of the hand """
 
+        if (not self.controller.ready):
+            # want to print TableView.results, but that isn't working.
+            # self.mesgBetweenRounds(TableView.results)
+            self.mesgBetweenRounds(self.betweenrounds)
+            # self.ready_btn.draw(self.display, self.ready_btn.outline_color)
+            # NOTE - button was active regardless of whether drawn or not
+        else:
+            self.betweenrounds = ''
         self.last_hand = self.current_hand
         self.current_hand = self.controller.getHand()
         if not self.last_hand == self.current_hand:
@@ -63,7 +75,7 @@ class HandView:
             self.pickup_pile = self.top_discard_wrapped.img_clickable
             loc_xy = (self.pickup_pile.x, self.pickup_pile.y)
             self.pickup_pile.draw(self.display, loc_xy, self.pickup_pile.outline_color)
-        self.ready_btn.draw(self.display, self.ready_btn.outline_color)
+        self.ready_btn.draw(self.display, self.ready_btn.outline_color) # see NOTE above
         self.mv_selected_btn.draw(self.display, self.mv_selected_btn.outline_color)
         self.sort_btn.draw(self.display, self.sort_btn.outline_color)
         self.prepare_card_btn.draw(self.display, self.prepare_card_btn.outline_color)
@@ -104,6 +116,7 @@ class HandView:
                 elif self.ready_btn.isOver(pos):
                     tempReady = self.controller.isReady()
                     self.controller.setReady(not tempReady) #want to eventually make this a checkbox so I won't have to do this check not thing
+                    print(str(self.controller.ready))
                 elif self.mv_selected_btn.isOver(pos):
                     self.hand_info.sort(
                         key=lambda wc: (wc.img_clickable.x + (wc.status * UIC.Disp_Width))
@@ -113,6 +126,10 @@ class HandView:
                     self.already_prepared_cards = self.controller.getPreparedCards()
                     self.wrapped_cards_to_prep = self.gatherSelected()
                     self.wild_cards = self.controller.automaticallyPrepareCards(self.wrapped_cards_to_prep)
+                    # wild_cards[0] contains prepared cards minus automatically prepared cards wild card
+                    # that have not yet been designated, and wild_cards[1] is the
+                    # list of possible cards each could be assigned to.  Currently list of possibilities is
+                    # full list of playable cards [1,4,5....13] rather than something more sophisticated.
                     self.num_wilds = len(self.wild_cards)
                     # newly_prepped_cards = all prepared cards minus already_prepared_cards
                     self.newly_prepped_cards = self.controller.getPreparedCards()
@@ -274,7 +291,10 @@ class HandView:
             element.img_clickable.y = card_xy[1]
             card_xy = (card_xy[0] + UIC.Card_Spacing, card_xy[1])
             if card_xy[0] > UIC.Disp_Width:
-                print('Need to make loc_xy assignment more sophisticated')
+                print('Layout code is too simple-use selection and sort buttons to see cards on right')
+                # todo: figure out why next line never appears.
+                self.controller.note = 'Layout code is too simple-use selection and sort buttons ' \
+                                       'to see cards on right'
             refreshed.append(element)
         return refreshed
 
@@ -316,3 +336,13 @@ class HandView:
             if element.status == 2:
                 element.status = 0
                 element.img_clickable.changeOutline(0)
+    def mesgBetweenRounds(self, results):
+        # print results where cards usually go until Ready button is clicked for next round.
+        font = UIC.Big_Text
+        y_offset = (UIC.Disp_Height * (1 - (UIC.Hand_Row_Fraction * 0.8)))
+        for result_string in results:
+            text_surface = font.render(result_string, True, UIC.Black)
+            text_rect = text_surface.get_rect()
+            text_rect.center = ((UIC.Disp_Width / 2),  y_offset)
+            y_offset = y_offset + UIC.Text_Feed
+            self.display.blit(text_surface, text_rect)
