@@ -79,7 +79,9 @@ class HandView:
 
         for event in pygame.event.get():
             if self.num_wilds > 0:
-                self.controller.note = 'You need to designate your prepared wild cards.'
+                wild_instructions = 'Use the keyboard to designate your prepared wild cards \r\n '
+                wild_instructions = wild_instructions + '(use 0 for 10 and J, Q, or K for facecards).'
+                self.controller.note = wild_instructions
             pos = pygame.mouse.get_pos()
 
             if event.type == pygame.QUIT:
@@ -92,6 +94,8 @@ class HandView:
                 if self.pickup_pile_sz > 0:
                     if self.pickup_pile.isOver(pos):
                         self.controller.pickUpPile()
+                        if len(self.controller.prepared_cards) == 0:
+                            self.clearPreparedCardsGui()
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
                 elif self.sort_btn.isOver(pos):
@@ -121,12 +125,11 @@ class HandView:
                             wrappedcard.img_clickable.changeOutline(4)
                 elif self.play_prepared_cards_btn.isOver(pos):
                     self.controller.play()
+                    if len(self.controller.prepared_cards) == 0:
+                        self.clearPreparedCardsGui()
                 elif self.clear_prepared_cards_btn.isOver(pos):
                     self.controller.clearPreparedCards()
-                    for element in self.hand_info:
-                        if element.status == 2:
-                            element.status = 0
-                            element.img_clickable.changeOutline(0)
+                    self.clearPreparedCardsGui()
                 elif self.discard_action_btn.isOver(pos):
                     wc_list = []
                     for element in self.gatherSelected():
@@ -308,3 +311,8 @@ class HandView:
                     for element in wrapped_discards:
                         self.hand_info.remove(element)
             return False # now that this is done, we don't have anything waiting on confirmation
+    def clearPreparedCardsGui(self):
+        for element in self.hand_info:
+            if element.status == 2:
+                element.status = 0
+                element.img_clickable.changeOutline(0)
