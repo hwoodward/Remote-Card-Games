@@ -14,6 +14,8 @@ class GameServer(Server, ServerState):
         Server.__init__(self, localaddr=localaddr)
         ServerState.__init__(self, ruleset)
         self.players = []
+        self.in_round = False
+        self.game_over = False
         print('Server launched')
 
     def Connected(self, channel, addr):
@@ -28,6 +30,8 @@ class GameServer(Server, ServerState):
 
     def checkReady(self):
         """Confirm if all players are ready to move on to next round"""
+        if self.in_round:
+            return False
         player_states = [p.ready for p in self.players]
         if False not in player_states:
             self.nextRound()
@@ -36,10 +40,11 @@ class GameServer(Server, ServerState):
     def nextRound(self):
         """Start the next round of play"""
         self.round += 1
+        self.in_round = True
         if self.round > self.rules.Number_Rounds:
             #Game is over
             print("GAME OVER - CHECK LAST SCORE REPORT FOR FINAL RESULT")
-            #TODO: make this better!
+            self.game_over = True
         self.constructDeck(len(self.players))
         for player in self.players:
             player.Send_deal(self.dealHands(), self.round)

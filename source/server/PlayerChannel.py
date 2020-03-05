@@ -75,14 +75,17 @@ class PlayerChannel(Channel):
     
     def Network_goOut(self, data):
         self._server.Send_endRound(self.name)
+        self._server.in_round = False
         
     ### Score reports ###
     def Network_reportScore(self, data):
         score = data["score"]
         self.scores.append(score)
         self._server.Send_scores()
-        #Clear out visible cards since the round is over
+        #Clear out visible cards since the round is over (This clear won't be broadcast until later)
         self.visible_cards = {}
+        #In case everyone is already ready to go and don't want to analyze:
+        self._server.checkReady()
         
     ### Visible card updates ###
     def Network_publicInfo(self, data):
