@@ -2,6 +2,7 @@ from server.PlayerChannel import PlayerChannel
 from server.ServerState import ServerState
 
 from PodSixNet.Server import Server
+from PodSixNet.Channel import Channel
 
 
 class GameServer(Server, ServerState):
@@ -28,9 +29,14 @@ class GameServer(Server, ServerState):
             self.Send_publicInfo()
             print(channel, "Client connected")
 
-     def disconnect(self, channel):
-         """Called by a channel when it disconnects"""
-         self.players.remove(channel)
+    def disconnect(self, channel):
+        """Called by a channel when it disconnects"""
+        player_index = self.players.index(channel)
+        self.players.remove(channel)
+        if self.turn_index == player_index:
+            #It was disconnected players turn, need to send newTurn to the next player, accounting for adjusted list
+            self.turn_index = self.turn_index % len(self.players) 
+            self.players[self.turn_index].Send({"action": "startTurn"})
          
     def checkReady(self):
         """Confirm if all players are ready to move on to next round"""
