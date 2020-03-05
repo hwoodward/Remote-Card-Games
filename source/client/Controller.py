@@ -264,7 +264,4 @@ class Controller(ConnectionListener):
 
 
     def Network_clearReady(self, data):
-        # to be done: find out what this routine is meant to do...right now it's resetting ready to false when
-        # the round is underway, and I want ready to be true until round ends.
-        # slw -- self.setReady(False)
-        print('in controller.Network_clear')
+        self.setReady(False)
