@@ -55,7 +55,6 @@ class HandView:
             # self.mesgBetweenRounds(TableView.results)
             self.mesgBetweenRounds(self.betweenrounds)
             # self.ready_btn.draw(self.display, self.ready_btn.outline_color)
-            # NOTE - button was active regardless of whether drawn or not
         else:
             self.betweenrounds = ''
         self.last_hand = self.current_hand
@@ -75,7 +74,8 @@ class HandView:
             self.pickup_pile = self.top_discard_wrapped.img_clickable
             loc_xy = (self.pickup_pile.x, self.pickup_pile.y)
             self.pickup_pile.draw(self.display, loc_xy, self.pickup_pile.outline_color)
-        self.ready_btn.draw(self.display, self.ready_btn.outline_color) # see NOTE above
+        if not self.controller.ready:
+            self.ready_btn.draw(self.display, self.ready_btn.outline_color)
         self.mv_selected_btn.draw(self.display, self.mv_selected_btn.outline_color)
         self.sort_btn.draw(self.display, self.sort_btn.outline_color)
         self.prepare_card_btn.draw(self.display, self.prepare_card_btn.outline_color)
@@ -113,10 +113,8 @@ class HandView:
                 elif self.sort_btn.isOver(pos):
                     self.hand_info.sort(key=lambda wc: wc.key)
                     self.hand_info = self.refreshXY(self.hand_info)
-                elif self.ready_btn.isOver(pos):
-                    tempReady = self.controller.isReady()
-                    self.controller.setReady(not tempReady) #want to eventually make this a checkbox so I won't have to do this check not thing
-                    print(str(self.controller.ready))
+                elif not self.controller.ready and self.ready_btn.isOver(pos):
+                    self.controller.setReady(True)
                 elif self.mv_selected_btn.isOver(pos):
                     self.hand_info.sort(
                         key=lambda wc: (wc.img_clickable.x + (wc.status * UIC.Disp_Width))
