@@ -28,6 +28,10 @@ class GameServer(Server, ServerState):
             self.Send_publicInfo()
             print(channel, "Client connected")
 
+     def disconnect(self, channel):
+         """Called by a channel when it disconnects"""
+         self.players.remove(channel)
+         
     def checkReady(self):
         """Confirm if all players are ready to move on to next round"""
         if self.in_round:

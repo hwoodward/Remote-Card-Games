@@ -16,6 +16,12 @@ class PlayerChannel(Channel):
         self.ready = False #for consensus transitions
         Channel.__init__(self, *args, **kwargs)
 
+    def Close(self):
+        """Called by podsixnet when a client disconnects"""
+        print("CLIENT DISCONNECTED FOR {0}".format(self.name))
+        self._server.disconnect(self)
+     
+
     def scoreForRound(self, round):
         """Handles getting score for round so we don't error if this player hasn't reported yet"""
         try:
