@@ -37,6 +37,7 @@ class HandView:
         if self.pickup_pile_sz > 0:
             self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25))
             self.pickup_pile = self.top_discard_wrapped.img_clickable
+            self.labelMedium(str(self.pickup_pile_sz), 150, 35)
         # Buttons to cause actions -- e.g. cards will be sorted by selection status or by number.
         self.ready_btn = Btn.Button(UIC.White, 10, (UIC.Disp_Height-30), 225, 25, text='ready to play')
         self.mv_selected_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='sort by status')
@@ -74,6 +75,8 @@ class HandView:
             self.pickup_pile = self.top_discard_wrapped.img_clickable
             loc_xy = (self.pickup_pile.x, self.pickup_pile.y)
             self.pickup_pile.draw(self.display, loc_xy, self.pickup_pile.outline_color)
+            self.labelMedium(str(self.pickup_pile_sz), 150, 35)
+
         if not self.controller.ready:
             self.ready_btn.draw(self.display, self.ready_btn.outline_color)
         self.mv_selected_btn.draw(self.display, self.mv_selected_btn.outline_color)
@@ -344,3 +347,10 @@ class HandView:
             text_rect.center = ((UIC.Disp_Width / 2),  y_offset)
             y_offset = y_offset + UIC.Text_Feed
             self.display.blit(text_surface, text_rect)
+
+    def labelMedium(self, labelstr, x_offset, y_offset):
+        font = UIC.Medium_Text
+        text_surface = font.render(labelstr, True, UIC.Bright_Blue)
+        text_rect = text_surface.get_rect()
+        text_rect.center = (x_offset, y_offset)
+        self.display.blit(text_surface, text_rect)
