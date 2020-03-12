@@ -32,7 +32,7 @@ class GameServer(Server, ServerState):
     def disconnect(self, channel):
         """Called by a channel when it disconnects"""
         player_index = self.players.index(channel)
-        self.players.remove(channel)
+        self.delPlayer(channel)
         if self.turn_index == player_index:
             #It was disconnected players turn, need to send newTurn to the next player, accounting for adjusted list
             self.turn_index = self.turn_index % len(self.players) 
@@ -65,7 +65,9 @@ class GameServer(Server, ServerState):
     def delPlayer(self, player):
         """Remove a player from the turn order"""
         self.players.remove(player)
-        self.Send_turnOrder();
+        self.Send_publicInfo();
+        if len(self.players) == 0:
+            self.game_over = True
 
     def nextTurn(self):
         """Advance to the next trun"""

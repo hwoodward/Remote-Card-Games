@@ -16,11 +16,6 @@ class PlayerChannel(Channel):
         self.ready = False #for consensus transitions
         Channel.__init__(self, *args, **kwargs)
 
-    def Close(self):
-        """Called by podsixnet when a client disconnects"""
-        print("CLIENT DISCONNECTED FOR {0}".format(self.name))
-        self._server.disconnect(self)
-     
 
     def scoreForRound(self, round):
         """Handles getting score for round so we don't error if this player hasn't reported yet"""
@@ -33,10 +28,12 @@ class PlayerChannel(Channel):
         """Called when a player disconnects
         Removes player from the turn order
         """
-        if self._server.round == -1:
-            self._server.delPlayer(self)
+        print("in_round value is: {0}".format(self._server.in_round))
+        if self._server.in_round:
+            self._server.delPlayer(self) #not during an active game, just delete.
             print(self, 'Client disconnected')
         else:
+            self._server.disconnect(self) #more complex disconnect logic to handle turns
             print(self, 'Client disconnected during active game')
 
     def Send_newCards(self, cards):
