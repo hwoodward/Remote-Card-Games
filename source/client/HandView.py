@@ -23,7 +23,6 @@ class HandView:
         self.prepared_cards = []     # will contain list of prepared cards from controller
         self.discards = []
         self.discard_confirm = False
-        # self.wilds_designated = True # All prepared wilds have been designated.
         self.num_wilds = 0
         self.wild_cards = []
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
@@ -35,9 +34,8 @@ class HandView:
             self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25))
             self.pickup_pile = self.top_discard_wrapped.img_clickable
         # Buttons to cause actions -- e.g. cards will be sorted by selection status or by number.
-        # will move hard coded numbers to UIC constants once I've worked them out a bit more.
         self.ready_btn = Btn.Button(UIC.White, 10, (UIC.Disp_Height-30), 225, 25, text='ready to play')
-        # FUTURE: may wish to only display ready button only when relevant.
+        # todo: should we only display ready button only when relevant?
         self.mv_selected_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='sort by status')
         self.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort by number')
         self.prepare_card_btn = Btn.Button(UIC.White, 400, 25, 345, 25, text='Selected cards -> prepared cards')
@@ -196,7 +194,6 @@ class HandView:
                             if (color_index % 2) == 1:
                                 color_index = color_index - 1
                                 element.img_clickable.changeOutline(color_index)
-            # else:
             # This next section has player enter desired values for wild cards.
             elif event.type == pygame.KEYDOWN and self.num_wilds > 0:
                 textnote = "Designate one of " + str(self.num_wilds) + "  wildcard(s)"
@@ -217,6 +214,7 @@ class HandView:
                 elif event.unicode in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0']:
                     wild_key = int(event.unicode)
                     self.controller.note = "This wild will be included with set of " + str(wild_key) +'s'
+                    #todo: remove line above if note never appears.
                 else:
                     self.controller.note = 'invalid key:' + textnote
                     wild_key = 666

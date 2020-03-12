@@ -20,8 +20,8 @@ class UICardWrapper:
         suit_letter = 'N'  # this doesn't distinguish between red & black Jokers
         if card.suit is not None:
             suit_letter = card.suit[0]
-        image_file = os.path.join('client', 'cardimages', 'card' + str(card.number) + suit_letter + '.png')
-        img = pygame.image.load(image_file)
+        image_index = str(card.number) + suit_letter
+        img = UIC.card_images[image_index]
         img = pygame.transform.rotozoom(img, 0, UIC.scale)
         return img
 

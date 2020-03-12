@@ -113,5 +113,5 @@ class Card():
 
     @staticmethod
     def getJokerDeck():
-        """Provides a with jokers based on the standard deck"""
+        """Provides a deck with jokers based on the standard deck"""
         return Card.getStandardDeck() + [Card(0, None), Card(0, None)]
