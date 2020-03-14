@@ -57,7 +57,8 @@ class HandView:
             # self.mesgBetweenRounds(TableView.results)
             self.mesgBetweenRounds(self.betweenrounds)
         else:
-            self.betweenrounds = ''
+            self.betweenrounds = ['print score here']
+            # ToDo: get scores so can print here...
         self.last_hand = self.current_hand
         self.current_hand = self.controller.getHand()
         if not self.last_hand == self.current_hand:
@@ -112,6 +113,12 @@ class HandView:
                         self.controller.pickUpPile()
                         if len(self.controller.prepared_cards) == 0:
                             self.clearPreparedCardsGui()
+                        # manually remove cards played, else an ambiguity in wrapped cards causes
+                        # picked up cards to sometimes get wrapping of cards just played.
+                        for wrappedcard in self.hand_info:
+                            if wrappedcard.status == 2:
+                                self.hand_info.remove(wrappedcard)
+                                self.last_hand.remove(wrappedcard.card)
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
                 elif self.sort_btn.isOver(pos):
@@ -119,6 +126,7 @@ class HandView:
                     self.hand_info = self.refreshXY(self.hand_info)
                 elif self.controller._state.round == -1 and self.ready_yes_btn.isOver(pos):
                     self.controller.setReady(True)
+                    # ToDo: test behavior of the ready buttons!
                 elif self.controller._state.round == -1 and self.ready_no_btn.isOver(pos):
                     self.controller.setReady(False)
                 elif self.mv_selected_btn.isOver(pos):
@@ -250,7 +258,7 @@ class HandView:
                     self.controller.note = str(this_wild) + ' will be a ' + str(wild_key)
                     icount = 0
                     for wrappedcard in self.wrapped_cards_to_prep:
-                        if wrappedcard.card == this_wild and icount == 0:
+                        if wrappedcard.card == this_wild and icount == 0 and wrappedcard.status == 1:
                             icount = 1
                             wrappedcard.status = 2
                             wrappedcard.img_clickable.changeOutline(4)
