@@ -127,6 +127,7 @@ class HandView:
                 elif self.controller._state.round == -1 and self.ready_yes_btn.isOver(pos):
                     self.controller.setReady(True)
                     # ToDo: test behavior of the ready buttons!
+
                 elif self.controller._state.round == -1 and self.ready_no_btn.isOver(pos):
                     self.controller.setReady(False)
                 elif self.mv_selected_btn.isOver(pos):
