@@ -2,6 +2,7 @@ from server.PlayerChannel import PlayerChannel
 from server.ServerState import ServerState
 
 from PodSixNet.Server import Server
+from PodSixNet.Channel import Channel
 
 
 class GameServer(Server, ServerState):
@@ -14,6 +15,8 @@ class GameServer(Server, ServerState):
         Server.__init__(self, localaddr=localaddr)
         ServerState.__init__(self, ruleset)
         self.players = []
+        self.in_round = False
+        self.game_over = False
         print('Server launched')
 
     def Connected(self, channel, addr):
@@ -26,8 +29,19 @@ class GameServer(Server, ServerState):
             self.Send_publicInfo()
             print(channel, "Client connected")
 
+    def disconnect(self, channel):
+        """Called by a channel when it disconnects"""
+        player_index = self.players.index(channel)
+        self.delPlayer(channel)
+        if self.turn_index == player_index:
+            #It was disconnected players turn, need to send newTurn to the next player, accounting for adjusted list
+            self.turn_index = self.turn_index % len(self.players) 
+            self.players[self.turn_index].Send({"action": "startTurn"})
+         
     def checkReady(self):
         """Confirm if all players are ready to move on to next round"""
+        if self.in_round:
+            return False
         player_states = [p.ready for p in self.players]
         if False not in player_states:
             self.nextRound()
@@ -36,10 +50,11 @@ class GameServer(Server, ServerState):
     def nextRound(self):
         """Start the next round of play"""
         self.round += 1
+        self.in_round = True
         if self.round > self.rules.Number_Rounds:
             #Game is over
             print("GAME OVER - CHECK LAST SCORE REPORT FOR FINAL RESULT")
-            #TODO: make this better!
+            self.game_over = True
         self.constructDeck(len(self.players))
         for player in self.players:
             player.Send_deal(self.dealHands(), self.round)
@@ -50,7 +65,9 @@ class GameServer(Server, ServerState):
     def delPlayer(self, player):
         """Remove a player from the turn order"""
         self.players.remove(player)
-        self.Send_turnOrder();
+        self.Send_publicInfo();
+        if len(self.players) == 0:
+            self.game_over = True
 
     def nextTurn(self):
         """Advance to the next trun"""

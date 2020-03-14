@@ -16,6 +16,7 @@ class PlayerChannel(Channel):
         self.ready = False #for consensus transitions
         Channel.__init__(self, *args, **kwargs)
 
+
     def scoreForRound(self, round):
         """Handles getting score for round so we don't error if this player hasn't reported yet"""
         try:
@@ -27,10 +28,12 @@ class PlayerChannel(Channel):
         """Called when a player disconnects
         Removes player from the turn order
         """
-        if self._server.round == -1:
-            self._server.delPlayer(self)
+        print("in_round value is: {0}".format(self._server.in_round))
+        if self._server.in_round:
+            self._server.delPlayer(self) #not during an active game, just delete.
             print(self, 'Client disconnected')
         else:
+            self._server.disconnect(self) #more complex disconnect logic to handle turns
             print(self, 'Client disconnected during active game')
 
     def Send_newCards(self, cards):
@@ -75,14 +78,17 @@ class PlayerChannel(Channel):
     
     def Network_goOut(self, data):
         self._server.Send_endRound(self.name)
+        self._server.in_round = False
         
     ### Score reports ###
     def Network_reportScore(self, data):
         score = data["score"]
         self.scores.append(score)
         self._server.Send_scores()
-        #Clear out visible cards since the round is over
+        #Clear out visible cards since the round is over (This clear won't be broadcast until later)
         self.visible_cards = {}
+        #In case everyone is already ready to go and don't want to analyze:
+        self._server.checkReady()
         
     ### Visible card updates ###
     def Network_publicInfo(self, data):
