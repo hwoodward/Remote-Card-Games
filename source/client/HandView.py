@@ -7,7 +7,7 @@ from client.UICardWrapper import UICardWrapper
 import client.UIConstants as UIC
 from common.Card import Card
 # import client.TableView as TableView  # ony used for printing results...
-# ToDo - debug problem with Tableview.results --- it's not working.
+# ToDo - print results between rounds. Currently not finding Tableview.results
 # ToDo -  had to comment out lines where I wanted to print scores.
 
 class HandView:
@@ -27,8 +27,8 @@ class HandView:
         self.discard_confirm = False
         self.num_wilds = 0
         self.wild_cards = []
-        self.betweenrounds = ['New game! When ready to start playing click on the YES button on the lower right ', \
-                       'to discard select ONE card and double click on discard button. ', \
+        self.betweenrounds = ['New game (or round)! When ready to start playing click on the YES button on the ', \
+                       'lower right to discard select ONE card and double click on discard button. ', \
                        'To pick up pile prepare necessary cards and then click on discard pile.']
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
         # discard info
@@ -57,9 +57,9 @@ class HandView:
 
         if (self.controller._state.round == -1):
             # self.results = TableView.results # want to print TableView.results, but that isn't working.
-            # ToDo: get scores so can print here...
-            self.betweenrounds = ['want to print TableView.results']
-            # self.mesgBetweenRounds(TableView.results)
+            # ToDo: get scores so can print here after first round is complete.
+            # ToDo: However, having trouble getting TableView.results here.
+            # ToDo: printing initial instructions when state.round == -1
             self.mesgBetweenRounds(self.betweenrounds)
         else:
             # set colors to what they need to be at the start of the "between rounds" state.
@@ -83,7 +83,6 @@ class HandView:
             loc_xy = (self.pickup_pile.x, self.pickup_pile.y)
             self.pickup_pile.draw(self.display, loc_xy, self.pickup_pile.outline_color)
             self.labelMedium(str(self.pickup_pile_sz), 150, 35)
-
         if self.controller._state.round == -1 :
             self.ready_yes_btn.draw(self.display, self.ready_yes_btn.outline_color)
             self.ready_no_btn.draw(self.display, self.ready_no_btn.outline_color)
@@ -258,8 +257,6 @@ class HandView:
                     wild_key = 13
                 elif event.unicode in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0']:
                     wild_key = int(event.unicode)
-                    self.controller.note = "This wild will be included with set of " + str(wild_key) +'s'
-                    #todo: remove line above if note never appears.
                 else:
                     self.controller.note = 'invalid key:' + textnote
                     wild_key = 666
