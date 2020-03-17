@@ -46,7 +46,7 @@ scale = 0.7
 Card_Spacing = 70 * scale
 outline_width = 8 * scale
 no_outline_color = (-1, -1, -1)  # flags there is no outline.
-outline_colors = (no_outline_color, Yellow, Green, Bright_Green, Bright_Blue, Bright_Blue)
+outline_colors = (no_outline_color, Yellow, Green, Bright_Green, Bright_Blue, Bright_Blue, Gray, Gray, Red, Bright_Red)
 # Since cannot change prepared cards status with mouse, don't highlight those cards when mouse is over them...
 # no_outline_color indicates clickable image (usually a card) not selected or prepared.
 # Yellow indicates not selected, but mouse is over clickable image.

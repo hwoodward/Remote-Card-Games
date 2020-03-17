@@ -6,8 +6,9 @@ from client.CreateDisplay import CreateDisplay
 from client.UICardWrapper import UICardWrapper
 import client.UIConstants as UIC
 from common.Card import Card
-# import client.TableView as TableView  #ToDo: evaluate if I really need to import this...
-
+# import client.TableView as TableView  # ony used for printing results...
+# ToDo - debug problem with Tableview.results --- it's not working.
+# ToDo -  had to comment out lines where I wanted to print scores.
 
 class HandView:
     """This class handles letting players actually input information
@@ -40,7 +41,9 @@ class HandView:
             self.labelMedium(str(self.pickup_pile_sz), 150, 35)
         # Buttons to cause actions -- e.g. cards will be sorted by selection status or by number.
         self.ready_yes_btn = Btn.Button(UIC.White, (UIC.Disp_Width-150), (UIC.Disp_Height-70), 125, 25, text='Ready:YES')
+        self.ready_color_idx = 2 # color of outline will be: UIC.outline_colors(ready_color_idx)
         self.ready_no_btn = Btn.Button(UIC.White, (UIC.Disp_Width-150), (UIC.Disp_Height-30), 125, 25, text='Ready:NO')
+        self.not_ready_color_idx = 6 # color of outline will be: UIC.outline_colors(ready_color_idx)
         self.mv_selected_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='sort by status')
         self.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort by number')
         self.prepare_card_btn = Btn.Button(UIC.White, 400, 25, 345, 25, text='Selected cards -> prepared cards')
@@ -53,12 +56,15 @@ class HandView:
         """This updates the view of the hand """
 
         if (self.controller._state.round == -1):
-            # want to print TableView.results, but that isn't working.
+            # self.results = TableView.results # want to print TableView.results, but that isn't working.
+            # ToDo: get scores so can print here...
+            self.betweenrounds = ['want to print TableView.results']
             # self.mesgBetweenRounds(TableView.results)
             self.mesgBetweenRounds(self.betweenrounds)
         else:
-            self.betweenrounds = ['print score here']
-            # ToDo: get scores so can print here...
+            # set colors to what they need to be at the start of the "between rounds" state.
+            self.ready_color_idx = 2
+            self.not_ready_color_idx = 6
         self.last_hand = self.current_hand
         self.current_hand = self.controller.getHand()
         if not self.last_hand == self.current_hand:
@@ -126,10 +132,12 @@ class HandView:
                     self.hand_info = self.refreshXY(self.hand_info)
                 elif self.controller._state.round == -1 and self.ready_yes_btn.isOver(pos):
                     self.controller.setReady(True)
-                    # ToDo: test behavior of the ready buttons!
-
+                    self.ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
+                    self.not_ready_color_idx = 8  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
                 elif self.controller._state.round == -1 and self.ready_no_btn.isOver(pos):
                     self.controller.setReady(False)
+                    self.ready_color_idx = 2  # color of outline will be: UIC.outline_colors(ready_color_idx)
+                    self.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
                 elif self.mv_selected_btn.isOver(pos):
                     self.hand_info.sort(
                         key=lambda wc: (wc.img_clickable.x + (wc.status * UIC.Disp_Width))
@@ -187,13 +195,13 @@ class HandView:
                     else:
                        self.pickup_pile.changeOutline(0)
                 if self.ready_yes_btn.isOver(pos):
-                    self.ready_yes_btn.outline_color = UIC.Bright_Green # set outline color
+                    self.ready_yes_btn.outline_color = UIC.outline_colors[self.ready_color_idx + 1]
                 else:
-                    self.ready_yes_btn.outline_color = UIC.Green # change outline
+                    self.ready_yes_btn.outline_color = UIC.outline_colors[self.ready_color_idx]
                 if self.ready_no_btn.isOver(pos):
-                    self.ready_no_btn.outline_color = UIC.Bright_Red # set outline color
+                    self.ready_no_btn.outline_color = UIC.outline_colors[self.not_ready_color_idx + 1]
                 else:
-                    self.ready_no_btn.outline_color = UIC.Red # change outline
+                    self.ready_no_btn.outline_color = UIC.outline_colors[self.not_ready_color_idx]
                 if self.mv_selected_btn.isOver(pos):
                     self.mv_selected_btn.outline_color = UIC.Black  # set outline color
                 else:
