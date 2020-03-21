@@ -51,7 +51,7 @@ class GameServer(Server, ServerState):
         """Start the next round of play"""
         self.round += 1
         self.in_round = True
-        if self.round > self.rules.Number_Rounds:
+        if self.round > self.rules.Number_Rounds-1: #Need to take one off Number_Rounds because we index from zero
             #Game is over
             print("GAME OVER - CHECK LAST SCORE REPORT FOR FINAL RESULT")
             self.game_over = True
