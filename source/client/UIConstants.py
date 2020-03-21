@@ -47,15 +47,15 @@ Card_Spacing = 70 * scale
 outline_width = 8 * scale
 no_outline_color = (-1, -1, -1)  # flags there is no outline.
 outline_colors = (no_outline_color, Yellow, Green, Bright_Green, Bright_Blue, Bright_Blue, Gray, Gray, Red, Bright_Red)
-# Since cannot change prepared cards status with mouse, don't highlight those cards when mouse is over them...
-# no_outline_color indicates clickable image (usually a card) not selected or prepared.
-# Yellow indicates not selected, but mouse is over clickable image.
-# green elements indicate card is 'selected'
-# bright green indicates mouse is over card.
-# blue indicates card is prepared (for play).
-
+'''
+No_outline_color indicates clickable image (usually a card) not selected or prepared.
+Yellow indicates not selected, but mouse is over clickable image.
+green elements indicate card is 'selected'
+bright green indicates mouse is over card,
+blue indicates card is prepared (for play).
+Since cannot change prepared cards status with mouse, don't highlight those cards when mouse is over them...
+'''
 # load image of back of card, and scale it.
-# Back_Img = pygame.image.load(os.path.join('client', 'cardimages', 'cardBack.png'))
 Back_Img = pygame.image.load(os.path.join('bundle_data', 'cardimages', 'cardBack.png'))
 Back_Img = pygame.transform.rotozoom(Back_Img, 0, scale)
 

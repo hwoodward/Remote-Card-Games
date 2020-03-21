@@ -15,7 +15,7 @@ class TableView(ConnectionListener):
         self.hand_status = []
         self.compressed_info = {}
         self.playerByPlayer()
-        self.results = ' test for now, make blank after debugging'
+        self.results = ' '
 
     def playerByPlayer(self):
         self.compressSets(self.visible_cards)

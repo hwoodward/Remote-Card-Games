@@ -6,9 +6,6 @@ from client.CreateDisplay import CreateDisplay
 from client.UICardWrapper import UICardWrapper
 import client.UIConstants as UIC
 from common.Card import Card
-# import client.TableView as TableView  # ony used for printing results...
-# ToDo - print results between rounds. Currently not finding Tableview.results
-# ToDo -  had to comment out lines where I wanted to print scores.
 
 class HandView:
     """This class handles letting players actually input information
@@ -59,7 +56,7 @@ class HandView:
             # self.results = TableView.results # want to print TableView.results, but that isn't working.
             # ToDo: get scores so can print here after first round is complete.
             # ToDo: However, having trouble getting TableView.results here.
-            # ToDo: printing initial instructions when state.round == -1
+            # ToDo: For now printing initial instructions when state.round == -1
             self.mesgBetweenRounds(self.betweenrounds)
         else:
             # set colors to what they need to be at the start of the "between rounds" state.
