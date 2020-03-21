@@ -33,7 +33,7 @@ class GameServer(Server, ServerState):
         """Called by a channel when it disconnects"""
         player_index = self.players.index(channel)
         self.delPlayer(channel)
-        if self.turn_index == player_index:
+        if self.turn_index == player_index and self.in_round:
             #It was disconnected players turn, need to send newTurn to the next player, accounting for adjusted list
             self.turn_index = self.turn_index % len(self.players) 
             self.players[self.turn_index].Send({"action": "startTurn"})

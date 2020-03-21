@@ -28,13 +28,8 @@ class PlayerChannel(Channel):
         """Called when a player disconnects
         Removes player from the turn order
         """
-        print("in_round value is: {0}".format(self._server.in_round))
-        if self._server.in_round:
-            self._server.delPlayer(self) #not during an active game, just delete.
-            print(self, 'Client disconnected')
-        else:
-            self._server.disconnect(self) #more complex disconnect logic to handle turns
-            print(self, 'Client disconnected during active game')
+        self._server.disconnect(self)
+        print(self, 'Client disconnected')
 
     def Send_newCards(self, cards):
         """Serialize cards and format json to send newCards from a draw or pile pickup""" 
