@@ -33,7 +33,7 @@ class GameServer(Server, ServerState):
         """Called by a channel when it disconnects"""
         player_index = self.players.index(channel)
         self.delPlayer(channel)
-        if self.turn_index == player_index:
+        if self.turn_index == player_index and self.in_round:
             #It was disconnected players turn, need to send newTurn to the next player, accounting for adjusted list
             self.turn_index = self.turn_index % len(self.players) 
             self.players[self.turn_index].Send({"action": "startTurn"})
@@ -51,11 +51,11 @@ class GameServer(Server, ServerState):
         """Start the next round of play"""
         self.round += 1
         self.in_round = True
-        if self.round > self.rules.Number_Rounds:
+        if self.round > self.rules.Number_Rounds-1: #Need to take one off Number_Rounds because we index from zero
             #Game is over
             print("GAME OVER - CHECK LAST SCORE REPORT FOR FINAL RESULT")
             self.game_over = True
-        self.constructDeck(len(self.players))
+        self.prepareRound(len(self.players))
         for player in self.players:
             player.Send_deal(self.dealHands(), self.round)
         #set turn index to the dealer then start play
