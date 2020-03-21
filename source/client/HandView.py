@@ -7,7 +7,6 @@ from client.UICardWrapper import UICardWrapper
 import client.UIConstants as UIC
 from common.Card import Card
 
-
 class HandView:
     """This class handles letting players actually input information
 
@@ -25,6 +24,9 @@ class HandView:
         self.discard_confirm = False
         self.num_wilds = 0
         self.wild_cards = []
+        self.betweenrounds = ['New game (or round)! When ready to start playing click on the YES button on the ', \
+                       'lower right to discard select ONE card and double click on discard button. ', \
+                       'To pick up pile prepare necessary cards and then click on discard pile.']
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
         # discard info
         discard_info = self.controller.getDiscardInfo()
@@ -33,9 +35,12 @@ class HandView:
         if self.pickup_pile_sz > 0:
             self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25))
             self.pickup_pile = self.top_discard_wrapped.img_clickable
+            self.labelMedium(str(self.pickup_pile_sz), 150, 35)
         # Buttons to cause actions -- e.g. cards will be sorted by selection status or by number.
-        self.ready_btn = Btn.Button(UIC.White, 10, (UIC.Disp_Height-30), 225, 25, text='ready to play')
-        # todo: should we only display ready button only when relevant?
+        self.ready_yes_btn = Btn.Button(UIC.White, (UIC.Disp_Width-150), (UIC.Disp_Height-70), 125, 25, text='Ready:YES')
+        self.ready_color_idx = 2 # color of outline will be: UIC.outline_colors(ready_color_idx)
+        self.ready_no_btn = Btn.Button(UIC.White, (UIC.Disp_Width-150), (UIC.Disp_Height-30), 125, 25, text='Ready:NO')
+        self.not_ready_color_idx = 6 # color of outline will be: UIC.outline_colors(ready_color_idx)
         self.mv_selected_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='sort by status')
         self.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort by number')
         self.prepare_card_btn = Btn.Button(UIC.White, 400, 25, 345, 25, text='Selected cards -> prepared cards')
@@ -43,9 +48,20 @@ class HandView:
         self.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 75, 225, 25, text='Play prepared cards')
         self.discard_action_btn = Btn.Button(UIC.Bright_Red, 190, 25, 100, 25, text='discard')
 
+
     def update(self):
         """This updates the view of the hand """
 
+        if (self.controller._state.round == -1):
+            # self.results = TableView.results # want to print TableView.results, but that isn't working.
+            # ToDo: get scores so can print here after first round is complete.
+            # ToDo: However, having trouble getting TableView.results here.
+            # ToDo: For now printing initial instructions when state.round == -1
+            self.mesgBetweenRounds(self.betweenrounds)
+        else:
+            # set colors to what they need to be at the start of the "between rounds" state.
+            self.ready_color_idx = 2
+            self.not_ready_color_idx = 6
         self.last_hand = self.current_hand
         self.current_hand = self.controller.getHand()
         if not self.last_hand == self.current_hand:
@@ -63,7 +79,10 @@ class HandView:
             self.pickup_pile = self.top_discard_wrapped.img_clickable
             loc_xy = (self.pickup_pile.x, self.pickup_pile.y)
             self.pickup_pile.draw(self.display, loc_xy, self.pickup_pile.outline_color)
-        self.ready_btn.draw(self.display, self.ready_btn.outline_color)
+            self.labelMedium(str(self.pickup_pile_sz), 150, 35)
+        if self.controller._state.round == -1 :
+            self.ready_yes_btn.draw(self.display, self.ready_yes_btn.outline_color)
+            self.ready_no_btn.draw(self.display, self.ready_no_btn.outline_color)
         self.mv_selected_btn.draw(self.display, self.mv_selected_btn.outline_color)
         self.sort_btn.draw(self.display, self.sort_btn.outline_color)
         self.prepare_card_btn.draw(self.display, self.prepare_card_btn.outline_color)
@@ -79,7 +98,9 @@ class HandView:
 
         for event in pygame.event.get():
             if self.num_wilds > 0:
-                self.controller.note = 'You need to designate your prepared wild cards.'
+                wild_instructions = 'Use the keyboard to designate your prepared wild cards \r\n '
+                wild_instructions = wild_instructions + '(use 0 for 10 and J, Q, or K for facecards).'
+                self.controller.note = wild_instructions
             pos = pygame.mouse.get_pos()
 
             if event.type == pygame.QUIT:
@@ -92,14 +113,27 @@ class HandView:
                 if self.pickup_pile_sz > 0:
                     if self.pickup_pile.isOver(pos):
                         self.controller.pickUpPile()
+                        if len(self.controller.prepared_cards) == 0:
+                            self.clearPreparedCardsGui()
+                        # manually remove cards played, else an ambiguity in wrapped cards causes
+                        # picked up cards to sometimes get wrapping of cards just played.
+                        for wrappedcard in self.hand_info:
+                            if wrappedcard.status == 2:
+                                self.hand_info.remove(wrappedcard)
+                                self.last_hand.remove(wrappedcard.card)
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
                 elif self.sort_btn.isOver(pos):
                     self.hand_info.sort(key=lambda wc: wc.key)
                     self.hand_info = self.refreshXY(self.hand_info)
-                elif self.ready_btn.isOver(pos):
-                    tempReady = self.controller.isReady()
-                    self.controller.setReady(not tempReady) #want to eventually make this a checkbox so I won't have to do this check not thing
+                elif self.controller._state.round == -1 and self.ready_yes_btn.isOver(pos):
+                    self.controller.setReady(True)
+                    self.ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
+                    self.not_ready_color_idx = 8  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
+                elif self.controller._state.round == -1 and self.ready_no_btn.isOver(pos):
+                    self.controller.setReady(False)
+                    self.ready_color_idx = 2  # color of outline will be: UIC.outline_colors(ready_color_idx)
+                    self.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
                 elif self.mv_selected_btn.isOver(pos):
                     self.hand_info.sort(
                         key=lambda wc: (wc.img_clickable.x + (wc.status * UIC.Disp_Width))
@@ -109,6 +143,10 @@ class HandView:
                     self.already_prepared_cards = self.controller.getPreparedCards()
                     self.wrapped_cards_to_prep = self.gatherSelected()
                     self.wild_cards = self.controller.automaticallyPrepareCards(self.wrapped_cards_to_prep)
+                    # wild_cards[0] contains prepared cards minus automatically prepared cards wild card
+                    # that have not yet been designated, and wild_cards[1] is the
+                    # list of possible cards each could be assigned to.  Currently list of possibilities is
+                    # full list of playable cards [1,4,5....13] rather than something more sophisticated.
                     self.num_wilds = len(self.wild_cards)
                     # newly_prepped_cards = all prepared cards minus already_prepared_cards
                     self.newly_prepped_cards = self.controller.getPreparedCards()
@@ -121,12 +159,11 @@ class HandView:
                             wrappedcard.img_clickable.changeOutline(4)
                 elif self.play_prepared_cards_btn.isOver(pos):
                     self.controller.play()
+                    if len(self.controller.prepared_cards) == 0:
+                        self.clearPreparedCardsGui()
                 elif self.clear_prepared_cards_btn.isOver(pos):
                     self.controller.clearPreparedCards()
-                    for element in self.hand_info:
-                        if element.status == 2:
-                            element.status = 0
-                            element.img_clickable.changeOutline(0)
+                    self.clearPreparedCardsGui()
                 elif self.discard_action_btn.isOver(pos):
                     wc_list = []
                     for element in self.gatherSelected():
@@ -153,10 +190,14 @@ class HandView:
                        self.pickup_pile.changeOutline(1)
                     else:
                        self.pickup_pile.changeOutline(0)
-                if self.ready_btn.isOver(pos):
-                    self.ready_btn.outline_color = UIC.Bright_Green # set outline color
+                if self.ready_yes_btn.isOver(pos):
+                    self.ready_yes_btn.outline_color = UIC.outline_colors[self.ready_color_idx + 1]
                 else:
-                    self.ready_btn.outline_color = UIC.Gray # change outline
+                    self.ready_yes_btn.outline_color = UIC.outline_colors[self.ready_color_idx]
+                if self.ready_no_btn.isOver(pos):
+                    self.ready_no_btn.outline_color = UIC.outline_colors[self.not_ready_color_idx + 1]
+                else:
+                    self.ready_no_btn.outline_color = UIC.outline_colors[self.not_ready_color_idx]
                 if self.mv_selected_btn.isOver(pos):
                     self.mv_selected_btn.outline_color = UIC.Black  # set outline color
                 else:
@@ -213,8 +254,6 @@ class HandView:
                     wild_key = 13
                 elif event.unicode in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0']:
                     wild_key = int(event.unicode)
-                    self.controller.note = "This wild will be included with set of " + str(wild_key) +'s'
-                    #todo: remove line above if note never appears.
                 else:
                     self.controller.note = 'invalid key:' + textnote
                     wild_key = 666
@@ -222,7 +261,7 @@ class HandView:
                     self.controller.note = str(this_wild) + ' will be a ' + str(wild_key)
                     icount = 0
                     for wrappedcard in self.wrapped_cards_to_prep:
-                        if wrappedcard.card == this_wild and icount == 0:
+                        if wrappedcard.card == this_wild and icount == 0 and wrappedcard.status == 1:
                             icount = 1
                             wrappedcard.status = 2
                             wrappedcard.img_clickable.changeOutline(4)
@@ -271,7 +310,10 @@ class HandView:
             element.img_clickable.y = card_xy[1]
             card_xy = (card_xy[0] + UIC.Card_Spacing, card_xy[1])
             if card_xy[0] > UIC.Disp_Width:
-                print('Need to make loc_xy assignment more sophisticated')
+                print('Layout code is too simple-use selection and sort buttons to see cards on right')
+                # todo: figure out why next line never appears.
+                self.controller.note = 'Layout code is too simple-use selection and sort buttons ' \
+                                       'to see cards on right'
             refreshed.append(element)
         return refreshed
 
@@ -308,3 +350,25 @@ class HandView:
                     for element in wrapped_discards:
                         self.hand_info.remove(element)
             return False # now that this is done, we don't have anything waiting on confirmation
+    def clearPreparedCardsGui(self):
+        for element in self.hand_info:
+            if element.status == 2:
+                element.status = 0
+                element.img_clickable.changeOutline(0)
+    def mesgBetweenRounds(self, results):
+        # print results where cards usually go until Ready button is clicked for next round.
+        font = UIC.Big_Text
+        y_offset = (UIC.Disp_Height * (1 - (UIC.Hand_Row_Fraction * 0.8)))
+        for result_string in results:
+            text_surface = font.render(result_string, True, UIC.Black)
+            text_rect = text_surface.get_rect()
+            text_rect.center = ((UIC.Disp_Width / 2),  y_offset)
+            y_offset = y_offset + UIC.Text_Feed
+            self.display.blit(text_surface, text_rect)
+
+    def labelMedium(self, labelstr, x_offset, y_offset):
+        font = UIC.Medium_Text
+        text_surface = font.render(labelstr, True, UIC.Bright_Blue)
+        text_rect = text_surface.get_rect()
+        text_rect.center = (x_offset, y_offset)
+        self.display.blit(text_surface, text_rect)

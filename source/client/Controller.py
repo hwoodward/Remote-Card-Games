@@ -7,8 +7,6 @@ Turn_Phases = ['inactive', 'draw', 'forcedAction', 'play']
 class Controller(ConnectionListener):
     """ This client connects to a GameServer which will host a cardgame
 
-    Currently the client is incomplete
-
     The client displays the game _state it receives from the server
     It validates and submits player actions to the server during the player's turn
     It submits its score on round or game end
@@ -262,6 +260,8 @@ class Controller(ConnectionListener):
         self._state.round = -1
         score = self._state.scoreRound()
         connection.Send({"action": "reportScore", "score": score})
-    
+        self.setReady(False)
+
+
     def Network_clearReady(self, data):
         self.setReady(False)

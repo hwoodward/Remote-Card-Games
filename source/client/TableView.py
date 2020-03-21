@@ -15,6 +15,7 @@ class TableView(ConnectionListener):
         self.hand_status = []
         self.compressed_info = {}
         self.playerByPlayer()
+        self.results = ' '
 
     def playerByPlayer(self):
         self.compressSets(self.visible_cards)
@@ -63,12 +64,12 @@ class TableView(ConnectionListener):
                     text_color = UIC.Black
                 ykey = y_coord + (UIC.Small_Text_Feed * (key - 3))
                 if key == 1:
-                    player_text = 'Aces' + detail_str
+                    player_text = 'Aces ' + detail_str
                     ykey = y_coord + (UIC.Small_Text_Feed * 11)
                 elif key == 11:
-                    player_text = 'Jacks' + detail_str
+                    player_text = 'Jacks ' + detail_str
                 elif key == 12:
-                    player_text = 'Queens' + detail_str
+                    player_text = 'Queens ' + detail_str
                 elif key == 13:
                     player_text = 'Kings ' + detail_str
                 else:
@@ -91,12 +92,13 @@ class TableView(ConnectionListener):
             for key in melded:
                 set = melded[key]
                 length_set = len(set)
-                wild_count = 0
-                for s_card in set:
-                    # Need to change below to: if s_card.number == 0 or s_card.number == 2:
-                    if s_card[0] == 0 or s_card[0] == 2:
-                        wild_count = wild_count + 1
-                summary[key] = (length_set, (length_set - wild_count), wild_count)
+                if length_set > 0:
+                    wild_count = 0
+                    for s_card in set:
+                        # Need to change below to: if s_card.number == 0 or s_card.number == 2:
+                        if s_card[0] == 0 or s_card[0] == 2:
+                            wild_count = wild_count + 1
+                    summary[key] = (length_set, (length_set - wild_count), wild_count)
             self.compressed_info[key_player] = summary
 
 
@@ -122,9 +124,16 @@ class TableView(ConnectionListener):
     
     def Network_scores(self, data):
         """Notification from the server of the scores, in turn order"""
+
         round_scores = data["round_scores"]
         total_scores = data["total_scores"]
-        #TODO: eventually we should display these actually in the window instead of printing to terminal
+        self.results=''
         for idx in range(len(self.player_names)):
-            print("{0} scored {1} this round, and has {2} total".format(self.player_names[idx], round_scores[idx], total_scores[idx]))
-        
+            self.results = self.results + "  [" + self.player_names[idx] + ": " + str(round_scores[idx]) + " " \
+                      +  str(total_scores[idx]) +  "]  " + " \r \n "
+        print("{0} scored {1} this round, and  has {2} total".format(self.player_names[idx], round_scores[idx], total_scores[idx]))
+        print(self.results)
+
+
+
+
