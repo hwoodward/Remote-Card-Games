@@ -26,14 +26,19 @@ class ServerState():
         self.discard_pile = []
         self.turn_index = 0
 
-    def constructDeck(self, numPlayers):
-        """Build up and shuffle the draw_pile deck based on rules"""
+    def prepareRound(self, numPlayers):
+        """Reset the state for a round
+        
+        Constructs the shuffled draw pile
+        Clears out the discard pile
+        """
         deck = []
         for _ in range(0, self.rules.numDecks(numPlayers)):
             for card in self.rules.singleDeck():
                 deck.append(card)
         random.shuffle(deck)
         self.draw_pile = deck
+        self.discard_pile = []
 
     def drawCards(self):
         """Return the next Draw_Size cards from the draw pile"""

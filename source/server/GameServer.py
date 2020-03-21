@@ -55,7 +55,7 @@ class GameServer(Server, ServerState):
             #Game is over
             print("GAME OVER - CHECK LAST SCORE REPORT FOR FINAL RESULT")
             self.game_over = True
-        self.constructDeck(len(self.players))
+        self.prepareRound(len(self.players))
         for player in self.players:
             player.Send_deal(self.dealHands(), self.round)
         #set turn index to the dealer then start play
