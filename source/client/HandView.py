@@ -31,10 +31,11 @@ class HandView:
         self.round_advance = False
         self.round_meld = [50,90,120,150]
         self.betweenrounds = ['Welcome to a new game.  This is the round of 50.',\
-                        'When ready to start playing click on the YES button on the lower right.',\
-                        'To discard select ONE card & double click on discard button. To pick up pile ',\
-                        'PREPARE necessary cards & then click on discard pile. Cumulative score displays', \
-                        " beneath player's cards"]
+                        'To draw click on the deck of cards (upper left).',\
+                        'To discard select ONE card & double click on discard button. ',\
+                        'To pick up pile PREPARE necessary cards & then click on discard pile. ',\
+                        "Cumulative score will display beneath player's cards",\
+                        'When ready to start playing click on the YES button on the lower right.']
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
         # discard info
         discard_info = self.controller.getDiscardInfo()
@@ -366,12 +367,12 @@ class HandView:
                 element.img_clickable.changeOutline(0)
     def mesgBetweenRounds(self, results):
         # print results where cards usually go until Ready button is clicked for next round.
-        font = UIC.Big_Text
+        font = UIC.Medium_Text
         y_offset = (UIC.Disp_Height * (1 - (UIC.Hand_Row_Fraction * 0.8)))
         for result_string in results:
             text_surface = font.render(result_string, True, UIC.Black)
             text_rect = text_surface.get_rect()
-            text_rect.center = ((UIC.Disp_Width / 2),  y_offset)
+            text_rect.center = ((UIC.Disp_Width * 0.5),  y_offset)
             y_offset = y_offset + UIC.Text_Feed
             self.display.blit(text_surface, text_rect)
 
