@@ -68,6 +68,7 @@ class HandView:
                 self.betweenrounds[0] = 'This is the round of ' + str(self.round_meld[self.round_index]) + ' ! '
                 self.round_advance = False
         else:
+            self.round_advance = True
             # set colors to what they need to be at the start of the "between rounds" state.
             self.ready_color_idx = 2
             self.not_ready_color_idx = 6
@@ -137,7 +138,6 @@ class HandView:
                     self.hand_info = self.refreshXY(self.hand_info)
                 elif self.controller._state.round == -1 and self.ready_yes_btn.isOver(pos):
                     self.controller.setReady(True)
-                    self.round_advance = True
                     self.ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
                     self.not_ready_color_idx = 8  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
                 elif self.controller._state.round == -1 and self.ready_no_btn.isOver(pos):
