@@ -7,11 +7,13 @@ from client.UICardWrapper import UICardWrapper
 import client.UIConstants as UIC
 from common.Card import Card
 
+
 class HandView:
     """This class handles letting players actually input information
 
     Drawing, melding and discards are all done in this class.
     Player can also fidget with hand during other players' turns.
+    Parts of this version of HandView are customized for HandAndFoot.
     """
     def __init__(self, controller, display):
         self.controller = controller
@@ -24,9 +26,15 @@ class HandView:
         self.discard_confirm = False
         self.num_wilds = 0
         self.wild_cards = []
-        self.betweenrounds = ['New game (or round)! When ready to start playing click on the YES button on the ', \
-                       'lower right to discard select ONE card and double click on discard button. ', \
-                       'To pick up pile prepare necessary cards and then click on discard pile.']
+        #todo: required meld is hardcoded here. Should be in rules only...
+        self.round_index = 0
+        self.round_advance = False
+        self.round_meld = [50,90,120,150]
+        self.betweenrounds = ['Welcome to a new game.  This is the round of 50.',\
+                        'When ready to start playing click on the YES button on the lower right.',\
+                        'To discard select ONE card & double click on discard button. To pick up pile ',\
+                        'PREPARE necessary cards & then click on discard pile. Cumulative score displays', \
+                        " beneath player's cards"]
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
         # discard info
         discard_info = self.controller.getDiscardInfo()
@@ -53,11 +61,11 @@ class HandView:
         """This updates the view of the hand """
 
         if (self.controller._state.round == -1):
-            # self.results = TableView.results # want to print TableView.results, but that isn't working.
-            # ToDo: get scores so can print here after first round is complete.
-            # ToDo: However, having trouble getting TableView.results here.
-            # ToDo: For now printing initial instructions when state.round == -1
             self.mesgBetweenRounds(self.betweenrounds)
+            if self.round_advance:
+                self.round_index = self.round_index + 1
+                self.betweenrounds[0] = 'This is the round of ' + str(self.round_meld[self.round_index]) + ' ! '
+                self.round_advance = False
         else:
             # set colors to what they need to be at the start of the "between rounds" state.
             self.ready_color_idx = 2
@@ -115,12 +123,12 @@ class HandView:
                         self.controller.pickUpPile()
                         if len(self.controller.prepared_cards) == 0:
                             self.clearPreparedCardsGui()
-                        # manually remove cards played, else an ambiguity in wrapped cards causes
-                        # picked up cards to sometimes get wrapping of cards just played.
-                        for wrappedcard in self.hand_info:
-                            if wrappedcard.status == 2:
-                                self.hand_info.remove(wrappedcard)
-                                self.last_hand.remove(wrappedcard.card)
+                            # manually remove cards played, else an ambiguity in wrapped cards causes
+                            # picked up cards to sometimes get wrapping of cards just played.
+                            for wrappedcard in self.hand_info:
+                                if wrappedcard.status == 2:
+                                    self.hand_info.remove(wrappedcard)
+                                    self.last_hand.remove(wrappedcard.card)
                 if self.draw_pile.isOver(pos):
                     self.controller.draw()
                 elif self.sort_btn.isOver(pos):
@@ -128,6 +136,7 @@ class HandView:
                     self.hand_info = self.refreshXY(self.hand_info)
                 elif self.controller._state.round == -1 and self.ready_yes_btn.isOver(pos):
                     self.controller.setReady(True)
+                    self.round_advance = True
                     self.ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
                     self.not_ready_color_idx = 8  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
                 elif self.controller._state.round == -1 and self.ready_no_btn.isOver(pos):

@@ -4,8 +4,11 @@ from PodSixNet.Connection import connection, ConnectionListener
 import client.UIConstants as UIC
 from common.Card import Card
 
+
 class TableView(ConnectionListener):
     """ This displays publicly available info on all the players.
+
+    It was designed for HandAndFoot
     """
 
     def __init__(self, display):
@@ -15,7 +18,8 @@ class TableView(ConnectionListener):
         self.hand_status = []
         self.compressed_info = {}
         self.playerByPlayer()
-        self.results = ' '
+        self.results = {}
+
 
     def playerByPlayer(self):
         self.compressSets(self.visible_cards)
@@ -54,32 +58,41 @@ class TableView(ConnectionListener):
             y_coord = y_coord + UIC.Medium_Text_Feed
             self.display.blit(text_surface, text_rect)
             for key in melded_summary:
-                detail_str = str(melded_summary[key][0])
-                detail_str = detail_str + ': (' + str(melded_summary[key][1]) + ', ' + str(melded_summary[key][2]) +')'
-                if (melded_summary[key][0] > 6):
-                    detail_str = detail_str + '<<<'
-                if (melded_summary[key][2] == 0):
-                    text_color = UIC.Red
-                else:
-                    text_color = UIC.Black
-                ykey = y_coord + (UIC.Small_Text_Feed * (key - 3))
-                if key == 1:
-                    player_text = 'Aces ' + detail_str
-                    ykey = y_coord + (UIC.Small_Text_Feed * 11)
-                elif key == 11:
-                    player_text = 'Jacks ' + detail_str
-                elif key == 12:
-                    player_text = 'Queens ' + detail_str
-                elif key == 13:
-                    player_text = 'Kings ' + detail_str
-                else:
-                    player_text =  str(key) + "'s " + detail_str
-                text_surface, text_rect = self.textObjects(player_text, UIC.Small_Text, text_color)
-                text_rect.center = ((bk_grd_rect[0] + 0.5 * players_sp_w), (bk_grd_rect[1] + ykey))
-                self.display.blit(text_surface, text_rect)
+                if (melded_summary[key][0] > 0):
+                    detail_str = str(melded_summary[key][0])
+                    detail_str = detail_str + ': (' + str(melded_summary[key][1]) + ', ' + str(melded_summary[key][2]) +')'
+                    if (melded_summary[key][0] > 6):
+                        detail_str = detail_str + '<<<'
+                    if (melded_summary[key][2] == 0):
+                        text_color = UIC.Red
+                    else:
+                        text_color = UIC.Black
+                    ykey = y_coord + (UIC.Small_Text_Feed * (key - 3))
+                    if key == 1:
+                        player_text = 'Aces ' + detail_str
+                        ykey = y_coord + (UIC.Small_Text_Feed * 11)
+                    elif key == 11:
+                        player_text = 'Jacks ' + detail_str
+                    elif key == 12:
+                        player_text = 'Queens ' + detail_str
+                    elif key == 13:
+                        player_text = 'Kings ' + detail_str
+                    else:
+                        player_text =  str(key) + "'s  " + detail_str
+                    text_surface, text_rect = self.textObjects(player_text, UIC.Small_Text, text_color)
+                    text_rect.center = ((bk_grd_rect[0] + 0.5 * players_sp_w), (bk_grd_rect[1] + ykey))
+                    self.display.blit(text_surface, text_rect)
+                # Print cumulative score for this player.
+                if len(self.results) > 0:
+                    player_total_points = str(self.results[player_name])
+                    text_surface, text_rect = self.textObjects(player_total_points, UIC.Small_Text, UIC.Blue)
+                    text_rect.center = (bk_grd_rect[0] + 0.5 * players_sp_w,\
+                                        bk_grd_rect[1] + y_coord + (UIC.Small_Text_Feed * 13))
+                    self.display.blit(text_surface, text_rect)
             # Move to next players rectangle and color:
             bk_grd_rect = (bk_grd_rect[0] + players_sp_w, bk_grd_rect[1], bk_grd_rect[2], bk_grd_rect[3])
             color_index = (color_index + 1) % len(UIC.table_grid_colors)
+
 
     def compressSets(self, v_cards):
         """ Don't have space to display every card. Summarize sets of cards here. """
@@ -127,12 +140,16 @@ class TableView(ConnectionListener):
 
         round_scores = data["round_scores"]
         total_scores = data["total_scores"]
-        self.results=''
+        self.results = {}
+        self.results_cmdscreen = ''
         for idx in range(len(self.player_names)):
-            self.results = self.results + "  [" + self.player_names[idx] + ": " + str(round_scores[idx]) + " " \
-                      +  str(total_scores[idx]) +  "]  " + " \r \n "
+            self.results[self.player_names[idx]] = total_scores[idx]
+            self.results_cmdscreen= self.results_cmdscreen + "  [" + \
+                                    self.player_names[idx] + ": " + str(round_scores[idx]) + " " + \
+                                    str(total_scores[idx]) +  "] \r \n  "
         print("{0} scored {1} this round, and  has {2} total".format(self.player_names[idx], round_scores[idx], total_scores[idx]))
-        print(self.results)
+        print(self.results_cmdscreen)
+
 
 
 
