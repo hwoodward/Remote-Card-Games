@@ -6,6 +6,7 @@ from client.CreateDisplay import CreateDisplay
 from client.UICardWrapper import UICardWrapper
 import client.UIConstants as UIC
 from common.Card import Card
+from common.HandAndFoot import Meld_Threshold
 
 
 class HandView:
@@ -26,10 +27,9 @@ class HandView:
         self.discard_confirm = False
         self.num_wilds = 0
         self.wild_cards = []
-        #todo: required meld is hardcoded here. Should be in rules only...
         self.round_index = 0
         self.round_advance = False
-        self.round_meld = [50,90,120,150]
+        self.round_meld = Meld_Threshold  #[50,90,120,150]
         self.betweenrounds = ['Welcome to a new game.  This is the round of 50.',\
                         'To draw click on the deck of cards (upper left).',\
                         'To discard select ONE card & double click on discard button. ',\
