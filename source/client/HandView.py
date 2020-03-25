@@ -16,6 +16,9 @@ class HandView:
     def __init__(self, controller, display):
         self.controller = controller
         self.display = display
+        self.scale_adjustment = UIC.scale  # relative size of cards displayed.  Becomes smaller when hand is very large.
+        self.adjusted_card_spacing = UIC.Card_Spacing
+        self.refresh_flag = False
         self.current_hand = []
         self.last_hand = []
         self.hand_info = []          # will contain UICardWrapped elements of current_hand
@@ -33,7 +36,7 @@ class HandView:
         self.top_discard = discard_info[0]  
         self.pickup_pile_sz = discard_info[1]
         if self.pickup_pile_sz > 0:
-            self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25))
+            self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25), UIC.scale)
             self.pickup_pile = self.top_discard_wrapped.img_clickable
             self.labelMedium(str(self.pickup_pile_sz), 150, 35)
         # Buttons to cause actions -- e.g. cards will be sorted by selection status or by number.
@@ -41,7 +44,7 @@ class HandView:
         self.ready_color_idx = 2 # color of outline will be: UIC.outline_colors(ready_color_idx)
         self.ready_no_btn = Btn.Button(UIC.White, (UIC.Disp_Width-150), (UIC.Disp_Height-30), 125, 25, text='Ready:NO')
         self.not_ready_color_idx = 6 # color of outline will be: UIC.outline_colors(ready_color_idx)
-        self.mv_selected_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='sort by status')
+        self.sort_status_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='sort by status')
         self.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort by number')
         self.prepare_card_btn = Btn.Button(UIC.White, 400, 25, 345, 25, text='Selected cards -> prepared cards')
         self.clear_prepared_cards_btn = Btn.Button(UIC.White, 320, 75, 225, 25, text='Clear prepared cards')
@@ -66,7 +69,9 @@ class HandView:
         self.current_hand = self.controller.getHand()
         if not self.last_hand == self.current_hand:
             self.hand_info = self.wrapHand(self.current_hand, self.hand_info)
-        self.showHolding(self.hand_info)               # displays hand
+        self.showHolding(self.hand_info)  # displays hand
+        if self.refresh_flag:  # if needed to rescale card size, then refreshXY again.
+            self.hand_info = self.refreshXY(self.hand_info)
         # display draw pile and various action buttons
         loc_xy = (self.draw_pile.x, self.draw_pile.y)
         self.draw_pile.draw(self.display, loc_xy, self.draw_pile.outline_color)
@@ -75,7 +80,7 @@ class HandView:
         self.top_discard = discard_info[0]
         self.pickup_pile_sz = discard_info[1]
         if self.pickup_pile_sz > 0:
-            self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25))
+            self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25), UIC.scale)
             self.pickup_pile = self.top_discard_wrapped.img_clickable
             loc_xy = (self.pickup_pile.x, self.pickup_pile.y)
             self.pickup_pile.draw(self.display, loc_xy, self.pickup_pile.outline_color)
@@ -83,7 +88,7 @@ class HandView:
         if self.controller._state.round == -1 :
             self.ready_yes_btn.draw(self.display, self.ready_yes_btn.outline_color)
             self.ready_no_btn.draw(self.display, self.ready_no_btn.outline_color)
-        self.mv_selected_btn.draw(self.display, self.mv_selected_btn.outline_color)
+        self.sort_status_btn.draw(self.display, self.sort_status_btn.outline_color)
         self.sort_btn.draw(self.display, self.sort_btn.outline_color)
         self.prepare_card_btn.draw(self.display, self.prepare_card_btn.outline_color)
         self.clear_prepared_cards_btn.draw(self.display, self.clear_prepared_cards_btn.outline_color)
@@ -126,6 +131,8 @@ class HandView:
                 elif self.sort_btn.isOver(pos):
                     self.hand_info.sort(key=lambda wc: wc.key)
                     self.hand_info = self.refreshXY(self.hand_info)
+                    if self.refresh_flag:            # if needed to rescale card size, then refreshXY again.
+                        self.hand_info = self.refreshXY(self.hand_info)
                 elif self.controller._state.round == -1 and self.ready_yes_btn.isOver(pos):
                     self.controller.setReady(True)
                     self.ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
@@ -134,11 +141,13 @@ class HandView:
                     self.controller.setReady(False)
                     self.ready_color_idx = 2  # color of outline will be: UIC.outline_colors(ready_color_idx)
                     self.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
-                elif self.mv_selected_btn.isOver(pos):
+                elif self.sort_status_btn.isOver(pos):
                     self.hand_info.sort(
                         key=lambda wc: (wc.img_clickable.x + (wc.status * UIC.Disp_Width))
                         )
                     self.hand_info = self.refreshXY(self.hand_info)
+                    if self.refresh_flag:            # if needed to rescale card size, then refreshXY again.
+                        self.hand_info = self.refreshXY(self.hand_info)
                 elif self.prepare_card_btn.isOver(pos):
                     self.already_prepared_cards = self.controller.getPreparedCards()
                     self.wrapped_cards_to_prep = self.gatherSelected()
@@ -198,10 +207,10 @@ class HandView:
                     self.ready_no_btn.outline_color = UIC.outline_colors[self.not_ready_color_idx + 1]
                 else:
                     self.ready_no_btn.outline_color = UIC.outline_colors[self.not_ready_color_idx]
-                if self.mv_selected_btn.isOver(pos):
-                    self.mv_selected_btn.outline_color = UIC.Black  # set outline color
+                if self.sort_status_btn.isOver(pos):
+                    self.sort_status_btn.outline_color = UIC.Black  # set outline color
                 else:
-                    self.mv_selected_btn.outline_color = UIC.Gray  # change outline
+                    self.sort_status_btn.outline_color = UIC.Gray  # change outline
                 if self.sort_btn.isOver(pos):
                     self.sort_btn.outline_color = UIC.Black  # set outline color
                 else:
@@ -293,14 +302,20 @@ class HandView:
                         old_wrapped_hand.remove(already_wrapped)
                         newcard = False
                 if newcard:
-                    card_xy = (card_xy[0] + UIC.Card_Spacing, card_xy[1])
-                    card_wrapped = UICardWrapper(card, card_xy)
+                    card_xy = (card_xy[0] + self.adjusted_card_spacing, card_xy[1])
+                    card_wrapped = UICardWrapper(card, card_xy, self.scale_adjustment)
                 updated_wrapped_hand.append(card_wrapped)
+            maxX = UIC.Disp_Width - (self.adjusted_card_spacing / 2)
+            if (card_xy[0] > maxX):
+                scalingfactor = maxX / card_xy[0]
+                updated_wrapped_hand = self.rescaleCards(updated_wrapped_hand, scalingfactor)
+                self.refresh_flag = True
         return updated_wrapped_hand
 
     def refreshXY(self, original, layout_option=1):
+        self.refresh_flag = False
         """After sorting or melding, may wish to refresh card's xy coordinates """
-
+        maxX = UIC.Disp_Width - (self.adjusted_card_spacing / 2)
         if not layout_option == 1:
             print('the only layout supported now is cards in a line, left to right')
         refreshed = []
@@ -308,14 +323,28 @@ class HandView:
         for element in original:
             element.img_clickable.x = card_xy[0]
             element.img_clickable.y = card_xy[1]
-            card_xy = (card_xy[0] + UIC.Card_Spacing, card_xy[1])
-            if card_xy[0] > UIC.Disp_Width:
-                print('Layout code is too simple-use selection and sort buttons to see cards on right')
-                # todo: figure out why next line never appears.
-                self.controller.note = 'Layout code is too simple-use selection and sort buttons ' \
-                                       'to see cards on right'
+            card_xy = (card_xy[0] + self.adjusted_card_spacing, card_xy[1])
             refreshed.append(element)
+        if (card_xy[0] > maxX):
+            scalingfactor = maxX / card_xy[0]
+            self.rescaleCards(scalingfactor)
+            self.refresh_flag = True
+        # todo rescale to original card size once hand gets small enough.
         return refreshed
+
+    def rescaleCards(self, original, scaling):
+        print('in rescaleCards')
+        self.scale_adjustment = self.scale_adjustment * scaling
+        self.adjusted_card_spacing = self.adjusted_card_spacing * scaling
+        rescaled = []
+        for element in original:
+            loc_xy = (element.img_clickable.x, element.img_clickable.y)
+            scaledelement = UICardWrapper(element.card, loc_xy, self.scale_adjustment)
+            scaledelement.status = element.status
+            scaledelement.outline_index = element.img_clickable.outline_index
+            rescaled.append(scaledelement)
+        self.refresh_flag = True
+        return rescaled
 
     def showHolding(self, wrapped_cards):
         wrapped_cards.sort(key=lambda wc: wc.img_clickable.x)
@@ -372,3 +401,5 @@ class HandView:
         text_rect = text_surface.get_rect()
         text_rect.center = (x_offset, y_offset)
         self.display.blit(text_surface, text_rect)
+
+
