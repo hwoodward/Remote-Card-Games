@@ -6,6 +6,8 @@ from client.CreateDisplay import CreateDisplay
 from client.UICardWrapper import UICardWrapper
 import client.UIConstants as UIC
 from common.Card import Card
+from common.HandAndFoot import Deal_Size
+
 
 class HandView:
     """This class handles letting players actually input information
@@ -16,8 +18,8 @@ class HandView:
     def __init__(self, controller, display):
         self.controller = controller
         self.display = display
-        self.scale_adjustment = UIC.scale  # relative size of cards displayed.  Becomes smaller when hand is very large.
-        self.adjusted_card_spacing = UIC.Card_Spacing
+        self.deal_size = Deal_Size
+        self.hand_scaling = (UIC.scale, UIC.Card_Spacing)
         self.refresh_flag = False
         self.current_hand = []
         self.last_hand = []
@@ -302,20 +304,24 @@ class HandView:
                         old_wrapped_hand.remove(already_wrapped)
                         newcard = False
                 if newcard:
-                    card_xy = (card_xy[0] + self.adjusted_card_spacing, card_xy[1])
-                    card_wrapped = UICardWrapper(card, card_xy, self.scale_adjustment)
+                    card_xy = (card_xy[0] + self.hand_scaling[1], card_xy[1])
+                    card_wrapped = UICardWrapper(card, card_xy, self.hand_scaling[0])
                 updated_wrapped_hand.append(card_wrapped)
-            maxX = UIC.Disp_Width - (self.adjusted_card_spacing / 2)
+            maxX = UIC.Disp_Width - (self.hand_scaling[1] / 2)
             if (card_xy[0] > maxX):
                 scalingfactor = maxX / card_xy[0]
-                updated_wrapped_hand = self.rescaleCards(updated_wrapped_hand, scalingfactor)
+                self.hand_scaling = (scalingfactor * self.hand_scaling[0], scalingfactor * self.hand_scaling[1])
+                updated_wrapped_hand = self.rescaleCards(updated_wrapped_hand, self.hand_scaling[0])
                 self.refresh_flag = True
-        return updated_wrapped_hand
+            if (self.hand_scaling[0] != UIC.scale and len(updated_wrapped_hand) <= self.deal_size):
+                self.hand_scaling = (UIC.scale, UIC.Card_Spacing)
+                updated_wrapped_hand = self.rescaleCards(updated_wrapped_hand, self.hand_scaling[0])
+            return updated_wrapped_hand
 
     def refreshXY(self, original, layout_option=1):
         self.refresh_flag = False
         """After sorting or melding, may wish to refresh card's xy coordinates """
-        maxX = UIC.Disp_Width - (self.adjusted_card_spacing / 2)
+        maxX = UIC.Disp_Width - (self.hand_scaling[1] / 2)
         if not layout_option == 1:
             print('the only layout supported now is cards in a line, left to right')
         refreshed = []
@@ -323,25 +329,21 @@ class HandView:
         for element in original:
             element.img_clickable.x = card_xy[0]
             element.img_clickable.y = card_xy[1]
-            card_xy = (card_xy[0] + self.adjusted_card_spacing, card_xy[1])
+            card_xy = (card_xy[0] + self.hand_scaling[1], card_xy[1])
             refreshed.append(element)
         if (card_xy[0] > maxX):
             scalingfactor = maxX / card_xy[0]
-            self.rescaleCards(scalingfactor)
-            self.refresh_flag = True
-        # todo rescale to original card size once hand gets small enough.
+            self.hand_scaling = (scalingfactor * self.hand_scaling[0], scalingfactor * self.hand_scaling[1])
+            refreshed = self.rescaleCards(refreshed, self.hand_scaling[0])
         return refreshed
 
-    def rescaleCards(self, original, scaling):
-        print('in rescaleCards')
-        self.scale_adjustment = self.scale_adjustment * scaling
-        self.adjusted_card_spacing = self.adjusted_card_spacing * scaling
+    def rescaleCards(self, original, card_scaling):
         rescaled = []
         for element in original:
             loc_xy = (element.img_clickable.x, element.img_clickable.y)
-            scaledelement = UICardWrapper(element.card, loc_xy, self.scale_adjustment)
+            scaledelement = UICardWrapper(element.card, loc_xy, card_scaling)
             scaledelement.status = element.status
-            scaledelement.outline_index = element.img_clickable.outline_index
+            scaledelement.img_clickable.outline_index = element.img_clickable.outline_index
             rescaled.append(scaledelement)
         self.refresh_flag = True
         return rescaled
@@ -401,5 +403,3 @@ class HandView:
         text_rect = text_surface.get_rect()
         text_rect.center = (x_offset, y_offset)
         self.display.blit(text_surface, text_rect)
-
-
