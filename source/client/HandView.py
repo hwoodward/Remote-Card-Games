@@ -69,7 +69,9 @@ class HandView:
             self.not_ready_color_idx = 6
         self.last_hand = self.current_hand
         self.current_hand = self.controller.getHand()
-        if not self.last_hand == self.current_hand:
+        if len(self.current_hand) == 0:
+            self.hand_info = []
+        elif not self.last_hand == self.current_hand:
             self.hand_info = self.wrapHand(self.current_hand, self.hand_info)
         self.showHolding(self.hand_info)  # displays hand
         if self.refresh_flag:  # if needed to rescale card size, then refreshXY again.
