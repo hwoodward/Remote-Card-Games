@@ -16,7 +16,6 @@ class PlayerChannel(Channel):
         self.ready = False #for consensus transitions
         Channel.__init__(self, *args, **kwargs)
 
-
     def scoreForRound(self, round):
         """Handles getting score for round so we don't error if this player hasn't reported yet"""
         try:
