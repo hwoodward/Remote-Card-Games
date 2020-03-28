@@ -73,6 +73,7 @@ class GameServer(Server, ServerState):
         #Check for no more players
         if len(self.players) == 0:
             self.game_over = True
+            return
         #Check if it was deleted players turn and if so, make sure next player can start
         if self.turn_index == player_index and self.in_round:
             self.turn_index = self.turn_index % len(self.players) 
