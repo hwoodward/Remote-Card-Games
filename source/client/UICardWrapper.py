@@ -7,22 +7,22 @@ from client.ClickableImage import ClickableImage as ClickImg
 class UICardWrapper:
     """GUI needs image and position of card. """
 
-    def __init__(self, this_card, loc_xy):
+    def __init__(self, this_card, loc_xy, card_scaling):
         self.card = this_card
-        self.img = UICardWrapper.getImage(self.card)
+        self.img = UICardWrapper.getImage(self.card, card_scaling)
         self.img_clickable = ClickImg(self.img, loc_xy[0], loc_xy[1], self.img.get_width(), self.img.get_height(), 0)
         self.status = 0     # 0 = not selected or prepared, 1 = selected, 2 = prepared (ready for play)
         self.key = UICardWrapper.sortKey(this_card)
 
     @staticmethod
-    def getImage(card):
+    def getImage(card, card_scaling):
         """Helper to fetch correct image for a card"""
         suit_letter = 'N'  # this doesn't distinguish between red & black Jokers
         if card.suit is not None:
             suit_letter = card.suit[0]
         image_index = str(card.number) + suit_letter
         img = UIC.card_images[image_index]
-        img = pygame.transform.rotozoom(img, 0, UIC.scale)
+        img = pygame.transform.rotozoom(img, 0, card_scaling)
         return img
 
     def sortKey(this_card, sort_option=1):
