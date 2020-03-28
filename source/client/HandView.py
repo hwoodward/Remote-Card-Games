@@ -404,7 +404,7 @@ class HandView:
             text_surface = font.render(result_string, True, UIC.Black)
             text_rect = text_surface.get_rect()
             text_rect.center = ((UIC.Disp_Width * 0.5),  y_offset)
-            y_offset = y_offset + UIC.Text_Feed
+            y_offset = y_offset + UIC.Medium_Text_Feed
             self.display.blit(text_surface, text_rect)
 
     def labelMedium(self, labelstr, x_offset, y_offset):
