@@ -31,12 +31,11 @@ class GameServer(Server, ServerState):
 
     def disconnect(self, channel):
         """Called by a channel when it disconnects"""
-        player_index = self.players.index(channel)
+        if channel not in self.players:
+            #Disconnecting a channel that never fully joined the game, do nothing
+            return
+        #For players who did join the game need to handle removing them safely
         self.delPlayer(channel)
-        if self.turn_index == player_index and self.in_round:
-            #It was disconnected players turn, need to send newTurn to the next player, accounting for adjusted list
-            self.turn_index = self.turn_index % len(self.players) 
-            self.players[self.turn_index].Send({"action": "startTurn"})
          
     def checkReady(self):
         """Confirm if all players are ready to move on to next round"""
@@ -63,11 +62,23 @@ class GameServer(Server, ServerState):
         self.nextTurn()
 
     def delPlayer(self, player):
-        """Remove a player from the turn order"""
+        """Safely remove a player from the turn order
+        
+        Checks for game over if no more players and quits server
+        Moves turn forward if it was deleted players turn
+        """
+        player_index = self.players.index(player)
         self.players.remove(player)
         self.Send_publicInfo();
+        #Check for no more players
         if len(self.players) == 0:
             self.game_over = True
+            return
+        #Check if it was deleted players turn and if so, make sure next player can start
+        if self.turn_index == player_index and self.in_round:
+            self.turn_index = self.turn_index % len(self.players) 
+            self.players[self.turn_index].Send({"action": "startTurn"})
+
 
     def nextTurn(self):
         """Advance to the next trun"""
