@@ -75,7 +75,7 @@ def canMeld(prepared_cards, round_index):
             score += scoreGroup(card_group)
     min_score = Meld_Threshold[round_index]
     if score < min_score:
-        raise Exception("Meld does not meat round minimum score or {0}".format(min_score))
+        raise Exception("Meld does not meet round minimum score or {0}".format(min_score))
     return True
 
 
