@@ -33,7 +33,8 @@ class HandView:
         self.round_index = 0
         self.round_advance = False
         self.round_meld = Meld_Threshold  #[50,90,120,150]
-        self.betweenrounds = ['Welcome to a new game.  This is the round of 50.',\
+        # --- Hand And Foot Specific:
+        self.betweenrounds = ['Welcome to a new game.  This is the round of ' + str(Meld_Threshold[0]) + '.',\
                         'To draw click on the deck of cards (upper left).',\
                         'To discard select ONE card & double click on discard button. ',\
                         'To pick up pile PREPARE necessary cards & then click on discard pile. ',\
@@ -48,6 +49,9 @@ class HandView:
             self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25), UIC.scale)
             self.pickup_pile = self.top_discard_wrapped.img_clickable
             self.labelMedium(str(self.pickup_pile_sz), 150, 35)
+        # --- Hand And Foot Specific:
+        # --------Move to HandAndFoot Helper Function ******
+        # (other games may need different buttons, such as sort by suit)
         # Buttons to cause actions -- e.g. cards will be sorted by selection status or by number.
         self.ready_yes_btn = Btn.Button(UIC.White, (UIC.Disp_Width-150), (UIC.Disp_Height-70), 125, 25, text='Ready:YES')
         self.ready_color_idx = 2 # color of outline will be: UIC.outline_colors(ready_color_idx)
@@ -59,6 +63,7 @@ class HandView:
         self.clear_prepared_cards_btn = Btn.Button(UIC.White, 320, 75, 225, 25, text='Clear prepared cards')
         self.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 75, 225, 25, text='Play prepared cards')
         self.discard_action_btn = Btn.Button(UIC.Bright_Red, 190, 25, 100, 25, text='discard')
+        # ****** -----------
 
 
     def update(self):
@@ -89,6 +94,8 @@ class HandView:
         self.showHolding(self.hand_info)  # displays hand
         if self.refresh_flag:  # if needed to rescale card size, then refreshXY again.
             self.hand_info = self.refreshXY(self.hand_info)
+        # --- Hand And Foot Specific:
+        # --------Move to HandAndFoot Helper Function #########
         # display draw pile and various action buttons
         loc_xy = (self.draw_pile.x, self.draw_pile.y)
         self.draw_pile.draw(self.display, loc_xy, self.draw_pile.outline_color)
@@ -111,6 +118,7 @@ class HandView:
         self.clear_prepared_cards_btn.draw(self.display, self.clear_prepared_cards_btn.outline_color)
         self.play_prepared_cards_btn.draw(self.display, self.play_prepared_cards_btn.outline_color)
         self.discard_action_btn.draw(self.display, self.discard_action_btn.outline_color)
+        # ######################### ------------------------
 
     def nextEvent(self):
         """This submits the next user input to the controller,
@@ -132,13 +140,14 @@ class HandView:
                 quit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+                # ---  make this a generic helper function 'ClickedButton' ----
                 if self.pickup_pile_sz > 0:
                     if self.pickup_pile.isOver(pos):
                         self.controller.pickUpPile()
                         if len(self.controller.prepared_cards) == 0:
-                            self.clearPreparedCardsGui()
                             # manually remove cards played, else an ambiguity in wrapped cards causes
-                            # picked up cards to sometimes get wrapping of cards just played.
+                            # picked up cards to sometimes get coordinates of cards just played.
+                            # If statement insures that you don't remove cards if pick-up failed.
                             for wrappedcard in self.hand_info:
                                 if wrappedcard.status == 2:
                                     self.hand_info.remove(wrappedcard)
@@ -186,7 +195,12 @@ class HandView:
                 elif self.play_prepared_cards_btn.isOver(pos):
                     self.controller.play()
                     if len(self.controller.prepared_cards) == 0:
-                        self.clearPreparedCardsGui()
+                        # manually remove cards played, else an ambiguity in wrapped cards can cause
+                        # different wrapped cards with identical card values to be used.
+                        for wrappedcard in self.hand_info:
+                            if wrappedcard.status == 2:
+                                self.hand_info.remove(wrappedcard)
+                                self.last_hand.remove(wrappedcard.card)
                 elif self.clear_prepared_cards_btn.isOver(pos):
                     self.controller.clearPreparedCards()
                     self.clearPreparedCardsGui()
@@ -195,18 +209,21 @@ class HandView:
                     for element in self.gatherSelected():
                         wc_list.append(element)
                     self.discard_confirm = self.discardConfirmation(self.discard_confirm, wc_list)
-                else:
-                    for element in self.hand_info:
-                        # cannot select prepared cards, so not included in logic below.
-                        if element.img_clickable.isOver(pos):
-                            if element.status == 1:
-                                element.status = 0
-                                element.img_clickable.changeOutline(0)
-                            elif element.status == 0:
-                                element.status = 1
-                                element.img_clickable.changeOutline(2)
+                # --- end of ClickedButton ---
+                # ---  make this a generic helper function 'CardSelection' ----
+                for element in self.hand_info:
+                    # cannot select prepared cards, so not included in logic below.
+                    if element.img_clickable.isOver(pos):
+                        if element.status == 1:
+                            element.status = 0
+                            element.img_clickable.changeOutline(0)
+                        elif element.status == 0:
+                            element.status = 1
+                            element.img_clickable.changeOutline(2)
+                # --- end of CardSelection  ---
 
             elif event.type == pygame.MOUSEMOTION:
+                # --- move stuff below to generic helper function Mouse_Highlighting  --
                 if self.draw_pile.isOver(pos):
                     self.draw_pile.changeOutline(1)
                 else:
@@ -261,6 +278,7 @@ class HandView:
                             if (color_index % 2) == 1:
                                 color_index = color_index - 1
                                 element.img_clickable.changeOutline(color_index)
+            # --- end of  Mouse_Highlighting  --
             # This next section has player enter desired values for wild cards.
             elif event.type == pygame.KEYDOWN and self.num_wilds > 0:
                 textnote = "Designate one of " + str(self.num_wilds) + "  wildcard(s)"
