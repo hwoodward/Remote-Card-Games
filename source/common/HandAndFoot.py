@@ -97,7 +97,7 @@ def canPickupPile(top_card, prepared_cards, played_cards, round_index):
         if not isWild(card):
             total += 1
     if total < 2:
-        raise Exception("Cannot pickup the pile without 2 cards matching the top card of the discard pile")
+        raise Exception("Cannot pickup the pile without 2 prepared cards matching the top card of the discard pile")
     #check suggested play is legal (using adjusted deep copy of prepared cards)
     temp_prepared = {}
     for key, card_group in prepared_cards.items():

@@ -41,22 +41,30 @@ class TableView(ConnectionListener):
                 turnphase = self.hand_status[idx][0]
                 numcards = self.hand_status[idx][1]
                 foot = self.hand_status[idx][2]
-                player_text = player_name + ': ' + str(numcards)
+                player_text1 = player_name
+                player_text2 = str(numcards)
                 if (foot > 0):
-                    player_text = player_text + ' cards (in hand)'
+                    player_text2 = player_text2 + ' cards (in hand)'
                 else:
-                    player_text = player_text + ' cards (in foot)'
+                    player_text2 = player_text2 + ' cards (in foot)'
                 if turnphase == 'inactive':
-                    text_surface, text_rect = self.textObjects(player_text, UIC.Medium_Text, UIC.Black)
+                    text_surface1, text_rect1 = self.textObjects(player_text1, UIC.Medium_Text, UIC.Black)
+                    text_surface2, text_rect2 = self.textObjects(player_text2, UIC.Small_Text, UIC.Black)
                 else:
-                    text_surface, text_rect = self.textObjects(player_text, UIC.Big_Text, UIC.Black)
+                    text_surface1, text_rect1 = self.textObjects(player_text1, UIC.Big_Text, UIC.Black)
+                    text_surface2, text_rect2 = self.textObjects(player_text2, UIC.Small_Text, UIC.Black)
             else:
-                player_text = player_name + ' (should be joining soon)'
-                text_surface, text_rect = self.textObjects(player_text, UIC.Medium_Text, UIC.Black)
+                player_text1 = player_name
+                player_text2 = ' (should be joining soon)'
+                text_surface1, text_rect1 = self.textObjects(player_text1, UIC.Medium_Text, UIC.Black)
+                text_surface2, text_rect2 = self.textObjects(player_text2, UIC.Small_Text, UIC.Black)
             y_coord =  0.05 * UIC.Disp_Height
-            text_rect.center = ((bk_grd_rect[0] + 0.5 * players_sp_w), (bk_grd_rect[1] + y_coord))
+            text_rect1.center = ((bk_grd_rect[0] + 0.5 * players_sp_w), (bk_grd_rect[1] + y_coord))
+            self.display.blit(text_surface1, text_rect1)
             y_coord = y_coord + UIC.Medium_Text_Feed
-            self.display.blit(text_surface, text_rect)
+            text_rect2.center = ((bk_grd_rect[0] + 0.5 * players_sp_w), (bk_grd_rect[1] + y_coord))
+            self.display.blit(text_surface2, text_rect2)
+            # y_coord = y_coord + UIC.Medium_Text_Feed
             for key in melded_summary:
                 if (melded_summary[key][0] > 0):
                     detail_str = str(melded_summary[key][0])
@@ -83,12 +91,12 @@ class TableView(ConnectionListener):
                     text_rect.center = ((bk_grd_rect[0] + 0.5 * players_sp_w), (bk_grd_rect[1] + ykey))
                     self.display.blit(text_surface, text_rect)
                 # Print cumulative score for this player.
-                if len(self.results) > 0:
-                    player_total_points = str(self.results[player_name])
-                    text_surface, text_rect = self.textObjects(player_total_points, UIC.Small_Text, UIC.Blue)
-                    text_rect.center = (bk_grd_rect[0] + 0.5 * players_sp_w,\
-                                        bk_grd_rect[1] + y_coord + (UIC.Small_Text_Feed * 13))
-                    self.display.blit(text_surface, text_rect)
+            if len(self.results) > 0:
+                player_total_points = str(self.results[player_name])
+                text_surface, text_rect = self.textObjects(player_total_points, UIC.Small_Text, UIC.Blue)
+                text_rect.center = (bk_grd_rect[0] + 0.5 * players_sp_w,\
+                                    bk_grd_rect[1] + y_coord + (UIC.Small_Text_Feed * 13))
+                self.display.blit(text_surface, text_rect)
             # Move to next players rectangle and color:
             bk_grd_rect = (bk_grd_rect[0] + players_sp_w, bk_grd_rect[1], bk_grd_rect[2], bk_grd_rect[3])
             color_index = (color_index + 1) % len(UIC.table_grid_colors)
@@ -125,7 +133,7 @@ class TableView(ConnectionListener):
 
     def Network_publicInfo(self, data):
 
-        #TODO update example below.  False should be a play state, not True/False
+        # TODO: update example below.  False should be a play state, not True/False
         '''
         example of data (json structure) with two players, 'hhh' and 'sss' : 
         {'action': 'publicInfo', 'player_names': ['hhh', 'sss'], 'visible_cards': [{}, {}], 'hand_status': [[False, 12, 1], [True, 14, 1]]}
