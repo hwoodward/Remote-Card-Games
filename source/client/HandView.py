@@ -68,11 +68,16 @@ class HandView:
             self.mesgBetweenRounds(self.betweenrounds)
             if self.round_advance:
                 self.round_index = self.round_index + 1
-                self.betweenrounds[0] = 'This is the round of ' + str(self.round_meld[self.round_index]) + ' ! '
+                if self.round_index < len(self.round_meld):
+                    self.betweenrounds[0] = 'This is the round of ' + str(self.round_meld[self.round_index]) + ' ! '
+                else:
+                    self.betweenrounds = 'Game has concluded.         ', \
+                                    'Score can be found in command window.'
+                    # todo: Create better display for final results.
                 self.round_advance = False
         else:
             self.round_advance = True
-            # set colors to what they need to be at the start of the "between rounds" state.
+            # reset colors to what they need to be at the start of the "between rounds" state.
             self.ready_color_idx = 2
             self.not_ready_color_idx = 6
         self.last_hand = self.current_hand
