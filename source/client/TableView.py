@@ -91,12 +91,12 @@ class TableView(ConnectionListener):
                     text_rect.center = ((bk_grd_rect[0] + 0.5 * players_sp_w), (bk_grd_rect[1] + ykey))
                     self.display.blit(text_surface, text_rect)
                 # Print cumulative score for this player.
-                if len(self.results) > 0:
-                    player_total_points = str(self.results[player_name])
-                    text_surface, text_rect = self.textObjects(player_total_points, UIC.Small_Text, UIC.Blue)
-                    text_rect.center = (bk_grd_rect[0] + 0.5 * players_sp_w,\
-                                        bk_grd_rect[1] + y_coord + (UIC.Small_Text_Feed * 13))
-                    self.display.blit(text_surface, text_rect)
+            if len(self.results) > 0:
+                player_total_points = str(self.results[player_name])
+                text_surface, text_rect = self.textObjects(player_total_points, UIC.Small_Text, UIC.Blue)
+                text_rect.center = (bk_grd_rect[0] + 0.5 * players_sp_w,\
+                                    bk_grd_rect[1] + y_coord + (UIC.Small_Text_Feed * 13))
+                self.display.blit(text_surface, text_rect)
             # Move to next players rectangle and color:
             bk_grd_rect = (bk_grd_rect[0] + players_sp_w, bk_grd_rect[1], bk_grd_rect[2], bk_grd_rect[3])
             color_index = (color_index + 1) % len(UIC.table_grid_colors)
