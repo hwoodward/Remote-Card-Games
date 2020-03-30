@@ -3,7 +3,9 @@ import textwrap
 import client.Button as Btn
 from client.ClickableImage import ClickableImage as ClickImg
 from client.CreateDisplay import CreateDisplay
+import client.HandAndFootButtons as HandAndFootButtons
 from client.UICardWrapper import UICardWrapper
+# todo: do I still need UICardWrapper here?  Be sure to check creating executable before removing it.
 import client.UIConstants as UIC
 from common.Card import Card
 from common.HandAndFoot import Deal_Size
@@ -49,21 +51,8 @@ class HandView:
             self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25), UIC.scale)
             self.pickup_pile = self.top_discard_wrapped.img_clickable
             self.labelMedium(str(self.pickup_pile_sz), 150, 35)
-        # --- Hand And Foot Specific:
-        # --------Move to HandAndFoot Helper Function ******
-        # (other games may need different buttons, such as sort by suit)
-        # Buttons to cause actions -- e.g. cards will be sorted by selection status or by number.
-        self.ready_yes_btn = Btn.Button(UIC.White, (UIC.Disp_Width-150), (UIC.Disp_Height-70), 125, 25, text='Ready:YES')
-        self.ready_color_idx = 2 # color of outline will be: UIC.outline_colors(ready_color_idx)
-        self.ready_no_btn = Btn.Button(UIC.White, (UIC.Disp_Width-150), (UIC.Disp_Height-30), 125, 25, text='Ready:NO')
-        self.not_ready_color_idx = 6 # color of outline will be: UIC.outline_colors(ready_color_idx)
-        self.sort_status_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='sort by status')
-        self.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort by number')
-        self.prepare_card_btn = Btn.Button(UIC.White, 400, 25, 345, 25, text='Selected cards -> prepared cards')
-        self.clear_prepared_cards_btn = Btn.Button(UIC.White, 320, 75, 225, 25, text='Clear prepared cards')
-        self.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 75, 225, 25, text='Play prepared cards')
-        self.discard_action_btn = Btn.Button(UIC.Bright_Red, 190, 25, 100, 25, text='discard')
-        # ****** -----------
+        HandAndFootButtons.CreateButtons(self)
+
 
 
     def update(self):
@@ -94,31 +83,7 @@ class HandView:
         self.showHolding(self.hand_info)  # displays hand
         if self.refresh_flag:  # if needed to rescale card size, then refreshXY again.
             self.hand_info = self.refreshXY(self.hand_info)
-        # --- Hand And Foot Specific:
-        # --------Move to HandAndFoot Helper Function #########
-        # display draw pile and various action buttons
-        loc_xy = (self.draw_pile.x, self.draw_pile.y)
-        self.draw_pile.draw(self.display, loc_xy, self.draw_pile.outline_color)
-        # update discard info and redraw
-        discard_info = self.controller.getDiscardInfo()
-        self.top_discard = discard_info[0]
-        self.pickup_pile_sz = discard_info[1]
-        if self.pickup_pile_sz > 0:
-            self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25), UIC.scale)
-            self.pickup_pile = self.top_discard_wrapped.img_clickable
-            loc_xy = (self.pickup_pile.x, self.pickup_pile.y)
-            self.pickup_pile.draw(self.display, loc_xy, self.pickup_pile.outline_color)
-            self.labelMedium(str(self.pickup_pile_sz), 150, 35)
-        if self.controller._state.round == -1 :
-            self.ready_yes_btn.draw(self.display, self.ready_yes_btn.outline_color)
-            self.ready_no_btn.draw(self.display, self.ready_no_btn.outline_color)
-        self.sort_status_btn.draw(self.display, self.sort_status_btn.outline_color)
-        self.sort_btn.draw(self.display, self.sort_btn.outline_color)
-        self.prepare_card_btn.draw(self.display, self.prepare_card_btn.outline_color)
-        self.clear_prepared_cards_btn.draw(self.display, self.clear_prepared_cards_btn.outline_color)
-        self.play_prepared_cards_btn.draw(self.display, self.play_prepared_cards_btn.outline_color)
-        self.discard_action_btn.draw(self.display, self.discard_action_btn.outline_color)
-        # ######################### ------------------------
+        HandAndFootButtons.ButtonDisplay(self)
 
     def nextEvent(self):
         """This submits the next user input to the controller,
@@ -140,77 +105,8 @@ class HandView:
                 quit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                # ---  make this a generic helper function 'ClickedButton' ----
-                if self.pickup_pile_sz > 0:
-                    if self.pickup_pile.isOver(pos):
-                        self.controller.pickUpPile()
-                        if len(self.controller.prepared_cards) == 0:
-                            # manually remove cards played, else an ambiguity in wrapped cards causes
-                            # picked up cards to sometimes get coordinates of cards just played.
-                            # If statement insures that you don't remove cards if pick-up failed.
-                            for wrappedcard in self.hand_info:
-                                if wrappedcard.status == 2:
-                                    self.hand_info.remove(wrappedcard)
-                                    self.last_hand.remove(wrappedcard.card)
-                if self.draw_pile.isOver(pos):
-                    self.controller.draw()
-                elif self.sort_btn.isOver(pos):
-                    self.hand_info.sort(key=lambda wc: wc.key)
-                    self.hand_info = self.refreshXY(self.hand_info)
-                    if self.refresh_flag:            # if needed to rescale card size, then refreshXY again.
-                        self.hand_info = self.refreshXY(self.hand_info)
-                elif self.controller._state.round == -1 and self.ready_yes_btn.isOver(pos):
-                    self.controller.setReady(True)
-                    self.ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
-                    self.not_ready_color_idx = 8  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
-                elif self.controller._state.round == -1 and self.ready_no_btn.isOver(pos):
-                    self.controller.setReady(False)
-                    self.ready_color_idx = 2  # color of outline will be: UIC.outline_colors(ready_color_idx)
-                    self.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
-                elif self.sort_status_btn.isOver(pos):
-                    self.hand_info.sort(
-                        key=lambda wc: (wc.img_clickable.x + (wc.status * UIC.Disp_Width))
-                        )
-                    self.hand_info = self.refreshXY(self.hand_info)
-                    if self.refresh_flag:            # if needed to rescale card size, then refreshXY again.
-                        self.hand_info = self.refreshXY(self.hand_info)
-                elif self.prepare_card_btn.isOver(pos):
-                    self.already_prepared_cards = self.controller.getPreparedCards()
-                    self.wrapped_cards_to_prep = self.gatherSelected()
-                    self.wild_cards = self.controller.automaticallyPrepareCards(self.wrapped_cards_to_prep)
-                    # wild_cards[0] contains prepared cards minus automatically prepared cards wild card
-                    # that have not yet been designated, and wild_cards[1] is the
-                    # list of possible cards each could be assigned to.  Currently list of possibilities is
-                    # full list of playable cards [1,4,5....13] rather than something more sophisticated.
-                    self.num_wilds = len(self.wild_cards)
-                    # newly_prepped_cards = all prepared cards minus already_prepared_cards
-                    self.newly_prepped_cards = self.controller.getPreparedCards()
-                    for element in self.already_prepared_cards:
-                        self.newly_prepped_cards.remove(element)
-                    for wrappedcard in self.wrapped_cards_to_prep:
-                        if wrappedcard.card in self.newly_prepped_cards:
-                            self.newly_prepped_cards.remove(wrappedcard.card)
-                            wrappedcard.status = 2
-                            wrappedcard.img_clickable.changeOutline(4)
-                elif self.play_prepared_cards_btn.isOver(pos):
-                    self.controller.play()
-                    if len(self.controller.prepared_cards) == 0:
-                        # manually remove cards played, else an ambiguity in wrapped cards can cause
-                        # different wrapped cards with identical card values to be used.
-                        for wrappedcard in self.hand_info:
-                            if wrappedcard.status == 2:
-                                self.hand_info.remove(wrappedcard)
-                                self.last_hand.remove(wrappedcard.card)
-                elif self.clear_prepared_cards_btn.isOver(pos):
-                    self.controller.clearPreparedCards()
-                    self.clearPreparedCardsGui()
-                elif self.discard_action_btn.isOver(pos):
-                    wc_list = []
-                    for element in self.gatherSelected():
-                        wc_list.append(element)
-                    self.discard_confirm = self.discardConfirmation(self.discard_confirm, wc_list)
-                # --- end of ClickedButton ---
-                # ---  make this a generic helper function 'CardSelection' ----
+                HandAndFootButtons.ClickedButton(self,pos)
+                # ---  make below a generic helper function 'CardSelection' ----
                 for element in self.hand_info:
                     # cannot select prepared cards, so not included in logic below.
                     if element.img_clickable.isOver(pos):
@@ -223,62 +119,22 @@ class HandView:
                 # --- end of CardSelection  ---
 
             elif event.type == pygame.MOUSEMOTION:
-                # --- move stuff below to generic helper function Mouse_Highlighting  --
-                if self.draw_pile.isOver(pos):
-                    self.draw_pile.changeOutline(1)
-                else:
-                    self.draw_pile.changeOutline(0)
-                if self.pickup_pile_sz > 0:
-                    if self.pickup_pile.isOver(pos):
-                       self.pickup_pile.changeOutline(1)
+                HandAndFootButtons.MouseHiLight(self,pos)
+                # next section should go in card highlighting function -- generic, not HandAndFoot specific.
+                for element in self.hand_info:
+                    color_index = element.img_clickable.outline_index
+                    if element.img_clickable.isOver(pos):
+                        # Brighten colors that mouse is over.
+                        # Odd colors are bright, even show status.
+                        if (color_index % 2) == 0:
+                            color_index = element.img_clickable.outline_index + 1
+                            element.img_clickable.changeOutline(color_index)
                     else:
-                       self.pickup_pile.changeOutline(0)
-                if self.ready_yes_btn.isOver(pos):
-                    self.ready_yes_btn.outline_color = UIC.outline_colors[self.ready_color_idx + 1]
-                else:
-                    self.ready_yes_btn.outline_color = UIC.outline_colors[self.ready_color_idx]
-                if self.ready_no_btn.isOver(pos):
-                    self.ready_no_btn.outline_color = UIC.outline_colors[self.not_ready_color_idx + 1]
-                else:
-                    self.ready_no_btn.outline_color = UIC.outline_colors[self.not_ready_color_idx]
-                if self.sort_status_btn.isOver(pos):
-                    self.sort_status_btn.outline_color = UIC.Black  # set outline color
-                else:
-                    self.sort_status_btn.outline_color = UIC.Gray  # change outline
-                if self.sort_btn.isOver(pos):
-                    self.sort_btn.outline_color = UIC.Black  # set outline color
-                else:
-                    self.sort_btn.outline_color = UIC.Gray  # remove highlighted outline
-                if self.prepare_card_btn.isOver(pos):
-                    self.prepare_card_btn.outline_color = UIC.Bright_Blue  # set outline color
-                else:
-                    self.prepare_card_btn.outline_color = UIC.Blue  # remove highlighted outline
-                if self.clear_prepared_cards_btn.isOver(pos):
-                    self.clear_prepared_cards_btn.outline_color = UIC.Bright_Red  # set outline color
-                else:
-                    self.clear_prepared_cards_btn.outline_color = UIC.Red  # remove highlighted outline
-                if self.play_prepared_cards_btn.isOver(pos):
-                    self.play_prepared_cards_btn.outline_color = UIC.Bright_Green  # set outline color
-                else:
-                    self.play_prepared_cards_btn.outline_color = UIC.Green  # remove highlighted outline
-                if self.discard_action_btn.isOver(pos):
-                    self.discard_action_btn.outline_color = UIC.Black  # set outline color
-                else:
-                    self.discard_action_btn.outline_color = UIC.Bright_Red  # remove highlighted outline
-                    for element in self.hand_info:
                         color_index = element.img_clickable.outline_index
-                        if element.img_clickable.isOver(pos):
-                            # Brighten colors that mouse is over.
-                            # Odd colors are bright, even show status.
-                            if (color_index % 2) == 0:
-                                color_index = element.img_clickable.outline_index + 1
-                                element.img_clickable.changeOutline(color_index)
-                        else:
-                            color_index = element.img_clickable.outline_index
-                            if (color_index % 2) == 1:
-                                color_index = color_index - 1
-                                element.img_clickable.changeOutline(color_index)
-            # --- end of  Mouse_Highlighting  --
+                        if (color_index % 2) == 1:
+                            color_index = color_index - 1
+                            element.img_clickable.changeOutline(color_index)
+            # --- end of  Card_Highlighting  --
             # This next section has player enter desired values for wild cards.
             elif event.type == pygame.KEYDOWN and self.num_wilds > 0:
                 textnote = "Designate one of " + str(self.num_wilds) + "  wildcard(s)"
