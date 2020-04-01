@@ -1,8 +1,20 @@
 import pygame
 import client.Button as Btn
+import client.HandManagement as HandManagement
 import client.UIConstants as UIC
 from client.UICardWrapper import UICardWrapper
 
+"""This file contains methods used in displaying the buttons that enable the user to take actions
+
+If a button is clicked then generally two actions take place -- one action initiates communication with the server 
+and the second updates the display to reflect the action taken.  
+Discards are confirmed within the GUI, and that code is currently split between this file and HandView.
+
+It is Hand and Foot specific because different games may need additional buttons, and may need them arranged
+ differently, but most of this code should be useful for other games.
+"""
+# todo: decide where discard code should go, and how much of the action code following a button click should go in this file.
+# Might want to make this file focus on button creation and drawing and actions be in a separate file.
 
 
 def CreateButtons(self):
@@ -61,9 +73,9 @@ def ClickedButton(self,pos):
         self.controller.draw()
     elif self.sort_btn.isOver(pos):
         self.hand_info.sort(key=lambda wc: wc.key)
-        self.hand_info = self.refreshXY(self.hand_info)
+        self.hand_info = HandManagement.refreshXY(self, self.hand_info)
         if self.refresh_flag:  # if needed to rescale card size, then refreshXY again.
-            self.hand_info = self.refreshXY(self.hand_info)
+            self.hand_info = HandManagement.refreshXY(self, self.hand_info)
     elif self.controller._state.round == -1 and self.ready_yes_btn.isOver(pos):
         self.controller.setReady(True)
         self.ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
@@ -76,12 +88,12 @@ def ClickedButton(self,pos):
         self.hand_info.sort(
             key=lambda wc: (wc.img_clickable.x + (wc.status * UIC.Disp_Width))
         )
-        self.hand_info = self.refreshXY(self.hand_info)
+        self.hand_info = HandManagement.refreshXY(self, self.hand_info)
         if self.refresh_flag:  # if needed to rescale card size, then refreshXY again.
-            self.hand_info = self.refreshXY(self.hand_info)
+            self.hand_info = HandManagement.refreshXY(self, self.hand_info)
     elif self.prepare_card_btn.isOver(pos):
         self.already_prepared_cards = self.controller.getPreparedCards()
-        self.wrapped_cards_to_prep = self.gatherSelected()
+        self.wrapped_cards_to_prep = gatherSelected(self)
         self.wild_cards = self.controller.automaticallyPrepareCards(self.wrapped_cards_to_prep)
         # wild_cards[0] contains prepared cards minus automatically prepared cards wild card
         # that have not yet been designated, and wild_cards[1] is the
@@ -108,10 +120,10 @@ def ClickedButton(self,pos):
                     self.last_hand.remove(wrappedcard.card)
     elif self.clear_prepared_cards_btn.isOver(pos):
         self.controller.clearPreparedCards()
-        self.clearPreparedCardsGui()
+        HM.clearPreparedCardsGui(self)
     elif self.discard_action_btn.isOver(pos):
         wc_list = []
-        for element in self.gatherSelected():
+        for element in gatherSelected(self):
             wc_list.append(element)
         self.discard_confirm = self.discardConfirmation(self.discard_confirm, wc_list)
     return
@@ -158,3 +170,10 @@ def MouseHiLight(self,pos):
         self.discard_action_btn.outline_color = UIC.Black  # set outline color
     else:
         self.discard_action_btn.outline_color = UIC.Bright_Red  # remove highlighted outline
+
+def gatherSelected(self):
+    self.selected_list = []
+    for element in self.hand_info:
+        if element.status == 1:
+            self.selected_list.append(element)
+    return self.selected_list
