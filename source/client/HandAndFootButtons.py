@@ -61,14 +61,7 @@ def ClickedButton(self,pos):
     if self.pickup_pile_sz > 0:
         if self.pickup_pile.isOver(pos):
             self.controller.pickUpPile()
-            if len(self.controller.prepared_cards) == 0:
-                # manually remove cards played, else an ambiguity in wrapped cards causes
-                # picked up cards to sometimes get coordinates of cards just played.
-                # If statement insures that you don't remove cards if pick-up failed.
-                for wrappedcard in self.hand_info:
-                    if wrappedcard.status == 2:
-                        self.hand_info.remove(wrappedcard)
-                        self.last_hand.remove(wrappedcard.card)
+            HandManagement.preparedCardsPlayedGui(self)
     if self.draw_pile.isOver(pos):
         self.controller.draw()
     elif self.sort_btn.isOver(pos):
@@ -111,16 +104,10 @@ def ClickedButton(self,pos):
                 wrappedcard.img_clickable.changeOutline(4)
     elif self.play_prepared_cards_btn.isOver(pos):
         self.controller.play()
-        if len(self.controller.prepared_cards) == 0:
-            # manually remove cards played, else an ambiguity in wrapped cards can cause
-            # different wrapped cards with identical card values to be used.
-            for wrappedcard in self.hand_info:
-                if wrappedcard.status == 2:
-                    self.hand_info.remove(wrappedcard)
-                    self.last_hand.remove(wrappedcard.card)
+        HandManagement.preparedCardsPlayedGui(self)
     elif self.clear_prepared_cards_btn.isOver(pos):
         self.controller.clearPreparedCards()
-        HM.clearPreparedCardsGui(self)
+        HandManagement.clearPreparedCardsGui(self)
     elif self.discard_action_btn.isOver(pos):
         wc_list = []
         for element in gatherSelected(self):

@@ -49,6 +49,17 @@ def clearPreparedCardsGui(self):
             element.status = 0
             element.img_clickable.changeOutline(0)
 
+def preparedCardsPlayedGui(self):
+    if len(self.controller.prepared_cards) == 0:
+        # manually remove cards played, else an ambiguity in wrapped cards causes
+        # picked up cards to sometimes get coordinates of cards just played.
+        # If statement insures that you don't remove cards if pick-up failed.
+        for wrappedcard in self.hand_info:
+            if wrappedcard.status == 2:
+                self.hand_info.remove(wrappedcard)
+                self.last_hand.remove(wrappedcard.card)
+
+
 def refreshXY(self, original, layout_option=1):
     self.refresh_flag = False
     """After sorting or melding, may wish to refresh card's xy coordinates """
