@@ -36,16 +36,19 @@ class HandView:
         self.discard_confirm = False
         self.num_wilds = 0
         self.wild_cards = []
+        self.selected_list = []
         self.round_index = 0
         self.round_advance = False
-        self.round_meld = Meld_Threshold  #[50,90,120,150]
+        self.round_meld = Meld_Threshold  # [50,90,120,150]
+        self.ready_color_idx = 2
+        self.not_ready_color_idx = 6
         # --- Hand And Foot Specific:
-        self.betweenrounds = ['Welcome to a new game.  This is the round of ' + str(Meld_Threshold[0]) + '.',\
-                        'To draw click on the deck of cards (upper left).',\
-                        'To discard select ONE card & double click on discard button. ',\
-                        'To pick up pile PREPARE necessary cards & then click on discard pile. ',\
-                        "Cumulative score will display beneath player's cards",\
-                        'When ready to start playing click on the YES button on the lower right.']
+        self.betweenrounds = ['Welcome to a new game.  This is the round of ' + str(Meld_Threshold[0]) + '.',
+                              'To draw click on the deck of cards (upper left).',
+                              'To discard select ONE card & double click on discard button. ',
+                              'To pick up pile PREPARE necessary cards & then click on discard pile. ',
+                              "Cumulative score will display beneath player's cards",
+                              'When ready to start playing click on the YES button on the lower right.']
         self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
         # discard info
         discard_info = self.controller.getDiscardInfo()
@@ -60,7 +63,7 @@ class HandView:
     def update(self):
         """This updates the view of the hand, between rounds it displays a message. """
 
-        if (self.controller._state.round == -1):
+        if self.controller._state.round == -1:
             self.mesgBetweenRounds(self.betweenrounds)
             if self.round_advance:
                 self.round_index = self.round_index + 1
@@ -82,7 +85,7 @@ class HandView:
             self.hand_info = []
         elif not self.last_hand == self.current_hand:
             self.hand_info = HandManagement.wrapHand(self, self.current_hand, self.hand_info)
-        HandManagement.showHolding(self, self.hand_info) # displays hand
+        HandManagement.showHolding(self, self.hand_info)  # displays hand
         if self.refresh_flag:  # if needed to rescale card size, then refreshXY again.
             self.hand_info = HandManagement.refreshXY(self, self.hand_info)
         HandAndFootButtons.ButtonDisplay(self)
@@ -93,21 +96,21 @@ class HandView:
         key strokes don't do anything unless designating values for prepared wild cards,
         at which time the mouse is ignored unless you want to clear the prepared cards."""
 
-        for event in pygame.event.get():
+        for self.event in pygame.event.get():
             if self.num_wilds > 0:
                 wild_instructions = 'Use the keyboard to designate your prepared wild cards \r\n '
                 wild_instructions = wild_instructions + '(use 0 for 10 and J, Q, or K for facecards).'
                 self.controller.note = wild_instructions
             pos = pygame.mouse.get_pos()
 
-            if event.type == pygame.QUIT:
+            if self.event.type == pygame.QUIT:
                 # The window crashed, we should handle this
                 print("pygame crash, AAAHHH")
                 pygame.quit()
                 quit()
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                HandAndFootButtons.ClickedButton(self,pos)
+            if self.event.type == pygame.MOUSEBUTTONDOWN:
+                HandAndFootButtons.ClickedButton(self, pos)
                 # ---  make below a generic helper function 'CardSelection' ----
                 for element in self.hand_info:
                     # cannot select prepared cards, so not included in logic below.
@@ -119,8 +122,8 @@ class HandView:
                             element.status = 1
                             element.img_clickable.changeOutline(2)
 
-            elif event.type == pygame.MOUSEMOTION:
-                HandAndFootButtons.MouseHiLight(self,pos)
+            elif self.event.type == pygame.MOUSEMOTION:
+                HandAndFootButtons.MouseHiLight(self, pos)
                 # next section should go in card highlighting function -- generic, not HandAndFoot specific.
                 for element in self.hand_info:
                     color_index = element.img_clickable.outline_index
@@ -136,43 +139,50 @@ class HandView:
                             color_index = color_index - 1
                             element.img_clickable.changeOutline(color_index)
             # This next section has player enter desired values for wild cards.
-            elif event.type == pygame.KEYDOWN and self.num_wilds > 0:
-                # todo:
-                # def assignWilds(self) -- tried to split this off and ran into a problem, and program kept crashing.
-                textnote = "Designate one of " + str(self.num_wilds) + "  wildcard(s)"
-                textnote = textnote + " enter value by typing:  1-9, 0 (for ten), j, q, k or a. "
-                acceptable_keys = self.wild_cards[0][1]
-                self.controller.note = textnote
-                this_wild = self.wild_cards[0][0]
-                if event.key == pygame.K_a:
-                    wild_key = 1
-                elif event.key == pygame.K_0:
-                    wild_key = 10
-                elif event.key == pygame.K_j:
-                    wild_key = 11
-                elif event.key == pygame.K_q:
-                    wild_key = 12
-                elif event.key == pygame.K_k:
-                    wild_key = 13
-                elif event.unicode in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0']:
-                    wild_key = int(event.unicode)
-                else:
-                    self.controller.note = 'invalid key:' + textnote
-                    wild_key = 666
-                if wild_key in acceptable_keys:
-                    self.controller.note = str(this_wild) + ' will be a ' + str(wild_key)
-                    icount = 0
-                    for wrappedcard in self.wrapped_cards_to_prep:
-                        if wrappedcard.card == this_wild and icount == 0 and wrappedcard.status == 1:
-                            icount = 1
-                            wrappedcard.status = 2
-                            wrappedcard.img_clickable.changeOutline(4)
-                    self.controller.prepareCard(wild_key, this_wild)
-                    if self.num_wilds > 0:
-                        self.wild_cards = self.wild_cards[1:]
-                    self.num_wilds = len(self.wild_cards)
+            elif self.event.type == pygame.KEYDOWN and self.num_wilds > 0:
+                self.assignWilds()
 
+    def assignWilds(self):
+        textnote = "Designate one of " + str(self.num_wilds) + "  wildcard(s)"
+        textnote = textnote + " enter value by typing:  1-9, 0 (for ten), j, q, k or a. "
+        acceptable_keys = self.wild_cards[0][1]
+        self.controller.note = textnote
+        this_wild = self.wild_cards[0][0]
+        if self.event.key == pygame.K_a:
+            wild_key = 1
+        elif self.event.key == pygame.K_0:
+            wild_key = 10
+        elif self.event.key == pygame.K_j:
+            wild_key = 11
+        elif self.event.key == pygame.K_q:
+            wild_key = 12
+        elif self.event.key == pygame.K_k:
+            wild_key = 13
+        elif self.event.unicode in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0']:
+            wild_key = int(self.event.unicode)
+        else:
+            self.controller.note = 'invalid key:' + textnote
+            wild_key = 666
+        if wild_key in acceptable_keys:
+            self.controller.note = str(this_wild) + ' will be a ' + str(wild_key)
+            icount = 0
+            for wrappedcard in self.wrapped_cards_to_prep:
+                if wrappedcard.card == this_wild and icount == 0 and wrappedcard.status == 1:
+                    icount = 1
+                    wrappedcard.status = 2
+                    wrappedcard.img_clickable.changeOutline(4)
+            self.controller.prepareCard(wild_key, this_wild)
+            if self.num_wilds > 0:
+                self.wild_cards = self.wild_cards[1:]
+            self.num_wilds = len(self.wild_cards)
 
+    def gatherSelected(self):
+        # in order to take action on selected cards (either discarding them or preparing them) this method gathers them.
+        self.selected_list = []
+        for element in self.hand_info:
+            if element.status == 1:
+                self.selected_list.append(element)
+        return self.selected_list
 
     def discardConfirmation(self, confirmed, wrapped_discards):
         # Confirm a user is sure about a discard and then perform it once confirmed.
@@ -192,7 +202,7 @@ class HandView:
                 if controller_response:
                     for element in wrapped_discards:
                         self.hand_info.remove(element)
-            return False # now that this is done, we don't have anything waiting on confirmation
+            return False  # now that this is done, we don't have anything waiting on confirmation
 
     def mesgBetweenRounds(self, results):
         # print results where cards usually go until Ready button is clicked for next round.

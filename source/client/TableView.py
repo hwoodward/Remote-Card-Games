@@ -8,7 +8,7 @@ from common.Card import Card
 class TableView(ConnectionListener):
     """ This displays publicly available info on all the players.
 
-    It was designed for HandAndFoot
+    It is Hand And Foot Specific
     """
 
     def __init__(self, display):

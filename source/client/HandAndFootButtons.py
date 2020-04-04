@@ -13,16 +13,14 @@ Discards are confirmed within the GUI, and that code is currently split between 
 It is Hand and Foot specific because different games may need additional buttons, and may need them arranged
  differently, but most of this code should be useful for other games.
 """
-# todo: decide where discard code should go, and how much of the action code following a button click should go in this file.
-# Might want to make this file focus on button creation and drawing and actions be in a separate file.
 
 
 def CreateButtons(self):
     """This creates the buttons used for HandAndFoot. """
     self.ready_yes_btn = Btn.Button(UIC.White, (UIC.Disp_Width-150), (UIC.Disp_Height-70), 125, 25, text='Ready:YES')
-    self.ready_color_idx = 2 # color of outline will be: UIC.outline_colors(ready_color_idx)
+    self.ready_color_idx = 2  # color of outline will be: UIC.outline_colors(ready_color_idx)
     self.ready_no_btn = Btn.Button(UIC.White, (UIC.Disp_Width-150), (UIC.Disp_Height-30), 125, 25, text='Ready:NO')
-    self.not_ready_color_idx = 6 # color of outline will be: UIC.outline_colors(ready_color_idx)
+    self.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
     self.sort_status_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='sort by status')
     self.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort by number')
     self.prepare_card_btn = Btn.Button(UIC.White, 400, 25, 345, 25, text='Selected cards -> prepared cards')
@@ -56,7 +54,8 @@ def ButtonDisplay(self):
     self.discard_action_btn.draw(self.display, self.discard_action_btn.outline_color)
     return
 
-def ClickedButton(self,pos):
+
+def ClickedButton(self, pos):
     # carry out action after mouse clicked on button.
     if self.pickup_pile_sz > 0:
         if self.pickup_pile.isOver(pos):
@@ -86,7 +85,7 @@ def ClickedButton(self,pos):
             self.hand_info = HandManagement.refreshXY(self, self.hand_info)
     elif self.prepare_card_btn.isOver(pos):
         self.already_prepared_cards = self.controller.getPreparedCards()
-        self.wrapped_cards_to_prep = gatherSelected(self)
+        self.wrapped_cards_to_prep = self.gatherSelected()
         self.wild_cards = self.controller.automaticallyPrepareCards(self.wrapped_cards_to_prep)
         # wild_cards[0] contains prepared cards minus automatically prepared cards wild card
         # that have not yet been designated, and wild_cards[1] is the
@@ -110,12 +109,14 @@ def ClickedButton(self,pos):
         HandManagement.clearPreparedCardsGui(self)
     elif self.discard_action_btn.isOver(pos):
         wc_list = []
-        for element in gatherSelected(self):
+        discard_list = self.gatherSelected()
+        for element in discard_list:
             wc_list.append(element)
         self.discard_confirm = self.discardConfirmation(self.discard_confirm, wc_list)
     return
 
-def MouseHiLight(self,pos):
+
+def MouseHiLight(self, pos):
     if self.draw_pile.isOver(pos):
         self.draw_pile.changeOutline(1)
     else:
@@ -157,10 +158,3 @@ def MouseHiLight(self,pos):
         self.discard_action_btn.outline_color = UIC.Black  # set outline color
     else:
         self.discard_action_btn.outline_color = UIC.Bright_Red  # remove highlighted outline
-
-def gatherSelected(self):
-    self.selected_list = []
-    for element in self.hand_info:
-        if element.status == 1:
-            self.selected_list.append(element)
-    return self.selected_list
