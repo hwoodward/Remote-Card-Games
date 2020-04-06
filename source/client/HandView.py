@@ -70,9 +70,7 @@ class HandView:
                 if self.round_index < len(self.round_meld):
                     self.betweenrounds[0] = 'This is the round of ' + str(self.round_meld[self.round_index]) + ' ! '
                 else:
-                    self.betweenrounds = 'Game has concluded.         ', \
-                                    'Score can be found in command window.'
-                    # todo: Create better display for final results.
+                    self.betweenrounds = 'Game has concluded. Scores for each round can be found in command window.'
                 self.round_advance = False
         else:
             self.round_advance = True
@@ -124,21 +122,7 @@ class HandView:
 
             elif self.event.type == pygame.MOUSEMOTION:
                 HandAndFootButtons.MouseHiLight(self, pos)
-                # next section should go in card highlighting function -- generic, not HandAndFoot specific.
-                for element in self.hand_info:
-                    color_index = element.img_clickable.outline_index
-                    if element.img_clickable.isOver(pos):
-                        # Brighten colors that mouse is over.
-                        # Odd colors are bright, even show status.
-                        if (color_index % 2) == 0:
-                            color_index = element.img_clickable.outline_index + 1
-                            element.img_clickable.changeOutline(color_index)
-                    else:
-                        color_index = element.img_clickable.outline_index
-                        if (color_index % 2) == 1:
-                            color_index = color_index - 1
-                            element.img_clickable.changeOutline(color_index)
-            # This next section has player enter desired values for wild cards.
+                HandManagement.MouseHiLight(self, pos)
             elif self.event.type == pygame.KEYDOWN and self.num_wilds > 0:
                 self.assignWilds()
 

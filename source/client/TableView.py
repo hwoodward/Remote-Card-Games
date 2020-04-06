@@ -133,7 +133,7 @@ class TableView(ConnectionListener):
 
     def Network_publicInfo(self, data):
 
-        # TODO: update example below.  False should be a play state, not True/False
+        # todo: update example below.  False should be a play state, not True/False
         '''
         example of data (json structure) with two players, 'hhh' and 'sss' : 
         {'action': 'publicInfo', 'player_names': ['hhh', 'sss'], 'visible_cards': [{}, {}], 'hand_status': [[False, 12, 1], [True, 14, 1]]}

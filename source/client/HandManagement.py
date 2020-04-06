@@ -3,7 +3,7 @@ import client.Button as Btn
 import client.UIConstants as UIC
 from client.UICardWrapper import UICardWrapper
 
-"""This file contains methods used in displaying the hand, should be useful for many different games"""
+"""This file contains methods used in displaying, selecting and sorting the hand"""
 
 
 def wrapHand(self, updated_hand, wrapped_hand):
@@ -97,4 +97,18 @@ def showHolding(self, wrapped_cards):
         loc_xy = (wrapped_element.img_clickable.x, wrapped_element.img_clickable.y)
         wrapped_element.img_clickable.draw(self.display, loc_xy, color)
 
+def MouseHiLight(self, pos):
+    for element in self.hand_info:
+        color_index = element.img_clickable.outline_index
+        if element.img_clickable.isOver(pos):
+            # Brighten colors that mouse is over.
+            # Odd colors are bright, even show status.
+            if (color_index % 2) == 0:
+                color_index = element.img_clickable.outline_index + 1
+                element.img_clickable.changeOutline(color_index)
+        else:
+            color_index = element.img_clickable.outline_index
+            if (color_index % 2) == 1:
+                color_index = color_index - 1
+                element.img_clickable.changeOutline(color_index)
 

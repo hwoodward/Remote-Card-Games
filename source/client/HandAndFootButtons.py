@@ -70,10 +70,15 @@ def ClickedButton(self, pos):
             self.hand_info = HandManagement.refreshXY(self, self.hand_info)
     elif self.controller._state.round == -1 and self.ready_yes_btn.isOver(pos):
         self.controller.setReady(True)
+        self.last_round_hand = self.hand_info
+        self.hand_info = []
         self.ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
         self.not_ready_color_idx = 8  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
     elif self.controller._state.round == -1 and self.ready_no_btn.isOver(pos):
         self.controller.setReady(False)
+        # comment out next line and line above defining self.last_round_hand
+        # if you don't want last round's hand to reappear.
+        self.hand_info = self.last_round_hand
         self.ready_color_idx = 2  # color of outline will be: UIC.outline_colors(ready_color_idx)
         self.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
     elif self.sort_status_btn.isOver(pos):
