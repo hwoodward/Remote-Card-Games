@@ -70,7 +70,7 @@ class HandView:
                 if self.round_index < len(self.round_meld):
                     self.betweenrounds[0] = 'This is the round of ' + str(self.round_meld[self.round_index]) + ' ! '
                 else:
-                    self.betweenrounds = 'Game has concluded. Scores for each round can be found in command window.'
+                    self.betweenrounds = ['Game has concluded. Scores for each round can be found in command window.']
                 self.round_advance = False
         else:
             self.round_advance = True
