@@ -23,7 +23,6 @@ def RunClient():
     It sets up the various classes and starts the game loop
     """
     hostinfo = str(input("Enter the host:port[localhost:12345] ") or "localhost:12345")
-    # hostinfo = str(input("Enter the host:port[woodstar.net:8080] ") or "woodstar.net:8080")
     host, port = hostinfo.split(":")
     print(host)
     print(port)
