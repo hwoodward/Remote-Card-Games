@@ -23,9 +23,10 @@ def CreateButtons(self):
     self.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
     self.sort_status_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='sort by status')
     self.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort by number')
-    self.prepare_card_btn = Btn.Button(UIC.White, 400, 25, 345, 25, text='Selected cards -> prepared cards')
-    self.clear_prepared_cards_btn = Btn.Button(UIC.White, 320, 75, 225, 25, text='Clear prepared cards')
-    self.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 75, 225, 25, text='Play prepared cards')
+    self.prepare_card_btn = Btn.Button(UIC.White, 400, 15, 345, 25, text='Selected cards -> prepared cards')
+    self.clear_prepared_cards_btn = Btn.Button(UIC.White, 320, 53, 225, 25, text='Clear prepared cards')
+    self.clear_selected_cards_btn = Btn.Button(UIC.White, 200, 90, 225, 25, text='Clear selected cards')
+    self.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 53, 225, 25, text='Play prepared cards')
     self.discard_action_btn = Btn.Button(UIC.Bright_Red, 190, 25, 100, 25, text='discard')
     return
 
@@ -50,6 +51,7 @@ def ButtonDisplay(self):
     self.sort_btn.draw(self.display, self.sort_btn.outline_color)
     self.prepare_card_btn.draw(self.display, self.prepare_card_btn.outline_color)
     self.clear_prepared_cards_btn.draw(self.display, self.clear_prepared_cards_btn.outline_color)
+    self.clear_selected_cards_btn.draw(self.display, self.clear_selected_cards_btn.outline_color)
     self.play_prepared_cards_btn.draw(self.display, self.play_prepared_cards_btn.outline_color)
     self.discard_action_btn.draw(self.display, self.discard_action_btn.outline_color)
     return
@@ -112,6 +114,8 @@ def ClickedButton(self, pos):
     elif self.clear_prepared_cards_btn.isOver(pos):
         self.controller.clearPreparedCards()
         HandManagement.clearPreparedCardsGui(self)
+    elif self.clear_selected_cards_btn.isOver(pos):
+        HandManagement.clearSelectedCardsGui(self)
     elif self.discard_action_btn.isOver(pos):
         wc_list = []
         discard_list = self.gatherSelected()
@@ -155,6 +159,10 @@ def MouseHiLight(self, pos):
         self.clear_prepared_cards_btn.outline_color = UIC.Bright_Red  # set outline color
     else:
         self.clear_prepared_cards_btn.outline_color = UIC.Red  # remove highlighted outline
+    if self.clear_selected_cards_btn.isOver(pos):
+        self.clear_selected_cards_btn.outline_color = UIC.Bright_Orange # set outline color
+    else:
+        self.clear_selected_cards_btn.outline_color = UIC.Orange  # remove highlighted outline
     if self.play_prepared_cards_btn.isOver(pos):
         self.play_prepared_cards_btn.outline_color = UIC.Bright_Green  # set outline color
     else:

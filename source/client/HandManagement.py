@@ -59,6 +59,11 @@ def preparedCardsPlayedGui(self):
                 self.hand_info.remove(wrappedcard)
                 self.last_hand.remove(wrappedcard.card)
 
+def clearSelectedCardsGui(self):
+    for element in self.hand_info:
+        if element.status == 1:
+            element.status = 0
+            element.img_clickable.changeOutline(0)
 
 def refreshXY(self, original, layout_option=1):
     self.refresh_flag = False
@@ -76,7 +81,8 @@ def refreshXY(self, original, layout_option=1):
     if (card_xy[0] > maxX):
         scalingfactor = maxX / card_xy[0]
         self.hand_scaling = (scalingfactor * self.hand_scaling[0], scalingfactor * self.hand_scaling[1])
-        refreshed = rescaleCards(refreshed, self.hand_scaling[0])
+        refreshed_rescaled = rescaleCards(self, refreshed, self.hand_scaling[0])
+        refreshed = refreshed_rescaled
     return refreshed
 
 def rescaleCards(self, original, card_scaling):
