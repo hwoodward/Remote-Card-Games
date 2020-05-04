@@ -62,6 +62,14 @@ def preparedCardsPlayed(hand_view):
                 hand_view.last_hand.remove(wrappedcard.card)
     return
 
+
+def clearSelectedCardsGui(self):
+    for element in self.hand_info:
+        if element.status == 1:
+            element.status = 0
+            element.img_clickable.changeOutline(0)
+# TODO: interrupted while updating HandManagement -- 
+
 def refreshXY(hand_view, original, layout_option=1):
     hand_view.refresh_flag = False
     """After sorting or melding, may wish to refresh card's xy coordinates """
