@@ -1,5 +1,6 @@
 import pygame
 import client.Button as Btn
+from client.ClickableImage import ClickableImage as ClickImg
 import client.HandManagement as HandManagement
 import client.UIConstants as UIC
 from client.UICardWrapper import UICardWrapper
@@ -10,156 +11,157 @@ If a button is clicked then generally two actions take place -- one action initi
 and the second updates the display to reflect the action taken.  
 Discards are confirmed within the GUI, and that code is currently split between this file and HandView.
 
-It is Hand and Foot specific because different games may need additional buttons, and may need them arranged
+This file is Hand and Foot specific because different games may need additional buttons, and may need them arranged
  differently, but most of this code should be useful for other games.
 """
 
 
-def CreateButtons(self):
+def CreateButtons(Hand_View):
     """This creates the buttons used for HandAndFoot. """
-    self.ready_yes_btn = Btn.Button(UIC.White, (UIC.Disp_Width-150), (UIC.Disp_Height-70), 125, 25, text='Ready:YES')
-    self.ready_color_idx = 2  # color of outline will be: UIC.outline_colors(ready_color_idx)
-    self.ready_no_btn = Btn.Button(UIC.White, (UIC.Disp_Width-150), (UIC.Disp_Height-30), 125, 25, text='Ready:NO')
-    self.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
-    self.sort_status_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='sort by status')
-    self.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort by number')
-    self.prepare_card_btn = Btn.Button(UIC.White, 400, 25, 345, 25, text='Selected cards -> prepared cards')
-    self.clear_prepared_cards_btn = Btn.Button(UIC.White, 320, 75, 225, 25, text='Clear prepared cards')
-    self.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 75, 225, 25, text='Play prepared cards')
-    self.discard_action_btn = Btn.Button(UIC.Bright_Red, 190, 25, 100, 25, text='discard')
+    Hand_View.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
+    Hand_View.ready_yes_btn = Btn.Button(UIC.White, (UIC.Disp_Width - 150), (UIC.Disp_Height - 70), 125, 25, text='Ready:YES')
+    Hand_View.ready_color_idx = 2  # color of outline will be: UIC.outline_colors(ready_color_idx)
+    Hand_View.ready_no_btn = Btn.Button(UIC.White, (UIC.Disp_Width - 150), (UIC.Disp_Height - 30), 125, 25, text='Ready:NO')
+    Hand_View.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
+    Hand_View.sort_status_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='sort by status')
+    Hand_View.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort by number')
+    Hand_View.prepare_card_btn = Btn.Button(UIC.White, 400, 25, 345, 25, text='Selected cards -> prepared cards')
+    Hand_View.clear_prepared_cards_btn = Btn.Button(UIC.White, 320, 75, 225, 25, text='Clear prepared cards')
+    Hand_View.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 75, 225, 25, text='Play prepared cards')
+    Hand_View.discard_action_btn = Btn.Button(UIC.Bright_Red, 190, 25, 100, 25, text='discard')
     return
 
-def ButtonDisplay(self):
-    # display draw pile and various action buttons
-    loc_xy = (self.draw_pile.x, self.draw_pile.y)
-    self.draw_pile.draw(self.display, loc_xy, self.draw_pile.outline_color)
+def ButtonDisplay(Hand_View):
+    """ This updates draw pile and action buttons. It is called in HandView.update each render cycle. """
+    loc_xy = (Hand_View.draw_pile.x, Hand_View.draw_pile.y)
+    Hand_View.draw_pile.draw(Hand_View.display, loc_xy, Hand_View.draw_pile.outline_color)
     # update discard info and redraw
-    discard_info = self.controller.getDiscardInfo()
-    self.top_discard = discard_info[0]
-    self.pickup_pile_sz = discard_info[1]
-    if self.pickup_pile_sz > 0:
-        self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25), UIC.scale)
-        self.pickup_pile = self.top_discard_wrapped.img_clickable
-        loc_xy = (self.pickup_pile.x, self.pickup_pile.y)
-        self.pickup_pile.draw(self.display, loc_xy, self.pickup_pile.outline_color)
-        self.labelMedium(str(self.pickup_pile_sz), 150, 35)
-    if self.controller._state.round == -1:
-        self.ready_yes_btn.draw(self.display, self.ready_yes_btn.outline_color)
-        self.ready_no_btn.draw(self.display, self.ready_no_btn.outline_color)
-    self.sort_status_btn.draw(self.display, self.sort_status_btn.outline_color)
-    self.sort_btn.draw(self.display, self.sort_btn.outline_color)
-    self.prepare_card_btn.draw(self.display, self.prepare_card_btn.outline_color)
-    self.clear_prepared_cards_btn.draw(self.display, self.clear_prepared_cards_btn.outline_color)
-    self.play_prepared_cards_btn.draw(self.display, self.play_prepared_cards_btn.outline_color)
-    self.discard_action_btn.draw(self.display, self.discard_action_btn.outline_color)
+    discard_info = Hand_View.controller.getDiscardInfo()
+    Hand_View.top_discard = discard_info[0]
+    Hand_View.pickup_pile_sz = discard_info[1]
+    if Hand_View.pickup_pile_sz > 0:
+        Hand_View.top_discard_wrapped = UICardWrapper(Hand_View.top_discard, (100, 25), UIC.scale)
+        Hand_View.pickup_pile = Hand_View.top_discard_wrapped.img_clickable
+        loc_xy = (Hand_View.pickup_pile.x, Hand_View.pickup_pile.y)
+        Hand_View.pickup_pile.draw(Hand_View.display, loc_xy, Hand_View.pickup_pile.outline_color)
+        Hand_View.labelMedium(str(Hand_View.pickup_pile_sz), 150, 35)
+    if Hand_View.controller._state.round == -1:
+        Hand_View.ready_yes_btn.draw(Hand_View.display, Hand_View.ready_yes_btn.outline_color)
+        Hand_View.ready_no_btn.draw(Hand_View.display, Hand_View.ready_no_btn.outline_color)
+    Hand_View.sort_status_btn.draw(Hand_View.display, Hand_View.sort_status_btn.outline_color)
+    Hand_View.sort_btn.draw(Hand_View.display, Hand_View.sort_btn.outline_color)
+    Hand_View.prepare_card_btn.draw(Hand_View.display, Hand_View.prepare_card_btn.outline_color)
+    Hand_View.clear_prepared_cards_btn.draw(Hand_View.display, Hand_View.clear_prepared_cards_btn.outline_color)
+    Hand_View.play_prepared_cards_btn.draw(Hand_View.display, Hand_View.play_prepared_cards_btn.outline_color)
+    Hand_View.discard_action_btn.draw(Hand_View.display, Hand_View.discard_action_btn.outline_color)
     return
 
 
-def ClickedButton(self, pos):
+def ClickedButton(Hand_View, pos):
     # carry out action after mouse clicked on button.
-    if self.pickup_pile_sz > 0:
-        if self.pickup_pile.isOver(pos):
-            self.controller.pickUpPile()
-            HandManagement.preparedCardsPlayedGui(self)
-    if self.draw_pile.isOver(pos):
-        self.controller.draw()
-    elif self.sort_btn.isOver(pos):
-        self.hand_info.sort(key=lambda wc: wc.key)
-        self.hand_info = HandManagement.refreshXY(self, self.hand_info)
-        if self.refresh_flag:  # if needed to rescale card size, then refreshXY again.
-            self.hand_info = HandManagement.refreshXY(self, self.hand_info)
-    elif self.controller._state.round == -1 and self.ready_yes_btn.isOver(pos):
-        self.controller.setReady(True)
-        self.last_round_hand = self.hand_info
-        self.hand_info = []
-        self.ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
-        self.not_ready_color_idx = 8  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
-    elif self.controller._state.round == -1 and self.ready_no_btn.isOver(pos):
-        self.controller.setReady(False)
-        # comment out next line and line above defining self.last_round_hand
+    if Hand_View.pickup_pile_sz > 0:
+        if Hand_View.pickup_pile.isOver(pos):
+            Hand_View.controller.pickUpPile()
+            HandManagement.preparedCardsPlayedGui(Hand_View)
+    if Hand_View.draw_pile.isOver(pos):
+        Hand_View.controller.draw()
+    elif Hand_View.sort_btn.isOver(pos):
+        Hand_View.hand_info.sort(key=lambda wc: wc.key)
+        Hand_View.hand_info = HandManagement.refreshXY(Hand_View, Hand_View.hand_info)
+        if Hand_View.refresh_flag:  # if needed to rescale card size, then refreshXY again.
+            Hand_View.hand_info = HandManagement.refreshXY(Hand_View, Hand_View.hand_info)
+    elif Hand_View.controller._state.round == -1 and Hand_View.ready_yes_btn.isOver(pos):
+        Hand_View.controller.setReady(True)
+        Hand_View.last_round_hand = Hand_View.hand_info
+        Hand_View.hand_info = []
+        Hand_View.ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
+        Hand_View.not_ready_color_idx = 8  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
+    elif Hand_View.controller._state.round == -1 and Hand_View.ready_no_btn.isOver(pos):
+        Hand_View.controller.setReady(False)
+        # comment out next line and line above defining Hand_View.last_round_hand
         # if you don't want last round's hand to reappear.
-        self.hand_info = self.last_round_hand
-        self.ready_color_idx = 2  # color of outline will be: UIC.outline_colors(ready_color_idx)
-        self.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
-    elif self.sort_status_btn.isOver(pos):
-        self.hand_info.sort(
+        Hand_View.hand_info = Hand_View.last_round_hand
+        Hand_View.ready_color_idx = 2  # color of outline will be: UIC.outline_colors(ready_color_idx)
+        Hand_View.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
+    elif Hand_View.sort_status_btn.isOver(pos):
+        Hand_View.hand_info.sort(
             key=lambda wc: (wc.img_clickable.x + (wc.status * UIC.Disp_Width))
         )
-        self.hand_info = HandManagement.refreshXY(self, self.hand_info)
-        if self.refresh_flag:  # if needed to rescale card size, then refreshXY again.
-            self.hand_info = HandManagement.refreshXY(self, self.hand_info)
-    elif self.prepare_card_btn.isOver(pos):
-        self.already_prepared_cards = self.controller.getPreparedCards()
-        self.wrapped_cards_to_prep = self.gatherSelected()
-        self.wild_cards = self.controller.automaticallyPrepareCards(self.wrapped_cards_to_prep)
+        Hand_View.hand_info = HandManagement.refreshXY(Hand_View, Hand_View.hand_info)
+        if Hand_View.refresh_flag:  # if needed to rescale card size, then refreshXY again.
+            Hand_View.hand_info = HandManagement.refreshXY(Hand_View, Hand_View.hand_info)
+    elif Hand_View.prepare_card_btn.isOver(pos):
+        Hand_View.already_prepared_cards = Hand_View.controller.getPreparedCards()
+        Hand_View.wrapped_cards_to_prep = Hand_View.gatherSelected()
+        Hand_View.wild_cards = Hand_View.controller.automaticallyPrepareCards(Hand_View.wrapped_cards_to_prep)
         # wild_cards[0] contains prepared cards minus automatically prepared cards wild card
         # that have not yet been designated, and wild_cards[1] is the
         # list of possible cards each could be assigned to.  Currently list of possibilities is
         # full list of playable cards [1,4,5....13] rather than something more sophisticated.
-        self.num_wilds = len(self.wild_cards)
+        Hand_View.num_wilds = len(Hand_View.wild_cards)
         # newly_prepped_cards = all prepared cards minus already_prepared_cards
-        self.newly_prepped_cards = self.controller.getPreparedCards()
-        for element in self.already_prepared_cards:
-            self.newly_prepped_cards.remove(element)
-        for wrappedcard in self.wrapped_cards_to_prep:
-            if wrappedcard.card in self.newly_prepped_cards:
-                self.newly_prepped_cards.remove(wrappedcard.card)
+        Hand_View.newly_prepped_cards = Hand_View.controller.getPreparedCards()
+        for element in Hand_View.already_prepared_cards:
+            Hand_View.newly_prepped_cards.remove(element)
+        for wrappedcard in Hand_View.wrapped_cards_to_prep:
+            if wrappedcard.card in Hand_View.newly_prepped_cards:
+                Hand_View.newly_prepped_cards.remove(wrappedcard.card)
                 wrappedcard.status = 2
                 wrappedcard.img_clickable.changeOutline(4)
-    elif self.play_prepared_cards_btn.isOver(pos):
-        self.controller.play()
-        HandManagement.preparedCardsPlayedGui(self)
-    elif self.clear_prepared_cards_btn.isOver(pos):
-        self.controller.clearPreparedCards()
-        HandManagement.clearPreparedCardsGui(self)
-    elif self.discard_action_btn.isOver(pos):
+    elif Hand_View.play_prepared_cards_btn.isOver(pos):
+        Hand_View.controller.play()
+        HandManagement.preparedCardsPlayedGui(Hand_View)
+    elif Hand_View.clear_prepared_cards_btn.isOver(pos):
+        Hand_View.controller.clearPreparedCards()
+        HandManagement.clearPreparedCardsGui(Hand_View)
+    elif Hand_View.discard_action_btn.isOver(pos):
         wc_list = []
-        discard_list = self.gatherSelected()
+        discard_list = Hand_View.gatherSelected()
         for element in discard_list:
             wc_list.append(element)
-        self.discard_confirm = self.discardConfirmation(self.discard_confirm, wc_list)
+        Hand_View.discard_confirm = Hand_View.discardConfirmation(Hand_View.discard_confirm, wc_list)
     return
 
 
-def MouseHiLight(self, pos):
-    if self.draw_pile.isOver(pos):
-        self.draw_pile.changeOutline(1)
+def MouseHiLight(Hand_View, pos):
+    if Hand_View.draw_pile.isOver(pos):
+        Hand_View.draw_pile.changeOutline(1)
     else:
-        self.draw_pile.changeOutline(0)
-    if self.pickup_pile_sz > 0:
-        if self.pickup_pile.isOver(pos):
-            self.pickup_pile.changeOutline(1)
+        Hand_View.draw_pile.changeOutline(0)
+    if Hand_View.pickup_pile_sz > 0:
+        if Hand_View.pickup_pile.isOver(pos):
+            Hand_View.pickup_pile.changeOutline(1)
         else:
-            self.pickup_pile.changeOutline(0)
-    if self.ready_yes_btn.isOver(pos):
-        self.ready_yes_btn.outline_color = UIC.outline_colors[self.ready_color_idx + 1]
+            Hand_View.pickup_pile.changeOutline(0)
+    if Hand_View.ready_yes_btn.isOver(pos):
+        Hand_View.ready_yes_btn.outline_color = UIC.outline_colors[Hand_View.ready_color_idx + 1]
     else:
-        self.ready_yes_btn.outline_color = UIC.outline_colors[self.ready_color_idx]
-    if self.ready_no_btn.isOver(pos):
-        self.ready_no_btn.outline_color = UIC.outline_colors[self.not_ready_color_idx + 1]
+        Hand_View.ready_yes_btn.outline_color = UIC.outline_colors[Hand_View.ready_color_idx]
+    if Hand_View.ready_no_btn.isOver(pos):
+        Hand_View.ready_no_btn.outline_color = UIC.outline_colors[Hand_View.not_ready_color_idx + 1]
     else:
-        self.ready_no_btn.outline_color = UIC.outline_colors[self.not_ready_color_idx]
-    if self.sort_status_btn.isOver(pos):
-        self.sort_status_btn.outline_color = UIC.Black  # set outline color
+        Hand_View.ready_no_btn.outline_color = UIC.outline_colors[Hand_View.not_ready_color_idx]
+    if Hand_View.sort_status_btn.isOver(pos):
+        Hand_View.sort_status_btn.outline_color = UIC.Black  # set outline color
     else:
-        self.sort_status_btn.outline_color = UIC.Gray  # change outline
-    if self.sort_btn.isOver(pos):
-        self.sort_btn.outline_color = UIC.Black  # set outline color
+        Hand_View.sort_status_btn.outline_color = UIC.Gray  # change outline
+    if Hand_View.sort_btn.isOver(pos):
+        Hand_View.sort_btn.outline_color = UIC.Black  # set outline color
     else:
-        self.sort_btn.outline_color = UIC.Gray  # remove highlighted outline
-    if self.prepare_card_btn.isOver(pos):
-        self.prepare_card_btn.outline_color = UIC.Bright_Blue  # set outline color
+        Hand_View.sort_btn.outline_color = UIC.Gray  # remove highlighted outline
+    if Hand_View.prepare_card_btn.isOver(pos):
+        Hand_View.prepare_card_btn.outline_color = UIC.Bright_Blue  # set outline color
     else:
-        self.prepare_card_btn.outline_color = UIC.Blue  # remove highlighted outline
-    if self.clear_prepared_cards_btn.isOver(pos):
-        self.clear_prepared_cards_btn.outline_color = UIC.Bright_Red  # set outline color
+        Hand_View.prepare_card_btn.outline_color = UIC.Blue  # remove highlighted outline
+    if Hand_View.clear_prepared_cards_btn.isOver(pos):
+        Hand_View.clear_prepared_cards_btn.outline_color = UIC.Bright_Red  # set outline color
     else:
-        self.clear_prepared_cards_btn.outline_color = UIC.Red  # remove highlighted outline
-    if self.play_prepared_cards_btn.isOver(pos):
-        self.play_prepared_cards_btn.outline_color = UIC.Bright_Green  # set outline color
+        Hand_View.clear_prepared_cards_btn.outline_color = UIC.Red  # remove highlighted outline
+    if Hand_View.play_prepared_cards_btn.isOver(pos):
+        Hand_View.play_prepared_cards_btn.outline_color = UIC.Bright_Green  # set outline color
     else:
-        self.play_prepared_cards_btn.outline_color = UIC.Green  # remove highlighted outline
-    if self.discard_action_btn.isOver(pos):
-        self.discard_action_btn.outline_color = UIC.Black  # set outline color
+        Hand_View.play_prepared_cards_btn.outline_color = UIC.Green  # remove highlighted outline
+    if Hand_View.discard_action_btn.isOver(pos):
+        Hand_View.discard_action_btn.outline_color = UIC.Black  # set outline color
     else:
-        self.discard_action_btn.outline_color = UIC.Bright_Red  # remove highlighted outline
+        Hand_View.discard_action_btn.outline_color = UIC.Bright_Red  # remove highlighted outline

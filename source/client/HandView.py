@@ -49,7 +49,6 @@ class HandView:
                               'To pick up pile PREPARE necessary cards & then click on discard pile. ',
                               "Cumulative score will display beneath player's cards",
                               'When ready to start playing click on the YES button on the lower right.']
-        self.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
         # discard info
         discard_info = self.controller.getDiscardInfo()
         self.top_discard = discard_info[0]  
@@ -64,6 +63,8 @@ class HandView:
         """This updates the view of the hand, between rounds it displays a message. """
 
         if self.controller._state.round == -1:
+            # TODO: somewhere in here reset names so none are bold (currently if player went out in
+            #  previous round w/o discarding name would still be bold at start of new round).
             self.mesgBetweenRounds(self.betweenrounds)
             if self.round_advance:
                 self.round_index = self.round_index + 1
@@ -74,7 +75,7 @@ class HandView:
                 self.round_advance = False
         else:
             self.round_advance = True
-            # reset colors to what they need to be at the start of the "between rounds" state.
+            # reset outline colors on ready buttons to what they need to be at the start of the "between rounds" state.
             self.ready_color_idx = 2
             self.not_ready_color_idx = 6
         self.last_hand = self.current_hand
