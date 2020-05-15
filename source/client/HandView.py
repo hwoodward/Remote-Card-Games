@@ -49,14 +49,6 @@ class HandView:
                               'To pick up pile PREPARE necessary cards & then click on discard pile. ',
                               "Cumulative score will display beneath player's cards",
                               'When ready to start playing click on the YES button on the lower right.']
-        # discard info
-        discard_info = self.controller.getDiscardInfo()
-        self.top_discard = discard_info[0]  
-        self.pickup_pile_sz = discard_info[1]
-        if self.pickup_pile_sz > 0:
-            self.top_discard_wrapped = UICardWrapper(self.top_discard, (100, 25), UIC.scale)
-            self.pickup_pile = self.top_discard_wrapped.img_clickable
-            self.labelMedium(str(self.pickup_pile_sz), 150, 35)
         HandAndFootButtons.CreateButtons(self)
 
     def update(self):
@@ -162,7 +154,9 @@ class HandView:
             self.num_wilds = len(self.wild_cards)
 
     def gatherSelected(self):
-        # in order to take action on selected cards (either discarding them or preparing them) this method gathers them.
+        """ gathers selected cards
+        in order to take action on selected cards (either discarding them or preparing them)
+        """
         self.selected_list = []
         for element in self.hand_info:
             if element.status == 1:
@@ -170,7 +164,7 @@ class HandView:
         return self.selected_list
 
     def discardConfirmation(self, confirmed, wrapped_discards):
-        # Confirm a user is sure about a discard and then perform it once confirmed.
+        """ Confirm a user is sure about a discard and then perform it once confirmed."""
         discards = []
         for element in wrapped_discards:
             discards.append(element.card)
@@ -189,12 +183,12 @@ class HandView:
                         self.hand_info.remove(element)
             return False  # now that this is done, we don't have anything waiting on confirmation
 
-    def mesgBetweenRounds(self, results):
-        # print results where cards usually go until Ready button is clicked for next round.
+    def mesgBetweenRounds(self, message):
+        """print message where cards usually displayed until Ready button is clicked for next round."""
         font = UIC.Medium_Text
         y_offset = (UIC.Disp_Height * (1 - (UIC.Hand_Row_Fraction * 0.8)))
-        for result_string in results:
-            text_surface = font.render(result_string, True, UIC.Black)
+        for message_string in message:
+            text_surface = font.render(message_string, True, UIC.Black)
             text_rect = text_surface.get_rect()
             text_rect.center = ((UIC.Disp_Width * 0.5),  y_offset)
             y_offset = y_offset + UIC.Medium_Text_Feed
