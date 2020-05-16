@@ -102,7 +102,6 @@ class HandView:
 
             if self.event.type == pygame.MOUSEBUTTONDOWN:
                 HandAndFootButtons.ClickedButton(self, pos)
-                # ---  make below a generic helper function 'CardSelection' ----
                 for element in self.hand_info:
                     # cannot select prepared cards, so not included in logic below.
                     if element.img_clickable.isOver(pos):
@@ -117,41 +116,8 @@ class HandView:
                 HandAndFootButtons.MouseHiLight(self, pos)
                 HandManagement.MouseHiLight(self, pos)
             elif self.event.type == pygame.KEYDOWN and self.num_wilds > 0:
-                self.assignWilds()
+                HandManagement.manuallyAssign(self)
 
-    def assignWilds(self):
-        textnote = "Designate one of " + str(self.num_wilds) + "  wildcard(s)"
-        textnote = textnote + " enter value by typing:  1-9, 0 (for ten), j, q, k or a. "
-        acceptable_keys = self.wild_cards[0][1]
-        self.controller.note = textnote
-        this_wild = self.wild_cards[0][0]
-        if self.event.key == pygame.K_a:
-            wild_key = 1
-        elif self.event.key == pygame.K_0:
-            wild_key = 10
-        elif self.event.key == pygame.K_j:
-            wild_key = 11
-        elif self.event.key == pygame.K_q:
-            wild_key = 12
-        elif self.event.key == pygame.K_k:
-            wild_key = 13
-        elif self.event.unicode in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0']:
-            wild_key = int(self.event.unicode)
-        else:
-            self.controller.note = 'invalid key:' + textnote
-            wild_key = 666
-        if wild_key in acceptable_keys:
-            self.controller.note = str(this_wild) + ' will be a ' + str(wild_key)
-            icount = 0
-            for wrappedcard in self.wrapped_cards_to_prep:
-                if wrappedcard.card == this_wild and icount == 0 and wrappedcard.status == 1:
-                    icount = 1
-                    wrappedcard.status = 2
-                    wrappedcard.img_clickable.changeOutline(4)
-            self.controller.prepareCard(wild_key, this_wild)
-            if self.num_wilds > 0:
-                self.wild_cards = self.wild_cards[1:]
-            self.num_wilds = len(self.wild_cards)
 
     def gatherSelected(self):
         """ gathers selected cards
