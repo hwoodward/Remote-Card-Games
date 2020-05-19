@@ -158,7 +158,3 @@ class TableView(ConnectionListener):
         print("{0} scored {1} this round, and  has {2} total".format(self.player_names[idx], round_scores[idx], total_scores[idx]))
         print(self.results_cmdscreen)
 
-
-
-
-
