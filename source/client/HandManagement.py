@@ -62,9 +62,16 @@ def preparedCardsPlayed(hand_view):
                 hand_view.last_hand.remove(wrappedcard.card)
     return
 
+
+def clearSelectedCards(hand_view):
+    for element in hand_view.hand_info:
+        if element.status == 1:
+            element.status = 0
+            element.img_clickable.changeOutline(0)
+
 def refreshXY(hand_view, original, layout_option=1):
-    hand_view.refresh_flag = False
     """After sorting or melding, may wish to refresh card's xy coordinates """
+    hand_view.refresh_flag = False
     maxX = UIC.Disp_Width - (hand_view.hand_scaling[1] / 2)
     if not layout_option == 1:
         print('the only layout supported now is cards in a line, left to right')

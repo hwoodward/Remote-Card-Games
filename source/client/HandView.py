@@ -55,8 +55,6 @@ class HandView:
         """This updates the view of the hand, between rounds it displays a message. """
 
         if self.controller._state.round == -1:
-            # TODO: somewhere in here reset names so none are bold (currently if player went out in
-            #  previous round w/o discarding name would still be bold at start of new round).
             self.mesgBetweenRounds(self.betweenrounds)
             if self.round_advance:
                 self.round_index = self.round_index + 1

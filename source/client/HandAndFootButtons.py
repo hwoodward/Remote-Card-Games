@@ -25,9 +25,10 @@ def CreateButtons(hand_view):
     hand_view.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
     hand_view.sort_status_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='sort by status')
     hand_view.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort by number')
-    hand_view.prepare_card_btn = Btn.Button(UIC.White, 400, 25, 345, 25, text='Selected cards -> prepared cards')
-    hand_view.clear_prepared_cards_btn = Btn.Button(UIC.White, 320, 75, 225, 25, text='Clear prepared cards')
-    hand_view.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 75, 225, 25, text='Play prepared cards')
+    hand_view.prepare_card_btn = Btn.Button(UIC.White, 400, 15, 345, 25, text='Selected cards -> prepared cards')
+    hand_view.clear_prepared_cards_btn = Btn.Button(UIC.White, 320, 53, 225, 25, text='Clear prepared cards')
+    hand_view.clear_selected_cards_btn = Btn.Button(UIC.White, 200, 90, 225, 25, text='Clear selected cards')
+    hand_view.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 53, 225, 25, text='Play prepared cards')
     hand_view.discard_action_btn = Btn.Button(UIC.Bright_Red, 190, 25, 100, 25, text='discard')
     # for HandAndFoot do not need discard pile at beginning of game, but do need initiate pickup_pile_sz.
     hand_view.pickup_pile_sz = 0
@@ -54,12 +55,13 @@ def ButtonDisplay(hand_view):
     hand_view.sort_btn.draw(hand_view.display, hand_view.sort_btn.outline_color)
     hand_view.prepare_card_btn.draw(hand_view.display, hand_view.prepare_card_btn.outline_color)
     hand_view.clear_prepared_cards_btn.draw(hand_view.display, hand_view.clear_prepared_cards_btn.outline_color)
+    hand_view.clear_selected_cards_btn.draw(hand_view.display, hand_view.clear_selected_cards_btn.outline_color)
     hand_view.play_prepared_cards_btn.draw(hand_view.display, hand_view.play_prepared_cards_btn.outline_color)
     hand_view.discard_action_btn.draw(hand_view.display, hand_view.discard_action_btn.outline_color)
     return
 
 def ClickedButton(hand_view, pos):
-    # carry out action after mouse clicked on button.
+    """  Carry out action after mouse clicked on button. """
     if hand_view.pickup_pile_sz > 0:
         if hand_view.pickup_pile.isOver(pos):
             hand_view.controller.pickUpPile()
@@ -103,6 +105,8 @@ def ClickedButton(hand_view, pos):
     elif hand_view.clear_prepared_cards_btn.isOver(pos):
         hand_view.controller.clearPreparedCards()
         hand_view.hand_info = HandManagement.clearPreparedCardsInHandView(hand_view.hand_info)
+    elif hand_view.clear_selected_cards_btn.isOver(pos):
+        HandManagement.clearSelectedCards(hand_view)
     elif hand_view.discard_action_btn.isOver(pos):
         discard_list = hand_view.gatherSelected()
         hand_view.discard_confirm = hand_view.discardConfirmation(hand_view.discard_confirm, discard_list)
@@ -156,6 +160,10 @@ def MouseHiLight(hand_view, pos):
         hand_view.clear_prepared_cards_btn.outline_color = UIC.Bright_Red  # set outline color
     else:
         hand_view.clear_prepared_cards_btn.outline_color = UIC.Red  # remove highlighted outline
+    if hand_view.clear_selected_cards_btn.isOver(pos):
+        hand_view.clear_selected_cards_btn.outline_color = UIC.Bright_Orange  # set outline color
+    else:
+        hand_view.clear_selected_cards_btn.outline_color = UIC.Orange  # remove highlighted outline
     if hand_view.play_prepared_cards_btn.isOver(pos):
         hand_view.play_prepared_cards_btn.outline_color = UIC.Bright_Green  # set outline color
     else:

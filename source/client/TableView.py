@@ -154,7 +154,7 @@ class TableView(ConnectionListener):
             self.results[self.player_names[idx]] = total_scores[idx]
             self.results_cmdscreen= self.results_cmdscreen + "  [" + \
                                     self.player_names[idx] + ": " + str(round_scores[idx]) + " " + \
-                                    str(total_scores[idx]) +  "] \r \n  "
-        print("{0} scored {1} this round, and  has {2} total".format(self.player_names[idx], round_scores[idx], total_scores[idx]))
+                                    str(total_scores[idx]) +  "] \r \n "
+            print("{0} scored {1} this round, and  has {2} total".format(self.player_names[idx], round_scores[idx], total_scores[idx]))
         print(self.results_cmdscreen)
 
