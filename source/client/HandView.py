@@ -39,7 +39,6 @@ class HandView:
         self.selected_list = []
         self.round_index = 0
         self.round_advance = False
-        self.round_meld = Meld_Threshold  # [50,90,120,150]
         self.ready_color_idx = 2
         self.not_ready_color_idx = 6
         # --- Hand And Foot Specific:
@@ -58,8 +57,8 @@ class HandView:
             self.mesgBetweenRounds(self.betweenrounds)
             if self.round_advance:
                 self.round_index = self.round_index + 1
-                if self.round_index < len(self.round_meld):
-                    self.betweenrounds[0] = 'This is the round of ' + str(self.round_meld[self.round_index]) + ' ! '
+                if self.round_index < len(Meld_Threshold):
+                    self.betweenrounds[0] = 'This is the round of ' + str(Meld_Threshold[self.round_index]) + ' ! '
                 else:
                     self.betweenrounds = ['Game has concluded. Scores for each round can be found in command window.']
                 self.round_advance = False
@@ -73,10 +72,10 @@ class HandView:
         if len(self.current_hand) == 0:
             self.hand_info = []
         elif not self.last_hand == self.current_hand:
-            self.hand_info = HandManagement.wrapHand(self, self.current_hand, self.hand_info)
-        HandManagement.showHolding(self, self.hand_info)  # displays hand
+            self.hand_info = HandManagement.WrapHand(self, self.current_hand, self.hand_info)
+        HandManagement.ShowHolding(self, self.hand_info)  # displays hand
         if self.refresh_flag:  # if needed to rescale card size, then refreshXY again.
-            self.hand_info = HandManagement.refreshXY(self, self.hand_info)
+            self.hand_info = HandManagement.RefreshXY(self, self.hand_info)
         HandAndFootButtons.ButtonDisplay(self)
 
     def nextEvent(self):
@@ -112,9 +111,9 @@ class HandView:
 
             elif self.event.type == pygame.MOUSEMOTION:
                 HandAndFootButtons.MouseHiLight(self, pos)
-                HandManagement.MouseHiLight(self, pos)
+                HandManagement.MouseHiLight(self.hand_info, pos)
             elif self.event.type == pygame.KEYDOWN and self.num_wilds > 0:
-                HandManagement.manuallyAssign(self)
+                HandManagement.ManuallyAssign(self)
 
 
     def gatherSelected(self):

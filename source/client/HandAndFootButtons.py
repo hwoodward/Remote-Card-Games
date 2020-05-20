@@ -65,17 +65,17 @@ def ClickedButton(hand_view, pos):
     if hand_view.pickup_pile_sz > 0:
         if hand_view.pickup_pile.isOver(pos):
             hand_view.controller.pickUpPile()
-            HandManagement.preparedCardsPlayed(hand_view)
+            HandManagement.PreparedCardsPlayed(hand_view)
     if hand_view.draw_pile.isOver(pos):
         hand_view.controller.draw()
     elif hand_view.sort_btn.isOver(pos):
         hand_view.hand_info.sort(key=lambda wc: wc.key)
-        hand_view.hand_info = HandManagement.refreshXY(hand_view, hand_view.hand_info)
+        hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.sort_status_btn.isOver(pos):
         hand_view.hand_info.sort(
             key=lambda wc: (wc.img_clickable.x + (wc.status * UIC.Disp_Width))
         )
-        hand_view.hand_info = HandManagement.refreshXY(hand_view, hand_view.hand_info)
+        hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.prepare_card_btn.isOver(pos):
         hand_view.already_prepared_cards = hand_view.controller.getPreparedCards()
         hand_view.wrapped_cards_to_prep = hand_view.gatherSelected()
@@ -101,12 +101,12 @@ def ClickedButton(hand_view, pos):
         # take care of assigning values and marking wilds as prepared.
     elif hand_view.play_prepared_cards_btn.isOver(pos):
         hand_view.controller.play()
-        HandManagement.preparedCardsPlayed(hand_view)
+        HandManagement.PreparedCardsPlayed(hand_view)
     elif hand_view.clear_prepared_cards_btn.isOver(pos):
         hand_view.controller.clearPreparedCards()
-        hand_view.hand_info = HandManagement.clearPreparedCardsInHandView(hand_view.hand_info)
+        hand_view.hand_info = HandManagement.ClearPreparedCardsInHandView(hand_view.hand_info)
     elif hand_view.clear_selected_cards_btn.isOver(pos):
-        HandManagement.clearSelectedCards(hand_view)
+        HandManagement.ClearSelectedCards(hand_view.hand_info)
     elif hand_view.discard_action_btn.isOver(pos):
         discard_list = hand_view.gatherSelected()
         hand_view.discard_confirm = hand_view.discardConfirmation(hand_view.discard_confirm, discard_list)
@@ -134,6 +134,7 @@ def MouseHiLight(hand_view, pos):
     if hand_view.pickup_pile_sz > 0:
         if hand_view.pickup_pile.isOver(pos):
             hand_view.pickup_pile.changeOutline(1)
+            # ToDo: Figure out why this isn't working.
         else:
             hand_view.pickup_pile.changeOutline(0)
     if hand_view.ready_yes_btn.isOver(pos):
