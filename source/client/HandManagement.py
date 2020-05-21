@@ -26,11 +26,11 @@ def WrapHand(hand_view, updated_hand, wrapped_hand):
             newcard = True
             # Check to see if card already in hand, and if it is change newcard to False.
             # Do this so if card already in hand, then its position and status is preserved.
-            # TODO:
-            # Sometimes when you pick up the pile cards acquired match cards just played,
-            # and this leads to new cards appearing to be prepared.
-            # Planned future enhancement where card includes deck designation,
-            # so each card is unique, will fix this issue.
+            # Note that sometimes when you pick up the pile, an acquired card may match a card just played,
+            # and this leads to the acquired card appearing to be prepared.
+            # Player should clear prepared, and this will fix the problem.
+            # Planned future enhancement:  card class includes deck designation,
+            # so each card is unique, this will fix this issue.
             for already_wrapped in old_wrapped_hand:
                 if newcard and card == already_wrapped.card:
                     card_wrapped = already_wrapped
@@ -46,16 +46,17 @@ def WrapHand(hand_view, updated_hand, wrapped_hand):
         # Next section checks all cards will be visible, and if hand too large, then it shrinks cards.
         # Once length of hand <= original size it rescales cards to original size.
         maxX = UIC.Disp_Width - hand_view.hand_scaling[1]
-        if (card_xy[0] > maxX):
+        if card_xy[0] > maxX:
             scalingfactor = maxX / card_xy[0]
             hand_view.hand_scaling = (scalingfactor * hand_view.hand_scaling[0],
                                       scalingfactor * hand_view.hand_scaling[1])
             updated_wrapped_hand = RescaleCards(hand_view, updated_wrapped_hand, hand_view.hand_scaling[0])
             hand_view.refresh_flag = True
-        if (hand_view.hand_scaling[0] != UIC.scale and len(updated_wrapped_hand) <= hand_view.deal_size):
+        if hand_view.hand_scaling[0] != UIC.scale and len(updated_wrapped_hand) <= hand_view.deal_size:
             hand_view.hand_scaling = (UIC.scale, UIC.Card_Spacing)
             updated_wrapped_hand = RescaleCards(hand_view, updated_wrapped_hand, hand_view.hand_scaling[0])
     return updated_wrapped_hand
+
 
 def ClearPreparedCardsInHandView(wrapped_hand):
     for element in wrapped_hand:
@@ -63,6 +64,7 @@ def ClearPreparedCardsInHandView(wrapped_hand):
             element.status = 0
             element.img_clickable.changeOutline(0)
     return wrapped_hand
+
 
 def PreparedCardsPlayed(hand_view):
     if len(hand_view.controller.prepared_cards) == 0:
@@ -81,6 +83,7 @@ def ClearSelectedCards(wrapped_hand):
         if element.status == 1:
             element.status = 0
             element.img_clickable.changeOutline(0)
+
 
 def RefreshXY(hand_view, original, layout_option=1):
     """After sorting or melding, may wish to refresh card's xy coordinates """
@@ -101,6 +104,7 @@ def RefreshXY(hand_view, original, layout_option=1):
         refreshed = RescaleCards(refreshed, hand_view.hand_scaling[0], scalingfactor)
     return refreshed
 
+
 def RescaleCards(hand_view, original, card_scaling):
     rescaled = []
     for element in original:
@@ -112,6 +116,7 @@ def RescaleCards(hand_view, original, card_scaling):
     hand_view.refresh_flag = True
     return rescaled
 
+
 def ShowHolding(hand_view, wrapped_cards):
     wrapped_cards.sort(key=lambda wc: wc.img_clickable.x)
     for wrapped_element in wrapped_cards:
@@ -119,6 +124,7 @@ def ShowHolding(hand_view, wrapped_cards):
         loc_xy = (wrapped_element.img_clickable.x, wrapped_element.img_clickable.y)
         wrapped_element.img_clickable.draw(hand_view.display, loc_xy, color)
     return
+
 
 def MouseHiLight(wrapped_hand, pos):
     for element in wrapped_hand:
@@ -135,6 +141,7 @@ def MouseHiLight(wrapped_hand, pos):
                 color_index = color_index - 1
                 element.img_clickable.changeOutline(color_index)
     return
+
 
 def ManuallyAssign(hand_view):
     """ Cards that cannot be automatically assigned to sets must be manually assigned.

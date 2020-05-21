@@ -28,7 +28,7 @@ class ClickableImage:
         self.y = loc_xy[1]
         display.blit(self.image, (self.x, self.y))
 
-    def changeOutline(self,outline_idx):
+    def changeOutline(self, outline_idx):
         self.outline_index = outline_idx
         self.outline_color = UIC.outline_colors[outline_idx]
 
@@ -37,5 +37,4 @@ class ClickableImage:
         if pos[0] > self.x and pos[0] < self.x + self.width:
             if pos[1] > self.y and pos[1] < self.y + self.height:
                 return True
-
         return False
