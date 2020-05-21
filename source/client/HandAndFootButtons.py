@@ -30,8 +30,9 @@ def CreateButtons(hand_view):
     hand_view.clear_selected_cards_btn = Btn.Button(UIC.White, 200, 90, 225, 25, text='Clear selected cards')
     hand_view.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 53, 225, 25, text='Play prepared cards')
     hand_view.discard_action_btn = Btn.Button(UIC.Bright_Red, 190, 25, 100, 25, text='discard')
-    # for HandAndFoot do not need discard pile at beginning of game, but do need initiate pickup_pile_sz.
+    # for HandAndFoot do not need discard pile at beginning of game, but do need initialize pickup_pile_sz and _outline
     hand_view.pickup_pile_sz = 0
+    hand_view.pickup_pile_outline = UIC.outline_colors[0]
     return
 
 def ButtonDisplay(hand_view):
@@ -46,6 +47,9 @@ def ButtonDisplay(hand_view):
         hand_view.top_discard_wrapped = UICardWrapper(hand_view.top_discard, (100, 25), UIC.scale)
         hand_view.pickup_pile = hand_view.top_discard_wrapped.img_clickable
         loc_xy = (hand_view.pickup_pile.x, hand_view.pickup_pile.y)
+        # pickup_pile needs new clickable image each time card is discarded or pile is picked up.
+        # This resets outline color to no outline, so it needs to be reset.
+        hand_view.pickup_pile.outline_color = hand_view.pickup_pile_outline
         hand_view.pickup_pile.draw(hand_view.display, loc_xy, hand_view.pickup_pile.outline_color)
         hand_view.labelMedium(str(hand_view.pickup_pile_sz), 150, 35)
     if hand_view.controller._state.round == -1:
@@ -135,8 +139,14 @@ def MouseHiLight(hand_view, pos):
         if hand_view.pickup_pile.isOver(pos):
             hand_view.pickup_pile.changeOutline(1)
             # ToDo: Figure out why this isn't working.
+            # ToDo:
+            hand_view.pickup_pile_outline = hand_view.pickup_pile.outline_color
+            print("debug 1 : " + str(hand_view.pickup_pile.outline_color))
         else:
             hand_view.pickup_pile.changeOutline(0)
+            # ToDo:
+            hand_view.pickup_pile_outline = hand_view.pickup_pile.outline_color
+            print("debug 1 : " + str(hand_view.pickup_pile.outline_color))
     if hand_view.ready_yes_btn.isOver(pos):
         hand_view.ready_yes_btn.outline_color = UIC.outline_colors[hand_view.ready_color_idx + 1]
     else:
