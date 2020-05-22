@@ -75,6 +75,7 @@ class HandView:
             self.hand_info = HandManagement.WrapHand(self, self.current_hand, self.hand_info)
         HandManagement.ShowHolding(self, self.hand_info)  # displays hand
         if self.refresh_flag:  # if needed to rescale card size, then refreshXY again.
+            # Todo: Do we need refresh_flag at all??
             self.hand_info = HandManagement.RefreshXY(self, self.hand_info)
         HandAndFootButtons.ButtonDisplay(self)
 

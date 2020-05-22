@@ -47,14 +47,12 @@ def WrapHand(hand_view, updated_hand, wrapped_hand):
         # Once length of hand <= original size it rescales cards to original size.
         maxX = UIC.Disp_Width - hand_view.hand_scaling[1]
         if card_xy[0] > maxX:
-            scalingfactor = maxX / card_xy[0]
-            hand_view.hand_scaling = (scalingfactor * hand_view.hand_scaling[0],
-                                      scalingfactor * hand_view.hand_scaling[1])
-            updated_wrapped_hand = RescaleCards(hand_view, updated_wrapped_hand, hand_view.hand_scaling[0])
-            hand_view.refresh_flag = True
+            # RefreshXY will remove any gaps between cards, and if necessary rescale the cards.
+            updated_wrapped_hand = RefreshXY(hand_view, updated_wrapped_hand)
         if hand_view.hand_scaling[0] != UIC.scale and len(updated_wrapped_hand) <= hand_view.deal_size:
             hand_view.hand_scaling = (UIC.scale, UIC.Card_Spacing)
-            updated_wrapped_hand = RescaleCards(hand_view, updated_wrapped_hand, hand_view.hand_scaling[0])
+            updated_wrapped_hand = RescaleCards(updated_wrapped_hand, hand_view.hand_scaling)
+            updated_wrapped_hand = RefreshXY(hand_view, updated_wrapped_hand)
     return updated_wrapped_hand
 
 
@@ -86,8 +84,9 @@ def ClearSelectedCards(wrapped_hand):
 
 
 def RefreshXY(hand_view, original_wrapped_hand, layout_option=1):
-    """After sorting or melding, may wish to refresh card's xy coordinates """
-    hand_view.refresh_flag = False
+    """After sorting need to refresh XY coords, may also wish to refresh card's xy coordinates when hand large"""
+    # hand_view.refresh_flag = False
+    # refresh_flag = False
     maxX = UIC.Disp_Width - hand_view.hand_scaling[1]
     if not layout_option == 1:
         print('the only layout supported now is cards in a line, left to right')
@@ -101,19 +100,22 @@ def RefreshXY(hand_view, original_wrapped_hand, layout_option=1):
     if (card_xy[0] > maxX):
         scalingfactor = maxX / card_xy[0]
         hand_view.hand_scaling = (scalingfactor * hand_view.hand_scaling[0], scalingfactor * hand_view.hand_scaling[1])
-        refreshed_wrapped_hand = RescaleCards(refreshed_wrapped_hand, hand_view.hand_scaling[0], scalingfactor)
+        refreshed_wrapped_hand = RescaleCards(refreshed_wrapped_hand, hand_view.hand_scaling)
     return refreshed_wrapped_hand
 
 
-def RescaleCards(hand_view, original_wrapped_hand, card_scaling):
+def RescaleCards(original_wrapped_hand, card_scaling):
+    original_wrapped_hand.sort(key=lambda wc: wc.img_clickable.x)
     rescaled_wrapped_hand = []
+    card_xy = (10, UIC.Table_Hand_Border + 40)
     for element in original_wrapped_hand:
-        loc_xy = (element.img_clickable.x, element.img_clickable.y)
-        scaledelement = UICardWrapper(element.card, loc_xy, card_scaling)
+        loc_xy = (card_xy[0], card_xy[1])
+        scaledelement = UICardWrapper(element.card, loc_xy, card_scaling[0])
         scaledelement.status = element.status
         scaledelement.img_clickable.outline_index = element.img_clickable.outline_index
         rescaled_wrapped_hand.append(scaledelement)
-    hand_view.refresh_flag = True
+        card_xy = (card_xy[0] + card_scaling[1], card_xy[1])
+        # Todo: Need to figure out why stuff gets unsorted when hand is rescaled.
     return rescaled_wrapped_hand
 
 
