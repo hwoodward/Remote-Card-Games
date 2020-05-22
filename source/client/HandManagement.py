@@ -85,36 +85,36 @@ def ClearSelectedCards(wrapped_hand):
             element.img_clickable.changeOutline(0)
 
 
-def RefreshXY(hand_view, original, layout_option=1):
+def RefreshXY(hand_view, original_wrapped_hand, layout_option=1):
     """After sorting or melding, may wish to refresh card's xy coordinates """
     hand_view.refresh_flag = False
     maxX = UIC.Disp_Width - hand_view.hand_scaling[1]
     if not layout_option == 1:
         print('the only layout supported now is cards in a line, left to right')
-    refreshed = []
+    refreshed_wrapped_hand = []
     card_xy = (10, UIC.Table_Hand_Border + 40)
-    for element in original:
+    for element in original_wrapped_hand:
         element.img_clickable.x = card_xy[0]
         element.img_clickable.y = card_xy[1]
         card_xy = (card_xy[0] + hand_view.hand_scaling[1], card_xy[1])
-        refreshed.append(element)
+        refreshed_wrapped_hand.append(element)
     if (card_xy[0] > maxX):
         scalingfactor = maxX / card_xy[0]
         hand_view.hand_scaling = (scalingfactor * hand_view.hand_scaling[0], scalingfactor * hand_view.hand_scaling[1])
-        refreshed = RescaleCards(refreshed, hand_view.hand_scaling[0], scalingfactor)
-    return refreshed
+        refreshed_wrapped_hand = RescaleCards(refreshed_wrapped_hand, hand_view.hand_scaling[0], scalingfactor)
+    return refreshed_wrapped_hand
 
 
-def RescaleCards(hand_view, original, card_scaling):
-    rescaled = []
-    for element in original:
+def RescaleCards(hand_view, original_wrapped_hand, card_scaling):
+    rescaled_wrapped_hand = []
+    for element in original_wrapped_hand:
         loc_xy = (element.img_clickable.x, element.img_clickable.y)
         scaledelement = UICardWrapper(element.card, loc_xy, card_scaling)
         scaledelement.status = element.status
         scaledelement.img_clickable.outline_index = element.img_clickable.outline_index
-        rescaled.append(scaledelement)
+        rescaled_wrapped_hand.append(scaledelement)
     hand_view.refresh_flag = True
-    return rescaled
+    return rescaled_wrapped_hand
 
 
 def ShowHolding(hand_view, wrapped_cards):
