@@ -11,15 +11,17 @@ def WrapHand(hand_view, updated_hand, wrapped_hand):
 
     updated_hand is list of cards in hand
     wrapped_hand is list of wrapped cards previously in hand (before update)
-    if change is that new cards were added, then want to preserve location and status for cards that were
-    already in hand.
+    If change in uupdated_hand is that new cards were added, then want to preserve location and
+    status for cards that were already in hand.
     If cards were played, then the wrapped cards that are removed should be those cards with status = 2
     (prepared cards).
     Note that discards are removed immediately after controller confirms discard legal.
-    Variables from hand_view used: hand_view.hand_scaling (size and spacing of cards)
+    Variables from hand_view used: hand_view.hand_scaling (scaling and spacing of cards)
     """
     card_xy = (10, UIC.Table_Hand_Border + 40)
     # sort cards so that if prepared cards were played, those are the instances of the cards that are removed.
+    # This may cause selected cards to move...  these machinations will not be necessary when card definition includes
+    # deck.
     old_wrapped_hand = sorted(wrapped_hand, key=lambda x: x.status)
     updated_wrapped_hand = []
     if not updated_hand == []:
@@ -43,7 +45,7 @@ def WrapHand(hand_view, updated_hand, wrapped_hand):
                 card_wrapped = UICardWrapper(card, card_xy, hand_view.hand_scaling[0])
             updated_wrapped_hand.append(card_wrapped)
         # Should now have all the cards in the updated hand properly wrapped.  card_xy[0] is max x-coord of cards.
-        #  sort cards by location, so they will display more attractively, and in case RefreshXY will work properly.
+        # sort cards by location, so they will display more attractively and so RefreshXY will work properly if called.
         updated_wrapped_hand.sort(key=lambda wc: wc.img_clickable.x)
         # Next section checks all cards will be visible, and if hand too large, then it shrinks cards.
         # Once length of hand <= original size it rescales cards to original size.
@@ -53,7 +55,7 @@ def WrapHand(hand_view, updated_hand, wrapped_hand):
             updated_wrapped_hand = RefreshXY(hand_view, updated_wrapped_hand)
         if hand_view.hand_scaling[0] != UIC.scale and len(updated_wrapped_hand) <= hand_view.deal_size:
             hand_view.hand_scaling = (UIC.scale, UIC.Card_Spacing)
-            updated_wrapped_hand = RescaleCards(updated_wrapped_hand, hand_view.hand_scaling)
+            updated_wrapped_hand = RescaleCards(hand_view, updated_wrapped_hand)
             updated_wrapped_hand = RefreshXY(hand_view, updated_wrapped_hand)
     return updated_wrapped_hand
 
@@ -113,14 +115,6 @@ def RescaleCards(hand_view, original_wrapped_hand):
     for element in original_wrapped_hand:
         loc_xy = (card_xy[0], card_xy[1])
         scaled_element = UICardWrapper(element.card, loc_xy, hand_view.hand_scaling[0])
-        #Todo:
-        # intermittent problem, when I play prepared cards, which will bring # cards below 11
-        #File "C:\Users\sheri\Documents\GitHub\Remote-Card-Games\source\client\HandView.py", line 75, in update
-        # self.hand_info = HandManagement.WrapHand(self, self.current_hand, self.hand_info)
-        # File "C:\Users\sheri\Documents\GitHub\Remote-Card-Games\source\client\HandManagement.py", line 56, in WrapHand
-        #   updated_wrapped_hand = RescaleCards(updated_wrapped_hand, hand_view.hand_scaling)
-        # File "C:\Users\sheri\Documents\GitHub\Remote-Card-Games\source\client\HandManagement.py", line 115, in RescaleCards
-        # AttributeError: 'float' object has no attribute 'card'
         scaled_element.status = element.status
         scaled_element.img_clickable.outline_index = element.img_clickable.outline_index
         rescaled_wrapped_hand.append(scaled_element)
