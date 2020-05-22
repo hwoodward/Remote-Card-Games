@@ -153,6 +153,8 @@ class Controller(ConnectionListener):
             self.note = "You went out to end the round!"
             connection.Send({"action": "goOut"})
             self._state.went_out = True
+            self._state.turn_phase = Turn_Phases[0] # end active state after going out.
+            self.sendPublicInfo()
             return True
         else:
             self.note = "You have no cards left but aren't out, you have gone zaphod."
