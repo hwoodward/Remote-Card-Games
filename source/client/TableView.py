@@ -8,7 +8,7 @@ from common.Card import Card
 class TableView(ConnectionListener):
     """ This displays publicly available info on all the players.
 
-    It was designed for HandAndFoot
+    It is Hand And Foot Specific
     """
 
     def __init__(self, display):
@@ -133,11 +133,10 @@ class TableView(ConnectionListener):
 
     def Network_publicInfo(self, data):
 
-        # TODO: update example below.  False should be a play state, not True/False
         '''
         example of data (json structure) with two players, 'hhh' and 'sss' : 
-        {'action': 'publicInfo', 'player_names': ['hhh', 'sss'], 'visible_cards': [{}, {}], 'hand_status': [[False, 12, 1], [True, 14, 1]]}
-        '''
+        {'action': 'publicInfo', 'player_names': ['hhh', 'sss'], 'visible_cards': [{}, {}], 'hand_status': [['inactive', 12, 1], [True, 14, 1]]}
+        where 'inactive' is an example of a play state (possible states: 'inactive', 'draw', 'forcedAction', 'play' '''
         self.player_names = data["player_names"]
         self.visible_cards = data["visible_cards"]
         self.hand_status = data["hand_status"]
@@ -154,11 +153,7 @@ class TableView(ConnectionListener):
             self.results[self.player_names[idx]] = total_scores[idx]
             self.results_cmdscreen= self.results_cmdscreen + "  [" + \
                                     self.player_names[idx] + ": " + str(round_scores[idx]) + " " + \
-                                    str(total_scores[idx]) +  "] \r \n  "
-        print("{0} scored {1} this round, and  has {2} total".format(self.player_names[idx], round_scores[idx], total_scores[idx]))
+                                    str(total_scores[idx]) +  "] \r \n "
+            print("{0} scored {1} this round, and  has {2} total".format(self.player_names[idx], round_scores[idx], total_scores[idx]))
         print(self.results_cmdscreen)
-
-
-
-
 

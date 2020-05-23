@@ -1,10 +1,12 @@
 import sys
 import threading
-
 from time import sleep
 from server.GameServer import GameServer
+
+
 def RunServer():
     """This is the functionality start point for the server."""
+
     # get command line argument of server, port
     host, port = sys.argv[1].split(":")
     ruleset_name = sys.argv[2]
