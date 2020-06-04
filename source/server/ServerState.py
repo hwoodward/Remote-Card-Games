@@ -33,8 +33,8 @@ class ServerState():
         Clears out the discard pile
         """
         deck = []
-        for _ in range(0, self.rules.numDecks(numPlayers)):
-            for card in self.rules.singleDeck():
+        for deck_number in range(0, self.rules.numDecks(numPlayers)):
+            for card in self.rules.singleDeck(deck_number):
                 deck.append(card)
         random.shuffle(deck)
         self.draw_pile = deck
@@ -61,7 +61,7 @@ class ServerState():
 
     def getDiscardInfo(self):
         """Provides the top card and size of the discard pile as a tuple"""
-        top_card = Card(0, None) #If pile is empty we need a default card since None doesn't serialize
+        top_card = Card(0, None, 0) #If pile is empty we still need a default card since None doesn't serialize
         if len(self.discard_pile) > 0:
             top_card = self.discard_pile[-1]
         return [top_card, len(self.discard_pile)]

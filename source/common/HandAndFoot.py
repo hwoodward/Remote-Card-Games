@@ -24,9 +24,9 @@ def numDecks(numPlayers):
     """Specify how many decks of cards to put in the draw pile"""
     return math.ceil(numPlayers*1.5)
 
-def singleDeck():
-    """return a single deck of the correct type"""
-    return Card.getJokerDeck()
+def singleDeck(n):
+    """return a single deck of the correct type, n designates which deck of the numDecks to be used"""
+    return Card.getJokerDeck(n)
 
 def isWild(card):
     """returns true if a card is a wild"""

@@ -63,7 +63,7 @@ Back_Img = pygame.transform.rotozoom(Back_Img, 0, scale)
 
 # Load images for full deck of cards:
 suit_letter = 'N'  # this doesn't distinguish between red & black Jokers
-temp_deck = Card.getStandardDeck()
+temp_deck = Card.getStandardDeck(int(0))
 card_images = {}
 card_images['0N'] = pygame.image.load(os.path.join('bundle_data', 'cardimages', 'card0N.png'))
 for card in temp_deck:
