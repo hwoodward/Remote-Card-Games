@@ -11,40 +11,37 @@ def WrapHand(hand_view, updated_hand, wrapped_hand):
 
     updated_hand is list of cards in hand
     wrapped_hand is list of wrapped cards previously in hand (before update)
-    If change in uupdated_hand is that new cards were added, then want to preserve location and
+    If change in updated_hand is that new cards were added, then want to preserve location and
     status for cards that were already in hand.
-    If cards were played, then the wrapped cards that are removed should be those cards with status = 2
-    (prepared cards).
     Note that discards are removed immediately after controller confirms discard legal.
     Variables from hand_view used: hand_view.hand_scaling (scaling and spacing of cards)
     """
     card_xy = (10, UIC.Table_Hand_Border + 40)
-    # sort cards so that if prepared cards were played, those are the instances of the cards that are removed.
-    # This may cause selected cards to move...  these machinations will not be necessary when card definition includes
-    # deck.
-    old_wrapped_hand = sorted(wrapped_hand, key=lambda x: x.status)
+    old_wrapped_hand = wrapped_hand
+    # ToDo - only need 2 of 3: old_wrapped_hand, wrapped_hand, updated_wrapped_hand -- keep latter.
     updated_wrapped_hand = []
     if not updated_hand == []:
         for card in updated_hand:
             newcard = True
             # Check to see if card already in hand, and if it is change newcard to False.
             # Do this so if card already in hand, then its position and status is preserved.
-            # Note that sometimes when you pick up the pile, an acquired card may match a card just played,
-            # and this leads to the acquired card appearing to be prepared.
-            # Player should clear prepared, and this will fix the problem.
-            # Planned future enhancement:  card class includes deck designation,
-            # so each card is unique, this will fix this issue.
+            # ToDo: change logic of loops so all new cards are on the far right when you pick up the pile.
+            #  Else new cards will fill in the gaps until you hit max card, and can get some weird behavior.
             for already_wrapped in old_wrapped_hand:
                 if newcard and card == already_wrapped.card:
+                    newcard = False
                     card_wrapped = already_wrapped
+                    # reset card_xy so new cards appear to right of old cards (card_xy[0] is max x-coord of cards).
                     card_xy = (max(card_xy[0], card_wrapped.img_clickable.x), card_xy[1])
                     old_wrapped_hand.remove(already_wrapped)
-                    newcard = False
+                    # updated_hand.remove(card) # added this line to deck, so could put all new cards to far right
+                    # above line seemed to remove other cards
             if newcard:
+                # something failed when I tried this: for card in updated_hand:
                 card_xy = (card_xy[0] + hand_view.hand_scaling[1], card_xy[1])
                 card_wrapped = UICardWrapper(card, card_xy, hand_view.hand_scaling[0])
             updated_wrapped_hand.append(card_wrapped)
-        # Should now have all the cards in the updated hand properly wrapped.  card_xy[0] is max x-coord of cards.
+        # Should now have all the cards in the updated hand properly wrapped.
         # sort cards by location, so they will display more attractively and so RefreshXY will work properly if called.
         updated_wrapped_hand.sort(key=lambda wc: wc.img_clickable.x)
         # Next section checks all cards will be visible, and if hand too large, then it shrinks cards.
@@ -66,19 +63,6 @@ def ClearPreparedCardsInHandView(wrapped_hand):
             element.status = 0
             element.img_clickable.changeOutline(0)
     return wrapped_hand
-
-
-def PreparedCardsPlayed(hand_view):
-    " Remove prepared cards from those displayed while preserving location and status of other cards "
-    if len(hand_view.controller.prepared_cards) == 0:
-        # manually remove cards played, else an ambiguity in wrapped cards causes
-        # picked up cards to sometimes get coordinates of cards just played.
-        # If statement insures that you don't remove cards if pick-up failed.
-        for wrappedcard in hand_view.hand_info:
-            if wrappedcard.status == 2:
-                hand_view.hand_info.remove(wrappedcard)
-                hand_view.last_hand.remove(wrappedcard.card)
-    return
 
 
 def ClearSelectedCards(wrapped_hand):
