@@ -20,7 +20,6 @@ class TableView(ConnectionListener):
         self.playerByPlayer()
         self.results = {}
 
-
     def playerByPlayer(self):
         self.compressSets(self.visible_cards)
         num_players = len(self.player_names)
@@ -43,7 +42,7 @@ class TableView(ConnectionListener):
                 foot = self.hand_status[idx][2]
                 player_text1 = player_name
                 player_text2 = str(numcards)
-                if (foot > 0):
+                if foot > 0:
                     player_text2 = player_text2 + ' cards (in hand)'
                 else:
                     player_text2 = player_text2 + ' cards (in foot)'
@@ -58,20 +57,19 @@ class TableView(ConnectionListener):
                 player_text2 = ' (should be joining soon)'
                 text_surface1, text_rect1 = self.textObjects(player_text1, UIC.Medium_Text, UIC.Black)
                 text_surface2, text_rect2 = self.textObjects(player_text2, UIC.Small_Text, UIC.Black)
-            y_coord =  0.05 * UIC.Disp_Height
+            y_coord = 0.05 * UIC.Disp_Height
             text_rect1.center = ((bk_grd_rect[0] + 0.5 * players_sp_w), (bk_grd_rect[1] + y_coord))
             self.display.blit(text_surface1, text_rect1)
             y_coord = y_coord + UIC.Medium_Text_Feed
             text_rect2.center = ((bk_grd_rect[0] + 0.5 * players_sp_w), (bk_grd_rect[1] + y_coord))
             self.display.blit(text_surface2, text_rect2)
-            # y_coord = y_coord + UIC.Medium_Text_Feed
             for key in melded_summary:
-                if (melded_summary[key][0] > 0):
+                if melded_summary[key][0] > 0:
                     detail_str = str(melded_summary[key][0])
-                    detail_str = detail_str + ': (' + str(melded_summary[key][1]) + ', ' + str(melded_summary[key][2]) +')'
-                    if (melded_summary[key][0] > 6):
+                    detail_str = detail_str + ': (' + str(melded_summary[key][1]) + ', ' + str(melded_summary[key][2]) + ')'
+                    if melded_summary[key][0] > 6:
                         detail_str = detail_str + '<<<'
-                    if (melded_summary[key][2] == 0):
+                    if melded_summary[key][2] == 0:
                         text_color = UIC.Red
                     else:
                         text_color = UIC.Black
@@ -86,7 +84,7 @@ class TableView(ConnectionListener):
                     elif key == 13:
                         player_text = 'Kings ' + detail_str
                     else:
-                        player_text =  str(key) + "'s  " + detail_str
+                        player_text = str(key) + "'s  " + detail_str
                     text_surface, text_rect = self.textObjects(player_text, UIC.Small_Text, text_color)
                     text_rect.center = ((bk_grd_rect[0] + 0.5 * players_sp_w), (bk_grd_rect[1] + ykey))
                     self.display.blit(text_surface, text_rect)
@@ -94,13 +92,12 @@ class TableView(ConnectionListener):
             if len(self.results) > 0:
                 player_total_points = str(self.results[player_name])
                 text_surface, text_rect = self.textObjects(player_total_points, UIC.Small_Text, UIC.Blue)
-                text_rect.center = (bk_grd_rect[0] + 0.5 * players_sp_w,\
+                text_rect.center = (bk_grd_rect[0] + 0.5 * players_sp_w,
                                     bk_grd_rect[1] + y_coord + (UIC.Small_Text_Feed * 13))
                 self.display.blit(text_surface, text_rect)
             # Move to next players rectangle and color:
             bk_grd_rect = (bk_grd_rect[0] + players_sp_w, bk_grd_rect[1], bk_grd_rect[2], bk_grd_rect[3])
             color_index = (color_index + 1) % len(UIC.table_grid_colors)
-
 
     def compressSets(self, v_cards):
         """ Don't have space to display every card. Summarize sets of cards here. """
@@ -154,6 +151,6 @@ class TableView(ConnectionListener):
             self.results_cmdscreen= self.results_cmdscreen + "  [" + \
                                     self.player_names[idx] + ": " + str(round_scores[idx]) + " " + \
                                     str(total_scores[idx]) +  "] \r \n "
-            print("{0} scored {1} this round, and  has {2} total".format(self.player_names[idx], round_scores[idx], total_scores[idx]))
+            print("{0} scored {1} this round, and  has {2} total".format(
+                self.player_names[idx], round_scores[idx], total_scores[idx]))
         print(self.results_cmdscreen)
-

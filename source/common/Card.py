@@ -1,4 +1,4 @@
-class Card():
+class Card:
     """ This defines a playing card for use in the game
 
     Every card is an integer number and a suit (jokers have suit None and number 0)
@@ -10,8 +10,8 @@ class Card():
         self.suit = suit
 
         if suit is None:
-            self.number = 0 #Jokers are always 0
-        elif number not in range(1,14): #range includes start but not stop number
+            self.number = 0  # Jokers are always 0
+        elif number not in range(1, 14):  # range includes start but not stop number
             raise ValueError("Invalid card number")
         else:
             self.number = number
@@ -23,7 +23,7 @@ class Card():
             return 'Black'
         if self.suit in ['Hearts', 'Diamonds']:
             return 'Red'
-        return None #For jokers
+        return None  # For jokers
 
     def serialize(self):
         """translate into a format podsixnet can translate"""

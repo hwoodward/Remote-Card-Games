@@ -17,27 +17,20 @@ def WrapHand(hand_view, updated_hand, wrapped_hand):
     Variables from hand_view used: hand_view.hand_scaling (scaling and spacing of cards)
     """
     card_xy = (10, UIC.Table_Hand_Border + 40)
-    old_wrapped_hand = wrapped_hand
-    # ToDo - only need 2 of 3: old_wrapped_hand, wrapped_hand, updated_wrapped_hand -- keep latter.
     updated_wrapped_hand = []
     if not updated_hand == []:
         for card in updated_hand:
             newcard = True
             # Check to see if card already in hand, and if it is change newcard to False.
             # Do this so if card already in hand, then its position and status is preserved.
-            # ToDo: change logic of loops so all new cards are on the far right when you pick up the pile.
-            #  Else new cards will fill in the gaps until you hit max card, and can get some weird behavior.
-            for already_wrapped in old_wrapped_hand:
+            for already_wrapped in wrapped_hand:
                 if newcard and card == already_wrapped.card:
                     newcard = False
                     card_wrapped = already_wrapped
                     # reset card_xy so new cards appear to right of old cards (card_xy[0] is max x-coord of cards).
                     card_xy = (max(card_xy[0], card_wrapped.img_clickable.x), card_xy[1])
-                    old_wrapped_hand.remove(already_wrapped)
-                    # updated_hand.remove(card) # added this line to deck, so could put all new cards to far right
-                    # above line seemed to remove other cards
+                    wrapped_hand.remove(already_wrapped)
             if newcard:
-                # something failed when I tried this: for card in updated_hand:
                 card_xy = (card_xy[0] + hand_view.hand_scaling[1], card_xy[1])
                 card_wrapped = UICardWrapper(card, card_xy, hand_view.hand_scaling[0])
             updated_wrapped_hand.append(card_wrapped)
@@ -45,7 +38,7 @@ def WrapHand(hand_view, updated_hand, wrapped_hand):
         # sort cards by location, so they will display more attractively and so RefreshXY will work properly if called.
         updated_wrapped_hand.sort(key=lambda wc: wc.img_clickable.x)
         # Next section checks all cards will be visible, and if hand too large, then it shrinks cards.
-        # Once length of hand <= original size it rescales cards to original size.
+        # Once length of hand <= size at beginning of game it rescales cards to original size.
         maxX = UIC.Disp_Width - hand_view.hand_scaling[1]
         if card_xy[0] > maxX:
             # RefreshXY will remove any gaps between cards, and if necessary rescale the cards.
@@ -73,8 +66,7 @@ def ClearSelectedCards(wrapped_hand):
 
 
 def RefreshXY(hand_view, original_wrapped_hand, layout_option=1):
-    """After sorting need to refresh XY coords, may also wish to refresh card's xy coordinates when hand large"""
-
+    # After sorting need to refresh XY coords, may also wish to refresh card's xy coordinates when hand large
     maxX = UIC.Disp_Width - hand_view.hand_scaling[1]
     if not layout_option == 1:
         print('the only layout supported now is cards in a line, left to right')
@@ -85,7 +77,7 @@ def RefreshXY(hand_view, original_wrapped_hand, layout_option=1):
         element.img_clickable.y = card_xy[1]
         card_xy = (card_xy[0] + hand_view.hand_scaling[1], card_xy[1])
         refreshed_wrapped_hand.append(element)
-    if (card_xy[0] > maxX):
+    if card_xy[0] > maxX:
         scalingfactor = maxX / card_xy[0]
         hand_view.hand_scaling = (scalingfactor * hand_view.hand_scaling[0], scalingfactor * hand_view.hand_scaling[1])
         rescaled_wrapped_hand = RescaleCards(hand_view, refreshed_wrapped_hand)
