@@ -6,7 +6,7 @@ class PlayerChannel(Channel):
 
     def __init__(self, *args, **kwargs):
         """This overrides the lower lvl channel init
-        It's a place to set any client information thats provided from the server
+        It's a place to set any client information that's provided from the server
         """
         self.name = "guest"
         #visible cards and hand status are public info

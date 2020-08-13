@@ -4,7 +4,6 @@ from server.ServerState import ServerState
 from PodSixNet.Server import Server
 from PodSixNet.Channel import Channel
 
-
 class GameServer(Server, ServerState):
     channelClass = PlayerChannel
 
@@ -21,7 +20,7 @@ class GameServer(Server, ServerState):
 
     def Connected(self, channel, addr):
         """Called by podsixnet when a client connects and establishes a channel"""
-        #todo: remove this vestige: look to see if in round, instead of if have started rounds.
+        #todo: remove vestige comment below: look to see if in round, instead of if have started rounds.
         #todo: if self.round >= 0:
         if self.in_round:
             # todo: remove vestige print(channel, 'Client tried to connect during active game')

@@ -1,5 +1,5 @@
+import random                  # will be used to assign unique names
 from common.Card import Card
-
 from PodSixNet.Connection import connection, ConnectionListener
 
 Turn_Phases = ['inactive', 'draw', 'forcedAction', 'play']
@@ -18,13 +18,25 @@ class Controller(ConnectionListener):
         self.setName()
         self.ready = False
         self.note = "Game is beginning."
+        # TODO: figure out how to get player_names = current list of display names of all players
+        #  (TableView.player_names).
+        self.player_names = []
 
     ### Player Actions ###
     def setName(self):
         """Set up a display name and send it to the server"""
-        displayName = input("Select a display name: ")
+        #TODO: get updated list of player names.
+        self.player_names = ['asdf']
+        displayName = input("Enter a display name: ")
+        while displayName in self.player_names:
+            name2 = "Bob" + str(random.randint(101, 999))
+            print(displayName + ' already taken,' + 'you shall be named: ' + name2)
+            # it is possible that two players might still end up with the same name due to timing,
+            # but we do not yet deal with this corner case.
+            displayName = name2
         self._state.name = displayName
         connection.Send({"action": "displayName", "name": displayName})
+
 
     def setReady(self, readyState):
         """Update the player's ready state with the server"""

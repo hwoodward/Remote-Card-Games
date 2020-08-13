@@ -6,7 +6,7 @@ from client.Controller import Controller
 from client.CreateDisplay import CreateDisplay
 from client.HandView import HandView
 from client.TableView import TableView
-# imports below make it added so that can generate executable using pyinstaller.
+# imports below added so that can generate executable using pyinstaller.
 import common.HandAndFoot
 import common.Card
 import client.Button
