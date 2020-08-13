@@ -21,8 +21,11 @@ class GameServer(Server, ServerState):
 
     def Connected(self, channel, addr):
         """Called by podsixnet when a client connects and establishes a channel"""
-        if self.round >= 0:
-            print(channel, 'Client tried to connect during active game')
+        #todo: remove this vestige: look to see if in round, instead of if have started rounds.
+        #todo: if self.round >= 0:
+        if self.in_round:
+            # todo: remove vestige print(channel, 'Client tried to connect during active game')
+            print(channel, 'Client tried to connect during active round, try again between rounds')
             channel.Send({"action": "connectionDenied"})
         else:
             self.players.append(channel)
