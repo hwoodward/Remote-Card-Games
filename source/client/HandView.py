@@ -58,6 +58,9 @@ class HandView:
             self.mesgBetweenRounds(self.betweenrounds)
             if self.round_advance:
                 self.next_round = self.next_round + 1
+                if self.next_round < self.controller._state.round:
+                    print('debug -- note, this didnot print even though I expected it to.') # need to update next_round when player joins in later round.
+                    hand_view.next_round = self._state.round
                 if self.next_round < len(Meld_Threshold):
                     self.betweenrounds[0] = 'This is the round of ' + str(Meld_Threshold[self.next_round]) + ' ! '
                 else:
