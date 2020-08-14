@@ -37,12 +37,13 @@ class HandView:
         self.num_wilds = 0
         self.wild_cards = []
         self.selected_list = []
-        self.round_index = 0
+        self.next_round = self.controller._state.round + 1
+        print('debug in Handview --current round: '+str(self.next_round))
         self.round_advance = False
         self.ready_color_idx = 2
         self.not_ready_color_idx = 6
         # --- Hand And Foot Specific:
-        self.betweenrounds = ['Welcome to a new game.  This is the round of ' + str(Meld_Threshold[0]) + '.',
+        self.betweenrounds = ['Welcome to a new game.  This is the round of ' + str(Meld_Threshold[self.next_round]) + '.',
                               'To draw click on the deck of cards (upper left).',
                               'To discard select ONE card & double click on discard button. ',
                               'To pick up pile PREPARE necessary cards & then click on discard pile. ',
@@ -56,9 +57,9 @@ class HandView:
         if self.controller._state.round == -1:
             self.mesgBetweenRounds(self.betweenrounds)
             if self.round_advance:
-                self.round_index = self.round_index + 1
-                if self.round_index < len(Meld_Threshold):
-                    self.betweenrounds[0] = 'This is the round of ' + str(Meld_Threshold[self.round_index]) + ' ! '
+                self.next_round = self.next_round + 1
+                if self.next_round < len(Meld_Threshold):
+                    self.betweenrounds[0] = 'This is the round of ' + str(Meld_Threshold[self.next_round]) + ' ! '
                 else:
                     self.betweenrounds = ['Game has concluded. Scores for each round can be found in command window.']
                 self.round_advance = False

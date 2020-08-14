@@ -71,7 +71,7 @@ class GameServer(Server, ServerState):
         """
         player_index = self.players.index(player)
         self.players.remove(player)
-        self.Send_publicInfo();
+        self.Send_publicInfo()
         #Check for no more players
         if len(self.players) == 0:
             self.game_over = True

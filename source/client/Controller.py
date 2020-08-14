@@ -25,14 +25,15 @@ class Controller(ConnectionListener):
     ### Player Actions ###
     def setName(self):
         """Set up a display name and send it to the server"""
-        #TODO: get updated list of player names.
+        #TODO: replace next line with updated list of player names.
         self.player_names = ['asdf']
         displayName = input("Enter a display name: ")
         while displayName in self.player_names:
             name2 = "Bob" + str(random.randint(101, 999))
             print(displayName + ' already taken,' + 'you shall be named: ' + name2)
-            # it is possible that two players might still end up with the same name due to timing,
-            # but we do not yet deal with this corner case.
+            # todo: once this is debugged, then:
+            # it is possible (though unlikely) that two players might still end up with the
+            # same name due to timing, but we do not deal with this corner case.
             displayName = name2
         self._state.name = displayName
         connection.Send({"action": "displayName", "name": displayName})
@@ -256,6 +257,7 @@ class Controller(ConnectionListener):
     
     def Network_deal(self, data):
         self._state.round = data["round"]
+        print('debug --current round: '+str(self._state.round))
         self._state.reset()
         hand_list = [[Card.deserialize(c) for c in hand] for hand in data["hands"]]
         #TODO: we want to allow the player to choose the order of the hands eventually
