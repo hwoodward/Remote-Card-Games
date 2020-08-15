@@ -89,7 +89,7 @@ class TableView(ConnectionListener):
                     text_rect.center = ((bk_grd_rect[0] + 0.5 * players_sp_w), (bk_grd_rect[1] + ykey))
                     self.display.blit(text_surface, text_rect)
                 # Print cumulative score for this player.
-                # todo: If player just joined game then self.results[player_name] is null.  Need to catch that.
+                # If player just joined game then self.results[player_name] is null.  Need to catch that.
             if len(self.results) > 0:
                 if self.results.get(player_name) is not None:
                     player_total_points = str(self.results[player_name])

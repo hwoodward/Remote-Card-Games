@@ -37,8 +37,8 @@ class HandView:
         self.num_wilds = 0
         self.wild_cards = []
         self.selected_list = []
-        self.next_round = self.controller._state.round + 1
-        print('debug in Handview --current round: '+str(self.next_round))
+        self.next_round = 0 # can only join in when self.controller._state.round = -1 :(  self.controller._state.round + 1
+        print('debug in Handview line 41 --(self.next_round): '+str(self.next_round))
         self.round_advance = False
         self.ready_color_idx = 2
         self.not_ready_color_idx = 6
@@ -58,9 +58,11 @@ class HandView:
             self.mesgBetweenRounds(self.betweenrounds)
             if self.round_advance:
                 self.next_round = self.next_round + 1
-                if self.next_round < self.controller._state.round:
-                    print('debug -- note, this didnot print even though I expected it to.') # need to update next_round when player joins in later round.
-                    hand_view.next_round = self._state.round
+                # todo - delete following lines if they're never called
+                print('debug, HV line 62: self.next_round, self.controller._state.round:'+str(self.next_round)+' '+str(self.controller._state.round))
+                # if self.next_round < self.controller._state.round:
+                #    print('debug -- note, this didnot print even though I expected it to.') # need to update next_round when player joins in later round.
+                #    self.next_round = self.controller._state.round
                 if self.next_round < len(Meld_Threshold):
                     self.betweenrounds[0] = 'This is the round of ' + str(Meld_Threshold[self.next_round]) + ' ! '
                 else:

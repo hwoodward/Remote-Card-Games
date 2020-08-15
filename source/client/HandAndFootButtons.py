@@ -62,7 +62,7 @@ def ButtonDisplay(hand_view):
         hand_view.ready_yes_btn.draw(hand_view.display, hand_view.ready_yes_btn.outline_color)
         hand_view.ready_no_btn.draw(hand_view.display, hand_view.ready_no_btn.outline_color)
     else:
-        hand_view.labelMedium(str(Meld_Threshold[hand_view.next_round]) + "points to meld",
+        hand_view.labelMedium(str(Meld_Threshold[hand_view.controller._state.round]) + "points to meld",
                               hand_view.round_indicator_xy[0], hand_view.round_indicator_xy[1])
     hand_view.sort_status_btn.draw(hand_view.display, hand_view.sort_status_btn.outline_color)
     hand_view.sort_btn.draw(hand_view.display, hand_view.sort_btn.outline_color)

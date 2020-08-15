@@ -257,7 +257,7 @@ class Controller(ConnectionListener):
     
     def Network_deal(self, data):
         self._state.round = data["round"]
-        print('debug --current round: '+str(self._state.round))
+        print('debug (line 260 in controller)--current round: '+str(self._state.round))
         self._state.reset()
         hand_list = [[Card.deserialize(c) for c in hand] for hand in data["hands"]]
         #TODO: we want to allow the player to choose the order of the hands eventually
@@ -275,6 +275,7 @@ class Controller(ConnectionListener):
         self.note = "{0} has gone out to end the round!".format(out_player)
         self._state.round = -1
         score = self._state.scoreRound()
+        print('debug - controller line 278, score: '+str(score))
         connection.Send({"action": "reportScore", "score": score})
         self.setReady(False)
 
