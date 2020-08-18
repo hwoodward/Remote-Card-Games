@@ -3,6 +3,7 @@ from common.Card import Card
 from PodSixNet.Connection import connection, ConnectionListener
 
 Turn_Phases = ['inactive', 'draw', 'forcedAction', 'play']
+forbidden_names = ['guest']
 
 class Controller(ConnectionListener):
     """ This client connects to a GameServer which will host a cardgame
@@ -18,26 +19,37 @@ class Controller(ConnectionListener):
         self.setName()
         self.ready = False
         self.note = "Game is beginning."
-        # TODO: figure out how to get player_names = current list of display names of all players
-        #  (TableView.player_names).
-        self.player_names = []
 
     ### Player Actions ###
     def setName(self):
         """Set up a display name and send it to the server"""
-        #TODO: replace next line with updated list of player names.
-        self.player_names = ['asdf']
-        displayName = input("Enter a display name: ")
-        while displayName in self.player_names:
-            name2 = "Bob" + str(random.randint(101, 999))
-            print(displayName + ' already taken,' + 'you shall be named: ' + name2)
-            # todo: once this is debugged, then:
-            # it is possible (though unlikely) that two players might still end up with the
-            # same name due to timing, but we do not deal with this corner case.
-            displayName = name2
-        self._state.name = displayName
-        connection.Send({"action": "displayName", "name": displayName})
 
+        # to prevent duplicate names, displayname = 'guest' is forbidden.
+        # May as well allow other names to be forbidden, too (for fun :) )
+        # if name is in list of forbidden names, then changeName is called.
+        displayName = input("Enter a display name: ")
+        if displayName in forbidden_names:
+            print("Sorry, but that name is forbidden.")
+            changeName()
+        else:
+            self._state.name = displayName
+            connection.Send({"action": "displayName", "name": displayName})
+
+    def checkNames(self, player_names):
+        # Check that no names are duplicated.
+        if player_names.count(self._state.name) > 1 :
+            print(self._state.name + ' is already taken.')
+            self.changeName()
+
+    def changeName(self):
+        # Check that no names are duplicated.
+        name2 = "Bob" + str(random.randint(101, 999))
+        print(self._state.name + ' you shall be named: ' + name2)
+        # it is possible (though unlikely) that two players might still end up with the
+        # same name due to timing, (or 1/898 chance that the same Bob name is chosen)
+        # but we do not deal with these corner cases.
+        self._state.name = name2
+        connection.Send({"action": "displayName", "name": name2})
 
     def setReady(self, readyState):
         """Update the player's ready state with the server"""
@@ -214,7 +226,6 @@ class Controller(ConnectionListener):
 
     def lateJoinScores(self, score):
         """ When a player joins late the early rounds need to be assigned a score.  This does it. """
-        print('debug - controller line 217, score: ' + str(score))
         connection.Send({"action": "reportScore", "score": score})
 
     #######################################
@@ -262,7 +273,6 @@ class Controller(ConnectionListener):
     
     def Network_deal(self, data):
         self._state.round = data["round"]
-        print('debug (line 260 in controller)--current round: '+str(self._state.round))
         self._state.reset()
         hand_list = [[Card.deserialize(c) for c in hand] for hand in data["hands"]]
         #TODO: we want to allow the player to choose the order of the hands eventually
@@ -280,10 +290,8 @@ class Controller(ConnectionListener):
         self.note = "{0} has gone out to end the round!".format(out_player)
         self._state.round = -1
         score = self._state.scoreRound()
-        print('debug - controller line 278, score: '+str(score))
         connection.Send({"action": "reportScore", "score": score})
         self.setReady(False)
-
 
     def Network_clearReady(self, data):
         self.setReady(False)

@@ -37,10 +37,7 @@ class HandView:
         self.num_wilds = 0
         self.wild_cards = []
         self.selected_list = []
-        self.next_round = 0 # can only join in when self.controller._state.round = -1 :(  self.controller._state.round + 1
-        print('debug in Handview line 41 --(self.next_round): '+str(self.next_round))
-        # todo: report scores to server for rounds missed (for now report zero)
-        # todo: then remove all debug print statements.
+        self.next_round = 0
         self.round_advance = False
         self.ready_color_idx = 2
         self.not_ready_color_idx = 6
@@ -69,7 +66,6 @@ class HandView:
             if not self.next_round == self.controller._state.round:
                 # Need this to true up next_round if a player joins mid-game.
                 skipped_rounds =  self.controller._state.round - self.next_round
-                print('debug: HV line 72, Missed ' + str(skipped_rounds) + ', assigning score = zero to those rounds')
                 for idx in range(skipped_rounds):
                     score = 0
                     self.controller.lateJoinScores(score)

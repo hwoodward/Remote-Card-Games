@@ -35,6 +35,19 @@ def RunClient():
     createDisplay = CreateDisplay(playername)
     handView = HandView(gameControl, createDisplay.display)
     tableView = TableView(createDisplay.display)
+    while(len(tableView.player_names) < 1) or (tableView.player_names.count('guest') > 0 ):
+        note = "waiting for updated list of player names"
+        createDisplay.refresh()
+        handView.nextEvent()
+        connection.Pump()
+        gameControl.Pump()
+        tableView.Pump()
+        handView.update()
+        tableView.playerByPlayer()
+        note = "updating list of player names"
+        createDisplay.render(note)
+        sleep(0.001)
+    gameControl.checkNames(tableView.player_names)
     while True:
         createDisplay.refresh()
         handView.nextEvent()

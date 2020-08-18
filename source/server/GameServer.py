@@ -20,22 +20,15 @@ class GameServer(Server, ServerState):
 
     def Connected(self, channel, addr):
         """Called by podsixnet when a client connects and establishes a channel"""
-        #todo: remove vestige comment below: look to see if in round, instead of if have started rounds.
-        #todo: if self.round >= 0:
         if self.in_round:
-            # todo: remove vestige print(channel, 'Client tried to connect during active game')
             print(channel, 'Client tried to connect during active round, try again between rounds')
             channel.Send({"action": "connectionDenied"})
         else:
-            print('debug, at line 30 in GameServer')
             self.players.append(channel)
             self.Send_publicInfo()
             print(channel, "Client connected")
-            print(str(self.round))
             if self.round >= 0:
-                print(channel, 'a client joined between rounds, give them scores of zero for rounds missed')
-                for round_idx in range(0, self.round):
-                    channel.scoreForRound = 0
+                print(channel, 'a client joined between rounds')
 
     def disconnect(self, channel):
         """Called by a channel when it disconnects"""
@@ -65,7 +58,6 @@ class GameServer(Server, ServerState):
         self.prepareRound(len(self.players))
         for player in self.players:
             player.Send_deal(self.dealHands(), self.round)
-        #set turn index to the dealer then start play
         self.turn_index = self.round
         self.nextTurn()
 
@@ -106,10 +98,6 @@ class GameServer(Server, ServerState):
         """Send the scores to all players"""
         round_scores = [p.scoreForRound(self.round) for p in self.players]
         total_scores = [sum(p.scores) for p in self.players]
-        print("debug - in GameServer:")
-        for p in self.players:
-            print('debug-round score: '+ str(p.scoreForRound(self.round)))
-            print('debug-total score:' + str(sum(p.scores)))
         if None not in round_scores:
             self.Send_broadcast({"action": "scores", "round_scores": round_scores, "total_scores": total_scores})
 
