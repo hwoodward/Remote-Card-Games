@@ -39,6 +39,11 @@ class HandView:
         self.selected_list = []
         self.next_round = 0 # can only join in when self.controller._state.round = -1 :(  self.controller._state.round + 1
         print('debug in Handview line 41 --(self.next_round): '+str(self.next_round))
+        # todo: must report scores of zero to server for rounds missed
+        #   (could set rule so that it reports back average score for each round).
+        #  todo: Change [999999] back to None in PlayerChannel.
+        #  todo: Also  fix: -- first line of message is off round after round for the late player.
+        # todo: test, then remove all debug print statements.
         self.round_advance = False
         self.ready_color_idx = 2
         self.not_ready_color_idx = 6
@@ -58,17 +63,13 @@ class HandView:
             self.mesgBetweenRounds(self.betweenrounds)
             if self.round_advance:
                 self.next_round = self.next_round + 1
-                # todo - delete following lines if they're never called
-                print('debug, HV line 62: self.next_round, self.controller._state.round:'+str(self.next_round)+' '+str(self.controller._state.round))
-                # if self.next_round < self.controller._state.round:
-                #    print('debug -- note, this didnot print even though I expected it to.') # need to update next_round when player joins in later round.
-                #    self.next_round = self.controller._state.round
                 if self.next_round < len(Meld_Threshold):
                     self.betweenrounds[0] = 'This is the round of ' + str(Meld_Threshold[self.next_round]) + ' ! '
                 else:
                     self.betweenrounds = ['Game has concluded. Scores for each round can be found in command window.']
                 self.round_advance = False
         else:
+            self.next_round = self.controller._state.round # Need this to true up next_round if a player joins mid-game.
             self.round_advance = True
             # reset outline colors on ready buttons to what they need to be at the start of the "between rounds" state.
             self.ready_color_idx = 2

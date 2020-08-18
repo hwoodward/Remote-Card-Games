@@ -27,9 +27,15 @@ class GameServer(Server, ServerState):
             print(channel, 'Client tried to connect during active round, try again between rounds')
             channel.Send({"action": "connectionDenied"})
         else:
+            print('debug, at line 30 in GameServer')
             self.players.append(channel)
             self.Send_publicInfo()
             print(channel, "Client connected")
+            print(str(self.round))
+            if self.round >= 0:
+                print(channel, 'a client joined between rounds, give them scores of zero for rounds missed')
+                for round_idx in range(0, self.round):
+                    channel.scoreForRound = 0
 
     def disconnect(self, channel):
         """Called by a channel when it disconnects"""

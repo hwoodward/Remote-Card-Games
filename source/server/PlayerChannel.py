@@ -17,14 +17,15 @@ class PlayerChannel(Channel):
         Channel.__init__(self, *args, **kwargs)
 
     def scoreForRound(self, round):
-        """Handles getting score for round so we don't error if this player hasn't reported yet"""
+        """ Handles getting score for round so we don't error if this player hasn't reported yet."""
         try:
-            print("debug: at line 22 in server\playerchannel.py")
+            print("debug: at line 22 in server\playerchannel.py, will print round, self.scores[round]")
+            print(str(round) + '     ' + str(self.scores[round]))
             return self.scores[round]
         except:
             # debug: return None
             print("debug: at line 26 in server\playerchannel.py")
-            return [999999]
+            return None
         
     def Close(self):
         """Called when a player disconnects
