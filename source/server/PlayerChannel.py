@@ -20,7 +20,7 @@ class PlayerChannel(Channel):
         """ Handles getting score for round so we don't error if this player hasn't reported yet."""
         try:
             print("debug: at line 22 in server\playerchannel.py, will print round, self.scores[round]")
-            print(str(round) + '     ' + str(self.scores[round]))
+            print(str(round) + '     ' + str(self.scores))
             return self.scores[round]
         except:
             # debug: return None

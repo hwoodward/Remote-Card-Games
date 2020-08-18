@@ -106,6 +106,10 @@ class GameServer(Server, ServerState):
         """Send the scores to all players"""
         round_scores = [p.scoreForRound(self.round) for p in self.players]
         total_scores = [sum(p.scores) for p in self.players]
+        print("debug - in GameServer:")
+        for p in self.players:
+            print('debug-round score: '+ str(p.scoreForRound(self.round)))
+            print('debug-total score:' + str(sum(p.scores)))
         if None not in round_scores:
             self.Send_broadcast({"action": "scores", "round_scores": round_scores, "total_scores": total_scores})
 

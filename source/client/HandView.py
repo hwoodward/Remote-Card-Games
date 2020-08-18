@@ -39,11 +39,8 @@ class HandView:
         self.selected_list = []
         self.next_round = 0 # can only join in when self.controller._state.round = -1 :(  self.controller._state.round + 1
         print('debug in Handview line 41 --(self.next_round): '+str(self.next_round))
-        # todo: must report scores of zero to server for rounds missed
-        #   (could set rule so that it reports back average score for each round).
-        #  todo: Change [999999] back to None in PlayerChannel.
-        #  todo: Also  fix: -- first line of message is off round after round for the late player.
-        # todo: test, then remove all debug print statements.
+        # todo: report scores to server for rounds missed (for now report zero)
+        # todo: then remove all debug print statements.
         self.round_advance = False
         self.ready_color_idx = 2
         self.not_ready_color_idx = 6
@@ -69,7 +66,14 @@ class HandView:
                     self.betweenrounds = ['Game has concluded. Scores for each round can be found in command window.']
                 self.round_advance = False
         else:
-            self.next_round = self.controller._state.round # Need this to true up next_round if a player joins mid-game.
+            if not self.next_round == self.controller._state.round:
+                # Need this to true up next_round if a player joins mid-game.
+                skipped_rounds =  self.controller._state.round - self.next_round
+                print('debug: HV line 72, Missed ' + str(skipped_rounds) + ', assigning score = zero to those rounds')
+                for idx in range(skipped_rounds):
+                    score = 0
+                    self.controller.lateJoinScores(score)
+                self.next_round = self.controller._state.round
             self.round_advance = True
             # reset outline colors on ready buttons to what they need to be at the start of the "between rounds" state.
             self.ready_color_idx = 2

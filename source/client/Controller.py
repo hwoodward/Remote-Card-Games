@@ -212,6 +212,11 @@ class Controller(ConnectionListener):
         status_info = self._state.getHandStatus()
         connection.Send({"action": "publicInfo", "visible_cards":serialized_cards, "hand_status":status_info})
 
+    def lateJoinScores(self, score):
+        """ When a player joins late the early rounds need to be assigned a score.  This does it. """
+        print('debug - controller line 217, score: ' + str(score))
+        connection.Send({"action": "reportScore", "score": score})
+
     #######################################
     ### Network event/message callbacks ###
     #######################################
