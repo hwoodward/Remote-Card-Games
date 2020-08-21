@@ -27,10 +27,10 @@ class Controller(ConnectionListener):
         # to prevent duplicate names, displayname = 'guest' is forbidden.
         # May as well allow other names to be forbidden, too (for fun :) )
         # if name is in list of forbidden names, then changeName is called.
-        displayName = input("Enter a display name: ")
+        displayName = inputD("Enter a display name: ")
         if displayName in forbidden_names:
-            print("Sorry, but that name is forbidden.")
-            changeName()
+            self.note = "Sorry, but that name is forbidden."
+            self.changeName()
         else:
             self._state.name = displayName
             connection.Send({"action": "displayName", "name": displayName})
@@ -38,13 +38,14 @@ class Controller(ConnectionListener):
     def checkNames(self, player_names):
         # Check that no names are duplicated.
         if player_names.count(self._state.name) > 1 :
-            print(self._state.name + ' is already taken.')
+            self.note = self._state.name + ' is already taken.'
             self.changeName()
 
     def changeName(self):
         # Check that no names are duplicated.
         name2 = "Bob" + str(random.randint(101, 999))
-        print(self._state.name + ' you shall be named: ' + name2)
+        self.note =self.note + ' ' + self._state.name + ' you shall now be named: ' + name2
+        print(self.note)
         # it is possible (though unlikely) that two players might still end up with the
         # same name due to timing, (or 1/898 chance that the same Bob name is chosen)
         # but we do not deal with these corner cases.
