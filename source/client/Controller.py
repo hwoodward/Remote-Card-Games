@@ -27,7 +27,7 @@ class Controller(ConnectionListener):
         # to prevent duplicate names, displayname = 'guest' is forbidden.
         # May as well allow other names to be forbidden, too (for fun :) )
         # if name is in list of forbidden names, then changeName is called.
-        displayName = inputD("Enter a display name: ")
+        displayName = input("Enter a display name: ")
         if displayName in forbidden_names:
             self.note = "Sorry, but that name is forbidden."
             self.changeName()
