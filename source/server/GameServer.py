@@ -58,6 +58,7 @@ class GameServer(Server, ServerState):
         self.prepareRound(len(self.players))
         for player in self.players:
             player.Send_deal(self.dealHands(), self.round)
+        self.Send_scores()              # need to retransmit all the scores in case a player has joined between rounds
         self.turn_index = self.round
         self.nextTurn()
 

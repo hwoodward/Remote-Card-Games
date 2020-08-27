@@ -41,6 +41,7 @@ class ServerState():
         self.draw_pile = deck
         self.discard_pile = []
 
+
     def drawCards(self):
         """Return the next Draw_Size cards from the draw pile"""
         result = []

@@ -36,7 +36,7 @@ def RunClient():
     handView = HandView(gameControl, createDisplay.display)
     tableView = TableView(createDisplay.display)
     while(len(tableView.player_names) < 1) or (tableView.player_names.count('guest') > 0 ):
-        # Under test, if two people join with the same name almost simultaneously, then both might be renamed.
+        # Note that if two people join with the same name almost simultaneously, then both might be renamed.
         note = "waiting for updated list of player names"
         createDisplay.refresh()
         connection.Pump()
