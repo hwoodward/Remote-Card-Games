@@ -16,7 +16,7 @@ class Card:
         else:
             self.number = number
 
-        self.deck = int(deck)
+        self.deck = deck
 
     def getColor(self):
         if self.suit in ['Spades', 'Clubs']:

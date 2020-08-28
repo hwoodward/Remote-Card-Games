@@ -3,7 +3,7 @@ from common.Card import Card
 from PodSixNet.Connection import connection, ConnectionListener
 
 Turn_Phases = ['inactive', 'draw', 'forcedAction', 'play']
-forbidden_names = ['guest']
+Forbidden_Names = ['guest']
 
 class Controller(ConnectionListener):
     """ This client connects to a GameServer which will host a cardgame
@@ -28,7 +28,7 @@ class Controller(ConnectionListener):
         # May as well allow other names to be forbidden, too (for fun :) )
         # if name is in list of forbidden names, then changeName is called.
         displayName = input("Enter a display name: ")
-        if displayName in forbidden_names:
+        if displayName in Forbidden_Names:
             self.note = "Sorry, but that name is forbidden."
             self.changeName()
         else:
