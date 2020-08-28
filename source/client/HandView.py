@@ -41,7 +41,11 @@ class HandView:
         self.ready_color_idx = 2
         self.not_ready_color_idx = 6
         # --- Hand And Foot Specific:
-        self.help_text = ['Welcome to a new game.  This is the round of ' + str(Meld_Threshold[self.round_index]) + '.',
+        # if someone joins between rounds, then they won't know the meld requirement until the round begins because
+        # self.controller._state.round = =1 until play commences.  At that point the help_text is no longer printed.
+        # Correct meld requirement will be written in lower right corner once play commences.
+        self.help_text = ['Welcome to a new game.  First round meld requirement is: '
+                          + str(Meld_Threshold[self.round_index]) + '.',
                               'To draw click on the deck of cards (upper left).',
                               'To discard select ONE card & double click on discard button. ',
                               'To pick up pile PREPARE necessary cards & then click on discard pile. ',
