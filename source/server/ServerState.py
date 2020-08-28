@@ -3,6 +3,7 @@ from common.Card import Card
 import random
 import importlib
 
+
 class ServerState():
     """This tracks the game's shared state on the server.
 
@@ -13,16 +14,16 @@ class ServerState():
     """
 
     def __init__(self, ruleset = None):
-        if ruleset != None:
+        if ruleset is not None:
             rule_module = "common." + ruleset
         else:
-            #This is the unit test case - we may want to put a dummy ruleset in
+            # This is the unit test case - we may want to put a dummy ruleset in
             print("In unittest mode - using HandAndFoot rules")
             rule_module = "common.HandAndFoot"
 
         self.rules = importlib.import_module(rule_module)
         self.draw_pile = []
-        self.round = -1 #Start at negative so first nextRound call increments to 0
+        self.round = -1  # Start at negative so first nextRound call increments to 0
         self.discard_pile = []
         self.turn_index = 0
 
@@ -33,12 +34,13 @@ class ServerState():
         Clears out the discard pile
         """
         deck = []
-        for _ in range(0, self.rules.numDecks(numPlayers)):
-            for card in self.rules.singleDeck():
+        for deck_number in range(0, self.rules.numDecks(numPlayers)):
+            for card in self.rules.singleDeck(deck_number):
                 deck.append(card)
         random.shuffle(deck)
         self.draw_pile = deck
         self.discard_pile = []
+
 
     def drawCards(self):
         """Return the next Draw_Size cards from the draw pile"""
@@ -61,7 +63,7 @@ class ServerState():
 
     def getDiscardInfo(self):
         """Provides the top card and size of the discard pile as a tuple"""
-        top_card = Card(0, None) #If pile is empty we need a default card since None doesn't serialize
+        top_card = Card(0, None, 0)  # If pile is empty we still need a default card since None doesn't serialize
         if len(self.discard_pile) > 0:
             top_card = self.discard_pile[-1]
         return [top_card, len(self.discard_pile)]

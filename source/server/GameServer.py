@@ -4,7 +4,6 @@ from server.ServerState import ServerState
 from PodSixNet.Server import Server
 from PodSixNet.Channel import Channel
 
-
 class GameServer(Server, ServerState):
     channelClass = PlayerChannel
 
@@ -21,13 +20,15 @@ class GameServer(Server, ServerState):
 
     def Connected(self, channel, addr):
         """Called by podsixnet when a client connects and establishes a channel"""
-        if self.round >= 0:
-            print(channel, 'Client tried to connect during active game')
+        if self.in_round:
+            print(channel, 'Client tried to connect during active round, try again between rounds')
             channel.Send({"action": "connectionDenied"})
         else:
             self.players.append(channel)
             self.Send_publicInfo()
             print(channel, "Client connected")
+            if self.round >= 0:
+                print(channel, 'a client joined between rounds')
 
     def disconnect(self, channel):
         """Called by a channel when it disconnects"""
@@ -57,7 +58,7 @@ class GameServer(Server, ServerState):
         self.prepareRound(len(self.players))
         for player in self.players:
             player.Send_deal(self.dealHands(), self.round)
-        #set turn index to the dealer then start play
+        self.Send_scores()              # need to retransmit all the scores in case a player has joined between rounds
         self.turn_index = self.round
         self.nextTurn()
 
@@ -69,7 +70,7 @@ class GameServer(Server, ServerState):
         """
         player_index = self.players.index(player)
         self.players.remove(player)
-        self.Send_publicInfo();
+        self.Send_publicInfo()
         #Check for no more players
         if len(self.players) == 0:
             self.game_over = True

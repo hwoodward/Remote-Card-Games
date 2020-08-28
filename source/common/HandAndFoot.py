@@ -15,25 +15,29 @@ Pickup_Size = 8
 Discard_Size = 1
 
 Meld_Threshold = [50, 90, 120, 150]
-Number_Rounds = len(Meld_Threshold) #For convenience
+Number_Rounds = len(Meld_Threshold)  # For convenience
 
 Deal_Size = 11
 Hands_Per_Player = 2
+
 
 def numDecks(numPlayers):
     """Specify how many decks of cards to put in the draw pile"""
     return math.ceil(numPlayers*1.5)
 
-def singleDeck():
-    """return a single deck of the correct type"""
-    return Card.getJokerDeck()
+
+def singleDeck(n):
+    """return a single deck of the correct type, n designates which deck of the numDecks to be used"""
+    return Card.getJokerDeck(n)
+
 
 def isWild(card):
     """returns true if a card is a wild"""
-    if card.number in [0,2]:
+    if card.number in [0, 2]:
         return True
     else:
         return False
+
 
 def getKeyOptions(card):
     """returns the possible keys for the groups the card can go in"""
@@ -42,7 +46,8 @@ def getKeyOptions(card):
             raise Exception("Cannot play 3s")
         return [card.number]
     else:
-        return [1,4,5,6,7,8,9,10,11,12,13]
+        return [1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+
 
 def canPlayGroup(key, card_group):
     """checks if a group can be played
@@ -50,11 +55,11 @@ def canPlayGroup(key, card_group):
     returns True if it can, otherwise raises an exception with an explanation
     """
     if len(card_group) == 0:
-        return True # Need to allow empty groups to be "played" due to some side-effects of how we combined dictionaries
+        return True  # Need to allow empty groups to be "played" due to side-effects of how we combined dictionaries
     if key == 3:
         raise Exception("Illegal key - cannot play 3s")
     if len(card_group) < 3: 
-        raise Exception("Too few cards in group - minimum is 3");
+        raise Exception("Too few cards in group - minimum is 3")
     typeDiff = 0
     for card in card_group:
         if isWild(card):
@@ -66,6 +71,7 @@ def canPlayGroup(key, card_group):
     if typeDiff > 0:
         return True
     raise Exception("Too many wilds in {0} group.".format(key))
+
 
 def canMeld(prepared_cards, round_index):
     """Determines if a set of card groups is a legal meld"""
@@ -90,7 +96,7 @@ def canPickupPile(top_card, prepared_cards, played_cards, round_index):
         if len(key_opts) > 1:
             raise Exception("Cannot pickup the pile on wilds")
         top_key = key_opts[0]
-    #check suggested play contains 2 cards matching the top card
+    # check suggested play contains 2 cards matching the top card
     top_group = prepared_cards.setdefault(top_key, [])
     total = 0
     for card in top_group:
@@ -98,7 +104,7 @@ def canPickupPile(top_card, prepared_cards, played_cards, round_index):
             total += 1
     if total < 2:
         raise Exception("Cannot pickup the pile without 2 prepared cards matching the top card of the discard pile")
-    #check suggested play is legal (using adjusted deep copy of prepared cards)
+    # check suggested play is legal (using adjusted deep copy of prepared cards)
     temp_prepared = {}
     for key, card_group in prepared_cards.items():
         temp_prepared[key] = [x for x in card_group]
@@ -106,16 +112,18 @@ def canPickupPile(top_card, prepared_cards, played_cards, round_index):
             temp_prepared[key].append(top_card)
     return canPlay(temp_prepared, played_cards, round_index)
 
+
 def canPlay(prepared_cards, played_cards, round_index):
     """Confirms if playing the selected cards is legal"""
-    if not played_cards: #empty dicts evaluate to false (as does None)
+    if not played_cards:   # empty dicts evaluate to false (as does None)
         return canMeld(prepared_cards, round_index)
-    #Combine dictionaries to get the final played cards if suggest cards played
+    # Combine dictionaries to get the final played cards if suggest cards played
     combined_cards = combineCardDicts(prepared_cards, played_cards)
-    #Confirm each combined group is playable
+    # Confirm each combined group is playable
     for key, card_group in combined_cards.items():
         canPlayGroup(key, card_group)
     return True
+
 
 def combineCardDicts(dict1, dict2):
     """Combine two dictionaries of cards, such as played and to be played cards"""
@@ -132,9 +140,9 @@ def combineCardDicts(dict1, dict2):
 
 def cardValue(card):
     """Returns the point value for a card"""
-    if card.number in [4,5,6,7,8,9]:
+    if card.number in [4, 5, 6, 7, 8, 9]:
         return 5
-    if card.number in [10,11,12,13]:
+    if card.number in [10, 11, 12, 13]:
         return 10
     if card.number == 1:
         return 15
@@ -148,6 +156,7 @@ def cardValue(card):
         if card.getColor() == 'Red':
             return 500
     raise ValueError("Card submitted is not a legal playing card option")
+
 
 def goneOut(played_cards):
     """Returns true if the played set of cards meets the requirements to go out
@@ -166,6 +175,7 @@ def goneOut(played_cards):
     if clean and dirty:
         return True
     return False
+
 
 def caniestaHelper(card_group):
     """Returns a constant indicating canista status for the set
@@ -186,6 +196,7 @@ def caniestaHelper(card_group):
             return 'Clean'
     return None
 
+
 def calculateBonuses(played_cards, went_out):
     """Scores a card_group, including Caniesta bonuses"""
     bonus = 0
@@ -199,12 +210,14 @@ def calculateBonuses(played_cards, went_out):
             bonus += 300
     return bonus
 
+
 def scoreGroup(card_group):
     """Scores a group of cards for raw value"""
     score = 0
     for card in card_group:
         score += cardValue(card)
     return score
+
 
 def scoreRound(played_cards, unplayed_cards, went_out):
     """Calculates the score for a player for a round"""

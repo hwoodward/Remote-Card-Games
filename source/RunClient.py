@@ -6,7 +6,7 @@ from client.Controller import Controller
 from client.CreateDisplay import CreateDisplay
 from client.HandView import HandView
 from client.TableView import TableView
-# imports below make it added so that can generate executable using pyinstaller.
+# imports below added so that can generate executable using pyinstaller.
 import common.HandAndFoot
 import common.Card
 import client.Button
@@ -32,11 +32,24 @@ def RunClient():
     clientState = ClientState(ruleset)
     gameControl = Controller(clientState)
     playername = gameControl.getName()
-    createDisplay = CreateDisplay(playername)
-    handView = HandView(gameControl, createDisplay.display)
-    tableView = TableView(createDisplay.display)
+    gameboard = CreateDisplay(playername)
+    handView = HandView(gameControl, gameboard.display)
+    tableView = TableView(gameboard.display)
+    while(len(tableView.player_names) < 1) or (tableView.player_names.count('guest') > 0 ):
+        # Note that if two people join with the same name almost simultaneously, then both might be renamed.
+        note = "waiting for updated list of player names"
+        gameboard.refresh()
+        connection.Pump()
+        gameControl.Pump()
+        tableView.Pump()
+        tableView.playerByPlayer()
+        note = "updating list of player names"
+        gameboard.render(note)
+        sleep(0.001)
+    gameControl.checkNames(tableView.player_names)
     while True:
-        createDisplay.refresh()
+        # Primary game loop.
+        gameboard.refresh()
         handView.nextEvent()
         connection.Pump()
         gameControl.Pump()
@@ -44,7 +57,7 @@ def RunClient():
         handView.update()
         tableView.playerByPlayer()
         note = gameControl.note
-        createDisplay.render(note)
+        gameboard.render(note)
         sleep(0.001)
 
 if __name__ == "__main__":

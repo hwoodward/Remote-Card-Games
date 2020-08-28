@@ -1,8 +1,9 @@
+import random                  # will be used to assign unique names
 from common.Card import Card
-
 from PodSixNet.Connection import connection, ConnectionListener
 
 Turn_Phases = ['inactive', 'draw', 'forcedAction', 'play']
+Forbidden_Names = ['guest']
 
 class Controller(ConnectionListener):
     """ This client connects to a GameServer which will host a cardgame
@@ -22,9 +23,34 @@ class Controller(ConnectionListener):
     ### Player Actions ###
     def setName(self):
         """Set up a display name and send it to the server"""
-        displayName = input("Select a display name: ")
-        self._state.name = displayName
-        connection.Send({"action": "displayName", "name": displayName})
+
+        # to prevent duplicate names, displayname = 'guest' is forbidden.
+        # May as well allow other names to be forbidden, too (for fun :) )
+        # if name is in list of forbidden names, then changeName is called.
+        displayName = input("Enter a display name: ")
+        if displayName in Forbidden_Names:
+            self.note = "Sorry, but that name is forbidden."
+            self.changeName()
+        else:
+            self._state.name = displayName
+            connection.Send({"action": "displayName", "name": displayName})
+
+    def checkNames(self, player_names):
+        # Check that no names are duplicated.
+        if player_names.count(self._state.name) > 1 :
+            self.note = self._state.name + ' is already taken.'
+            self.changeName()
+
+    def changeName(self):
+        # Check that no names are duplicated.
+        name2 = "Bob" + str(random.randint(101, 999))
+        self.note =self.note + ' ' + self._state.name + ' you shall now be named: ' + name2
+        print(self.note)
+        # it is possible (though unlikely) that two players might still end up with the
+        # same name due to timing, (or 1/898 chance that the same Bob name is chosen)
+        # but we do not deal with these corner cases.
+        self._state.name = name2
+        connection.Send({"action": "displayName", "name": name2})
 
     def setReady(self, readyState):
         """Update the player's ready state with the server"""
@@ -199,6 +225,10 @@ class Controller(ConnectionListener):
         status_info = self._state.getHandStatus()
         connection.Send({"action": "publicInfo", "visible_cards":serialized_cards, "hand_status":status_info})
 
+    def lateJoinScores(self, score):
+        """ When a player joins late the early rounds need to be assigned a score.  This does it. """
+        connection.Send({"action": "reportScore", "score": score})
+
     #######################################
     ### Network event/message callbacks ###
     #######################################
@@ -263,7 +293,6 @@ class Controller(ConnectionListener):
         score = self._state.scoreRound()
         connection.Send({"action": "reportScore", "score": score})
         self.setReady(False)
-
 
     def Network_clearReady(self, data):
         self.setReady(False)

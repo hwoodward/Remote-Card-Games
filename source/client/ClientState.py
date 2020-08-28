@@ -1,7 +1,8 @@
 import importlib
 from common.Card import Card
 
-class ClientState():
+
+class ClientState:
     """ This class store client state for access by different listeners
 
     It tracks things like 'interactivity', a player's hand, discard state, etc.
@@ -10,7 +11,7 @@ class ClientState():
 
     def __init__(self, ruleset = None):
         """Initialize a state tracker for a given client"""
-        if ruleset != None:
+        if ruleset is not None:
             rule_module = "common." + ruleset
         else:
             #This is the unit test case - we may want to put a dummy ruleset in
@@ -18,11 +19,11 @@ class ClientState():
             rule_module = "common.HandAndFoot"
 
         self.rules = importlib.import_module(rule_module)
-        #Turn phase handled by controller
-        self.turn_phase = 'inactive' #hard coded start phase as 'not my turn'
-        self.round = -1 #Start with the 'no current round value
+        # Turn phase handled by controller
+        self.turn_phase = 'inactive'  # hard coded start phase as 'not my turn'
+        self.round = -1  # Start with the 'no current round value'
         self.name = "guest"
-        self.reset() #Start with state cleared for a fresh round
+        self.reset()  # Start with state cleared for a fresh round
 
     def dealtHands(self, hands):
         """Store the extra hands dealt to player for use after first hand is cleared"""
@@ -67,7 +68,7 @@ class ClientState():
 
     def playCards(self, prepared_cards):
         """Move cards from hand to visible"""
-        #First check that all the cards are in your hand
+        # First check that all the cards are in your hand
         tempHand = [x for x in self.hand_cards]
         try:
             for card_group in prepared_cards.values():
@@ -97,7 +98,7 @@ class ClientState():
         """Discard cards from hand"""
         if len(card_list) != self.rules.Discard_Size:
             raise Exception("Wrong discard size. Must discard {0} cards".format(self.rules.Discard_Size))
-        #check that all the cards are in your hand
+        # check that all the cards are in your hand
         tempHand = [x for x in self.hand_cards]
         try:
             for card in card_list:

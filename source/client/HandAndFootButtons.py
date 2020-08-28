@@ -1,14 +1,15 @@
 import pygame
 import client.Button as Btn
 from client.ClickableImage import ClickableImage as ClickImg
+from common.HandAndFoot import Meld_Threshold
 import client.HandManagement as HandManagement
 import client.UIConstants as UIC
 from client.UICardWrapper import UICardWrapper
 
 """This file contains methods used in displaying the buttons that enable the user to take actions
 
-If a button is clicked then generally two actions take place -- one action initiates communication with the server 
-and the second updates the display to reflect the action taken.  
+If a button is clicked, then typically 1 or 2 methods are called. The first initiates communication with the server, 
+and when necessary a 2nd updates the display to reflect the action taken.  
 Discards are confirmed within the GUI, and that code is currently split between this file and HandView.
 
 This file is Hand and Foot specific because different games may need additional buttons, and may need them arranged
@@ -19,10 +20,13 @@ This file is Hand and Foot specific because different games may need additional 
 def CreateButtons(hand_view):
     """This creates the buttons used for HandAndFoot. """
     hand_view.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
-    hand_view.ready_yes_btn = Btn.Button(UIC.White, (UIC.Disp_Width - 150), (UIC.Disp_Height - 70), 125, 25, text='Ready:YES')
+    hand_view.ready_yes_btn = \
+        Btn.Button(UIC.White, (UIC.Disp_Width - 150), (UIC.Disp_Height - 70), 125, 25, text='Ready:YES')
     hand_view.ready_color_idx = 2  # color of outline will be: UIC.outline_colors(ready_color_idx)
-    hand_view.ready_no_btn = Btn.Button(UIC.White, (UIC.Disp_Width - 150), (UIC.Disp_Height - 30), 125, 25, text='Ready:NO')
+    hand_view.ready_no_btn = \
+        Btn.Button(UIC.White, (UIC.Disp_Width - 150), (UIC.Disp_Height - 30), 125, 25, text='Ready:NO')
     hand_view.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
+    hand_view.round_indicator_xy = ((UIC.Disp_Width - 100), (UIC.Disp_Height - 20))
     hand_view.sort_status_btn = Btn.Button(UIC.White, 900, 25, 225, 25, text='sort by status')
     hand_view.sort_btn = Btn.Button(UIC.White, 900, 75, 225, 25, text='sort by number')
     hand_view.prepare_card_btn = Btn.Button(UIC.White, 400, 15, 345, 25, text='Selected cards -> prepared cards')
@@ -34,6 +38,7 @@ def CreateButtons(hand_view):
     hand_view.pickup_pile_sz = 0
     hand_view.pickup_pile_outline = UIC.outline_colors[0]
     return
+
 
 def ButtonDisplay(hand_view):
     """ This updates draw pile and action buttons. It is called in HandView.update each render cycle. """
@@ -56,6 +61,9 @@ def ButtonDisplay(hand_view):
     if hand_view.controller._state.round == -1:
         hand_view.ready_yes_btn.draw(hand_view.display, hand_view.ready_yes_btn.outline_color)
         hand_view.ready_no_btn.draw(hand_view.display, hand_view.ready_no_btn.outline_color)
+    else:
+        hand_view.labelMedium(str(Meld_Threshold[hand_view.controller._state.round]) + "points to meld",
+                              hand_view.round_indicator_xy[0], hand_view.round_indicator_xy[1])
     hand_view.sort_status_btn.draw(hand_view.display, hand_view.sort_status_btn.outline_color)
     hand_view.sort_btn.draw(hand_view.display, hand_view.sort_btn.outline_color)
     hand_view.prepare_card_btn.draw(hand_view.display, hand_view.prepare_card_btn.outline_color)
@@ -71,7 +79,6 @@ def ClickedButton(hand_view, pos):
     if hand_view.pickup_pile_sz > 0:
         if hand_view.pickup_pile.isOver(pos):
             hand_view.controller.pickUpPile()
-            HandManagement.PreparedCardsPlayed(hand_view)
     if hand_view.draw_pile.isOver(pos):
         hand_view.controller.draw()
     elif hand_view.sort_btn.isOver(pos):
@@ -107,7 +114,6 @@ def ClickedButton(hand_view, pos):
         # take care of assigning values and marking wilds as prepared.
     elif hand_view.play_prepared_cards_btn.isOver(pos):
         hand_view.controller.play()
-        HandManagement.PreparedCardsPlayed(hand_view)
     elif hand_view.clear_prepared_cards_btn.isOver(pos):
         hand_view.controller.clearPreparedCards()
         hand_view.hand_info = HandManagement.ClearPreparedCardsInHandView(hand_view.hand_info)
@@ -125,8 +131,8 @@ def ClickedButton(hand_view, pos):
         hand_view.not_ready_color_idx = 8  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
     elif hand_view.controller._state.round == -1 and hand_view.ready_no_btn.isOver(pos):
         hand_view.controller.setReady(False)
-        # comment out next line and the line above where hand_view.last_round_hand is defined
-        # if you don't want last round's hand to reappear.
+        # if you don't want last round's hand to reappear, then
+        # comment out line about 7 lines above this where hand_view.last_round_hand is defined
         hand_view.hand_info = hand_view.last_round_hand
         hand_view.ready_color_idx = 2  # color of outline will be: UIC.outline_colors(ready_color_idx)
         hand_view.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(not_ready_color_idx)

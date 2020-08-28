@@ -27,7 +27,6 @@ class HandView:
         self.display = display
         self.deal_size = Deal_Size
         self.hand_scaling = (UIC.scale, UIC.Card_Spacing)
-        self.refresh_flag = False
         self.current_hand = []
         self.last_hand = []
         self.hand_info = []          # will contain UICardWrapped elements of current_hand
@@ -42,7 +41,11 @@ class HandView:
         self.ready_color_idx = 2
         self.not_ready_color_idx = 6
         # --- Hand And Foot Specific:
-        self.betweenrounds = ['Welcome to a new game.  This is the round of ' + str(Meld_Threshold[0]) + '.',
+        # if someone joins between rounds, then they won't know the meld requirement until the round begins because
+        # self.controller._state.round = =1 until play commences.  At that point the help_text is no longer printed.
+        # Correct meld requirement will be written in lower right corner once play commences.
+        self.help_text = ['Welcome to a new game.  First round meld requirement is: '
+                          + str(Meld_Threshold[self.round_index]) + '.',
                               'To draw click on the deck of cards (upper left).',
                               'To discard select ONE card & double click on discard button. ',
                               'To pick up pile PREPARE necessary cards & then click on discard pile. ',
@@ -54,15 +57,22 @@ class HandView:
         """This updates the view of the hand, between rounds it displays a message. """
 
         if self.controller._state.round == -1:
-            self.mesgBetweenRounds(self.betweenrounds)
+            self.mesgBetweenRounds(self.help_text)
             if self.round_advance:
                 self.round_index = self.round_index + 1
                 if self.round_index < len(Meld_Threshold):
-                    self.betweenrounds[0] = 'This is the round of ' + str(Meld_Threshold[self.round_index]) + ' ! '
+                    self.help_text[0] = 'This is the round of ' + str(Meld_Threshold[self.round_index]) + ' ! '
                 else:
-                    self.betweenrounds = ['Game has concluded. Scores for each round can be found in command window.']
+                    self.help_text = ['Game has concluded. Scores for each round can be found in command window.']
                 self.round_advance = False
         else:
+            if not self.round_index == self.controller._state.round:
+                # Need this to true up round_index if a player joins mid-game.
+                skipped_rounds =  self.controller._state.round - self.round_index
+                for idx in range(skipped_rounds):
+                    score = 0
+                    self.controller.lateJoinScores(score)
+                self.round_index = self.controller._state.round
             self.round_advance = True
             # reset outline colors on ready buttons to what they need to be at the start of the "between rounds" state.
             self.ready_color_idx = 2
@@ -74,9 +84,6 @@ class HandView:
         elif not self.last_hand == self.current_hand:
             self.hand_info = HandManagement.WrapHand(self, self.current_hand, self.hand_info)
         HandManagement.ShowHolding(self, self.hand_info)  # displays hand
-        if self.refresh_flag:  # if needed to rescale card size, then refreshXY again.
-            # Todo: Do we need refresh_flag at all??
-            self.hand_info = HandManagement.RefreshXY(self, self.hand_info)
         HandAndFootButtons.ButtonDisplay(self)
 
     def nextEvent(self):
