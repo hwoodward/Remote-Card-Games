@@ -26,7 +26,7 @@ def RunClient():
     host, port = hostinfo.split(":")
     print(host)
     print(port)
-    ruleset = str(input("Enter the ruleset[HandAndFoot] ") or "HandAndFoot")
+    ruleset = str(input("Enter the ruleset[Liverpool] ") or "Liverpool")
     print(ruleset)
     connection.DoConnect((host, int(port)))
     clientState = ClientState(ruleset)

@@ -3,7 +3,8 @@ import textwrap
 import client.Button as Btn
 from client.ClickableImage import ClickableImage as ClickImg
 from client.CreateDisplay import CreateDisplay
-import client.HandAndFootButtons as HandAndFootButtons
+# import client.HandAndFootButtons as HandAndFootButtons
+import client.LiverpoolButtons as LiverpoolButtons
 import client.HandManagement as HandManagement
 from client.UICardWrapper import UICardWrapper
 import client.UIConstants as UIC
@@ -16,9 +17,9 @@ class HandView:
     """This class handles player's cards and enables actions.
 
     Actions are primarily performed using buttons, since these need to somewhat customized by game
-    the buttons are in HandAndFootButtons.py (it is Hand And Foot Specific).
+    the buttons are in LiverpoolButtons.py.
     Management of displaying the hand's cards is not game specific, and methods that help with that
-    are in HandManagement.py
+    are in HandManagement.py.
 
     Player can arrange their own hand, and prepare to play cards during other players' turns.
     """
@@ -51,7 +52,7 @@ class HandView:
                               'To pick up pile PREPARE necessary cards & then click on discard pile. ',
                               "Cumulative score will display beneath player's cards",
                               'When ready to start playing click on the YES button on the lower right.']
-        HandAndFootButtons.CreateButtons(self)
+        LiverpoolButtons.CreateButtons(self)
 
     def update(self):
         """This updates the view of the hand, between rounds it displays a message. """
@@ -84,7 +85,7 @@ class HandView:
         elif not self.last_hand == self.current_hand:
             self.hand_info = HandManagement.WrapHand(self, self.current_hand, self.hand_info)
         HandManagement.ShowHolding(self, self.hand_info)  # displays hand
-        HandAndFootButtons.ButtonDisplay(self)
+        LiverpoolButtons.ButtonDisplay(self)
 
     def nextEvent(self):
         """This submits the next user input to the controller,
@@ -106,7 +107,7 @@ class HandView:
                 quit()
 
             if self.event.type == pygame.MOUSEBUTTONDOWN:
-                HandAndFootButtons.ClickedButton(self, pos)
+                LiverpoolButtons.ClickedButton(self, pos)
                 for element in self.hand_info:
                     # cannot select prepared cards, so not included in logic below.
                     if element.img_clickable.isOver(pos):
@@ -118,7 +119,7 @@ class HandView:
                             element.img_clickable.changeOutline(2)
 
             elif self.event.type == pygame.MOUSEMOTION:
-                HandAndFootButtons.MouseHiLight(self, pos)
+                LiverpoolButtons.MouseHiLight(self, pos)
                 HandManagement.MouseHiLight(self.hand_info, pos)
             elif self.event.type == pygame.KEYDOWN and self.num_wilds > 0:
                 HandManagement.ManuallyAssign(self)
