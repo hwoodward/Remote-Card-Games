@@ -13,12 +13,14 @@ Game_Name = "Hand and Foot"
 Draw_Size = 2
 Pickup_Size = 8
 Discard_Size = 1
+play_pick_up = True  # must play some cards upon picking up the pile.
 
 Meld_Threshold = [50, 90, 120, 150]
 Number_Rounds = len(Meld_Threshold)  # For convenience
 
 Deal_Size = 11
 Hands_Per_Player = 2
+notes = ["You can only pick up the pile at the start of your turn."]
 
 
 def numDecks(numPlayers):
@@ -110,7 +112,7 @@ def canPickupPile(top_card, prepared_cards, played_cards, round_index):
         temp_prepared[key] = [x for x in card_group]
         if key == top_key:
             temp_prepared[key].append(top_card)
-    return canPlay(temp_prepared, played_cards, round_index)
+    return canPlay(temp_prepared, played_cards, round_index), True # Hand And Foot prepared cards are played.
 
 
 def canPlay(prepared_cards, played_cards, round_index):

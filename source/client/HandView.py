@@ -3,27 +3,37 @@ import textwrap
 import client.Button as Btn
 from client.ClickableImage import ClickableImage as ClickImg
 from client.CreateDisplay import CreateDisplay
-# import client.HandAndFootButtons as HandAndFootButtons
-import client.LiverpoolButtons as LiverpoolButtons
+import client.LiverpoolButtons as RuleSetsButtons_LP
+import client.HandAndFootButtons as RuleSetsButtons_HF
 import client.HandManagement as HandManagement
 from client.UICardWrapper import UICardWrapper
 import client.UIConstants as UIC
 from common.Card import Card
-from common.HandAndFoot import Deal_Size
-from common.HandAndFoot import Meld_Threshold
+from common.Liverpool import Deal_Size
+from common.Liverpool import Meld_Threshold as Meld_Threshold_LP
+from common.HandAndFoot import Meld_Threshold as Meld_Threshold_HF
 
 
 class HandView:
     """This class handles player's cards and enables actions.
 
     Actions are primarily performed using buttons, since these need to somewhat customized by game
-    the buttons are in LiverpoolButtons.py.
+    the buttons are in ***.py (*** is Liverpool or HandAndFoot) and are imported as RuleSetsButtons.
     Management of displaying the hand's cards is not game specific, and methods that help with that
     are in HandManagement.py.
 
     Player can arrange their own hand, and prepare to play cards during other players' turns.
     """
-    def __init__(self, controller, display):
+    def __init__(self, controller, display, ruleset):
+        self.ruleset = ruleset
+        if ruleset == 'Liverpool':
+            self.Meld_Threshold = Meld_Threshold_LP
+            self.RuleSetsButtons = RuleSetsButtons_LP
+        elif ruleset == 'HandAndFoot':
+            self.Meld_Threshold = Meld_Threshold_HF
+            self.RuleSetsButtons = RuleSetsButtons_HF
+        else:
+            self.Meld_Threshold = 'NO MELD THRESHOLD SET'
         self.controller = controller
         self.display = display
         self.deal_size = Deal_Size
@@ -39,30 +49,37 @@ class HandView:
         self.selected_list = []
         self.round_index = 0
         self.round_advance = False
+        # In liverpool: prepare cards buttons must be updated each round, after all players present
+        self.need_updated_buttons = True
         self.ready_color_idx = 2
         self.not_ready_color_idx = 6
         # --- Hand And Foot Specific:
         # if someone joins between rounds, then they won't know the meld requirement until the round begins because
-        # self.controller._state.round = =1 until play commences.  At that point the help_text is no longer printed.
+        # self.controller._state.round = -1 until play commences.  At that point the help_text is no longer printed.
         # Correct meld requirement will be written in lower right corner once play commences.
-        self.help_text = ['Welcome to a new game.  First round meld requirement is: '
-                          + str(Meld_Threshold[self.round_index]) + '.',
+        # For Liverpool the correct "prepare cards" buttons must be created, so I don't think it will support a player
+        # joining in the middle, unless they know what round they're joining in.
+        # Todo: implement solution where when you start game and enter liverpool, also asked to enter round number
+        #  May need to clarify that round 0 = round with 2 sets to meld.
+        # help_text is game specific.  May wish to move it to Ruleset.
+        self.help_text = ['Welcome to a the game.  Meld requirement is: '
+                          + str(self.Meld_Threshold[self.round_index]) + '.',
                               'To draw click on the deck of cards (upper left).',
                               'To discard select ONE card & double click on discard button. ',
-                              'To pick up pile PREPARE necessary cards & then click on discard pile. ',
+                              'To pick up discard, or attempt to buy discard, click on discard pile. ',
                               "Cumulative score will display beneath player's cards",
                               'When ready to start playing click on the YES button on the lower right.']
-        LiverpoolButtons.CreateButtons(self)
+        self.RuleSetsButtons.CreateButtons(self)
 
-    def update(self):
+    def update(self, num_players=1):
         """This updates the view of the hand, between rounds it displays a message. """
-
         if self.controller._state.round == -1:
             self.mesgBetweenRounds(self.help_text)
             if self.round_advance:
                 self.round_index = self.round_index + 1
-                if self.round_index < len(Meld_Threshold):
-                    self.help_text[0] = 'This is the round of ' + str(Meld_Threshold[self.round_index]) + ' ! '
+                if self.round_index < len(self.Meld_Threshold):
+                    self.help_text[0] = 'This is the round of ' + str(self.Meld_Threshold[self.round_index]) + ' ! '
+                    self.need_updated_buttons = True
                 else:
                     self.help_text = ['Game has concluded. Scores for each round can be found in command window.']
                 self.round_advance = False
@@ -71,9 +88,14 @@ class HandView:
                 # Need this to true up round_index if a player joins mid-game.
                 skipped_rounds =  self.controller._state.round - self.round_index
                 for idx in range(skipped_rounds):
+                    # todo:  How to score latecomers should be moved to ruleset.
                     score = 0
                     self.controller.lateJoinScores(score)
                 self.round_index = self.controller._state.round
+            # For Liverpool need to recreate 'prepare cards' buttons when commence each round.
+            if self.ruleset == 'Liverpool' and self.need_updated_buttons:
+                self.RuleSetsButtons.newRound(self, self.Meld_Threshold[self.round_index], num_players)
+                self.need_updated_buttons = False
             self.round_advance = True
             # reset outline colors on ready buttons to what they need to be at the start of the "between rounds" state.
             self.ready_color_idx = 2
@@ -85,7 +107,7 @@ class HandView:
         elif not self.last_hand == self.current_hand:
             self.hand_info = HandManagement.WrapHand(self, self.current_hand, self.hand_info)
         HandManagement.ShowHolding(self, self.hand_info)  # displays hand
-        LiverpoolButtons.ButtonDisplay(self)
+        self.RuleSetsButtons.ButtonDisplay(self)
 
     def nextEvent(self):
         """This submits the next user input to the controller,
@@ -107,7 +129,7 @@ class HandView:
                 quit()
 
             if self.event.type == pygame.MOUSEBUTTONDOWN:
-                LiverpoolButtons.ClickedButton(self, pos)
+                self.RuleSetsButtons.ClickedButton(self, pos)
                 for element in self.hand_info:
                     # cannot select prepared cards, so not included in logic below.
                     if element.img_clickable.isOver(pos):
@@ -119,7 +141,7 @@ class HandView:
                             element.img_clickable.changeOutline(2)
 
             elif self.event.type == pygame.MOUSEMOTION:
-                LiverpoolButtons.MouseHiLight(self, pos)
+                self.RuleSetsButtons.MouseHiLight(self, pos)
                 HandManagement.MouseHiLight(self.hand_info, pos)
             elif self.event.type == pygame.KEYDOWN and self.num_wilds > 0:
                 HandManagement.ManuallyAssign(self)

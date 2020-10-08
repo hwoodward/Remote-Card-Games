@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['RunClient.py'],
-             pathex=['C:\\Users\\sheri\\Documents\\GitHub\\Remote-Card-Games\\source'],
+             pathex=['C:\\Users\\sheri\\Documents\\git2_liverpool\\Remote-Card-Games\\source'],
              binaries=[],
              datas=[],
              hiddenimports=[],

@@ -33,6 +33,12 @@ def WrapHand(hand_view, updated_hand, wrapped_hand):
             if newcard:
                 card_xy = (card_xy[0] + hand_view.hand_scaling[1], card_xy[1])
                 card_wrapped = UICardWrapper(card, card_xy, hand_view.hand_scaling[0])
+                card_wrapped.key = UICardWrapper.sortKey(card_wrapped, 0)
+                #todo - above used for H&F, see if need to update further for H&F to still run.
+                card_wrapped.key = card_wrapped.sortKey(0)
+                # todo: in HandAndFoot, edit  so that key is set here instead of in UICardWrapper.
+                card_wrapped.key_LP = [card_wrapped.sortKey(1), card_wrapped.sortKey(2),
+                                       card_wrapped.sortKey(3), card_wrapped.sortKey(4) ]
             updated_wrapped_hand.append(card_wrapped)
         # Should now have all the cards in the updated hand properly wrapped.
         # sort cards by location, so they will display more attractively and so RefreshXY will work properly if called.

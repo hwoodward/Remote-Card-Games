@@ -83,18 +83,21 @@ class Controller(ConnectionListener):
         #Transition phase immediately to avoid double draw
         self._state.turn_phase = Turn_Phases[3]
     
-    def pickUpPile(self):
+    def pickUpPile(self, note):
         """Attempt to pick up the pile"""
         if self._state.turn_phase != Turn_Phases[1]:
-            self.note = "You can only pick up the pile at the start of your turn"
+            self.note = note
             return
         try:
             self._state.pickupPileRuleCheck(self.prepared_cards)
         except Exception as err:
             self.note = "{0}".format(err)
         else:
-            self._state.turn_phase = Turn_Phases[2] #Set turn phase to reflect forced action
-            self.note = "Waiting for new cards to make required play"
+            if self._state.rules.play_pick_up:
+                self._state.turn_phase = Turn_Phases[2] #Set turn phase to reflect forced action
+                self.note = "Waiting for new cards to make required play"
+            else:
+                self._state.turn_phase = Turn_Phases[3] # Liverpool doesn't force actions upon pile pickup.
             connection.Send({"action": "pickUpPile"})
 
     def makeForcedPlay(self, top_card):

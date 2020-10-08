@@ -90,8 +90,8 @@ class ClientState:
         """Confirm a player can pick up the pile with the prepared cards"""
         # check there are enough cards
         if self.discard_info[1] < self.rules.Pickup_Size:
-            raise Exception("Cannot pickup the pile until there are 8 cards")
-        # check prepared cards meet the forced play requirements
+            text = 'Cannot pickup the pile until there are ' + str(self.rules.Pickup_Size) + ' cards.'
+            raise Exception(text)
         return self.rules.canPickupPile(self.discard_info[0], prepared_cards, self.played_cards, self.round)
 
     def discardCards(self, card_list):

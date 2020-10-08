@@ -2,6 +2,7 @@ import pygame
 import client.Button as Btn
 from client.ClickableImage import ClickableImage as ClickImg
 from common.HandAndFoot import Meld_Threshold
+from common.HandAndFoot import notes
 import client.HandManagement as HandManagement
 import client.UIConstants as UIC
 from client.UICardWrapper import UICardWrapper
@@ -78,7 +79,7 @@ def ClickedButton(hand_view, pos):
     """  Carry out action after mouse clicked on button. """
     if hand_view.pickup_pile_sz > 0:
         if hand_view.pickup_pile.isOver(pos):
-            hand_view.controller.pickUpPile()
+            hand_view.controller.pickUpPile(notes[0])
     if hand_view.draw_pile.isOver(pos):
         hand_view.controller.draw()
     elif hand_view.sort_btn.isOver(pos):
@@ -90,7 +91,7 @@ def ClickedButton(hand_view, pos):
         )
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.prepare_card_btn.isOver(pos):
-        hand_view.already_prepared_cards = hand_view.controller.getPreparedCards()
+        # CodeReview note: Removed some lines that are no longer necessary now that deck is defined and cards are unique.
         hand_view.wrapped_cards_to_prep = hand_view.gatherSelected()
         hand_view.wild_cards = hand_view.controller.automaticallyPrepareCards(hand_view.wrapped_cards_to_prep)
         # wild_cards contains a list of lists.
@@ -99,13 +100,9 @@ def ClickedButton(hand_view, pos):
         #       wild_cards[k][0] rank should be 0 or 2 (a wild card) for all k.
         #       wild_cards[k][1] is list of playable card values: [1,4,5,6,7,8,9,10,11,12,13]
         hand_view.num_wilds = len(hand_view.wild_cards)
-        hand_view.newly_prepped_cards = hand_view.controller.getPreparedCards()
-        for element in hand_view.already_prepared_cards:
-            hand_view.newly_prepped_cards.remove(element)
-        # hand_view newly_prepped_cards is now all prepared cards minus already_prepared_cards
+        hand_view.prepped_cards = hand_view.controller.getPreparedCards()
         for wrappedcard in hand_view.wrapped_cards_to_prep:
-            if wrappedcard.card in hand_view.newly_prepped_cards:
-                hand_view.newly_prepped_cards.remove(wrappedcard.card)
+            if wrappedcard.card in hand_view.prepped_cards:
                 wrappedcard.status = 2
                 wrappedcard.img_clickable.changeOutline(4)
         # This concludes handling of the automatically prepared cards.

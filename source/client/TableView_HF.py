@@ -5,11 +5,10 @@ import client.UIConstants as UIC
 from common.Card import Card
 
 
-class TableView(ConnectionListener):
+class TableView_HF(ConnectionListener):
     """ This displays publicly available info on all the players.
 
-    It is Hand And Foot Specific.  Once ready to properly display Liverpool, then modify this so that playerByPlayer
-    has options depending on rule set OR so that there are two versions of playerByPlayer.
+    It is Hand And Foot Specific
     """
 
     def __init__(self, display):
