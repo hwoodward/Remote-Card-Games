@@ -14,6 +14,9 @@ Draw_Size = 2
 Pickup_Size = 8
 Discard_Size = 1
 play_pick_up = True  # must play some cards upon picking up the pile.
+# isWild method not working in TableView so added wildnumbers. this statement
+#todo: figure out issue with TableView.
+wild_numbers = [0, 2]
 
 Meld_Threshold = [50, 90, 120, 150]
 Number_Rounds = len(Meld_Threshold)  # For convenience
@@ -35,7 +38,7 @@ def singleDeck(n):
 
 def isWild(card):
     """returns true if a card is a wild"""
-    if card.number in [0, 2]:
+    if card.number in wild_numbers:
         return True
     else:
         return False

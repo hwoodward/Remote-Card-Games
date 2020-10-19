@@ -9,7 +9,8 @@ import client.HandManagement as HandManagement
 from client.UICardWrapper import UICardWrapper
 import client.UIConstants as UIC
 from common.Card import Card
-from common.Liverpool import Deal_Size
+from common.Liverpool import Deal_Size as Deal_Size_LP
+from common.HandAndFoot import Deal_Size as Deal_Size_HF
 from common.Liverpool import Meld_Threshold as Meld_Threshold_LP
 from common.HandAndFoot import Meld_Threshold as Meld_Threshold_HF
 
@@ -29,14 +30,16 @@ class HandView:
         if ruleset == 'Liverpool':
             self.Meld_Threshold = Meld_Threshold_LP
             self.RuleSetsButtons = RuleSetsButtons_LP
+            self.deal_size = Deal_Size_LP
+            self.buttons_per_player = self.Meld_Threshold[0][0] +  self.Meld_Threshold[0][1]
         elif ruleset == 'HandAndFoot':
             self.Meld_Threshold = Meld_Threshold_HF
             self.RuleSetsButtons = RuleSetsButtons_HF
+            self.deal_size = Deal_Size_HF
         else:
-            self.Meld_Threshold = 'NO MELD THRESHOLD SET'
+            print(ruleset + ' is not supported')
         self.controller = controller
         self.display = display
-        self.deal_size = Deal_Size
         self.hand_scaling = (UIC.scale, UIC.Card_Spacing)
         self.current_hand = []
         self.last_hand = []
@@ -48,8 +51,10 @@ class HandView:
         self.wild_cards = []
         self.selected_list = []
         self.round_index = 0
+        self.player_index = 0
         self.round_advance = False
-        # In liverpool: prepare cards buttons must be updated each round, after all players present
+        # In liverpool: prepare cards buttons must be updated each round
+        self.num_players = 1
         self.need_updated_buttons = True
         self.ready_color_idx = 2
         self.not_ready_color_idx = 6
@@ -59,8 +64,9 @@ class HandView:
         # Correct meld requirement will be written in lower right corner once play commences.
         # For Liverpool the correct "prepare cards" buttons must be created, so I don't think it will support a player
         # joining in the middle, unless they know what round they're joining in.
-        # Todo: implement solution where when you start game and enter liverpool, also asked to enter round number
-        #  May need to clarify that round 0 = round with 2 sets to meld.
+        # Todo: implement solution where when you start game and enter liverpool, you are also asked to enter
+        #  round number.  May need to clarify that round 0 = round with 2 sets to meld.
+        #
         # help_text is game specific.  May wish to move it to Ruleset.
         self.help_text = ['Welcome to a the game.  Meld requirement is: '
                           + str(self.Meld_Threshold[self.round_index]) + '.',
@@ -71,8 +77,18 @@ class HandView:
                               'When ready to start playing click on the YES button on the lower right.']
         self.RuleSetsButtons.CreateButtons(self)
 
-    def update(self, num_players=1):
+    def update(self, player_index=0, num_players=1, visible_cards = []):
         """This updates the view of the hand, between rounds it displays a message. """
+        '''
+        player_index and num_players needed for Liverpool.
+        self.this_player_name = this_player_name
+        self.player_names = player_names
+        self.player_index = player_names.index(this_player_name)
+        '''
+        self.visible_cards = visible_cards
+        # this is a list (one per player) of dictionaries (one key per player button)
+        self.player_index = player_index
+        self.num_players = num_players # len(player_names)
         if self.controller._state.round == -1:
             self.mesgBetweenRounds(self.help_text)
             if self.round_advance:
@@ -88,13 +104,13 @@ class HandView:
                 # Need this to true up round_index if a player joins mid-game.
                 skipped_rounds =  self.controller._state.round - self.round_index
                 for idx in range(skipped_rounds):
-                    # todo:  How to score latecomers should be moved to ruleset.
+                    #todo:  How to score latecomers should be moved to ruleset.
                     score = 0
                     self.controller.lateJoinScores(score)
                 self.round_index = self.controller._state.round
             # For Liverpool need to recreate 'prepare cards' buttons when commence each round.
             if self.ruleset == 'Liverpool' and self.need_updated_buttons:
-                self.RuleSetsButtons.newRound(self, self.Meld_Threshold[self.round_index], num_players)
+                self.RuleSetsButtons.newRound(self, self.Meld_Threshold[self.round_index])
                 self.need_updated_buttons = False
             self.round_advance = True
             # reset outline colors on ready buttons to what they need to be at the start of the "between rounds" state.

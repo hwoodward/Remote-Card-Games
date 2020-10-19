@@ -11,6 +11,7 @@ class ClientState:
 
     def __init__(self, ruleset = None):
         """Initialize a state tracker for a given client"""
+        self.ruleset = ruleset
         if ruleset is not None:
             rule_module = "common." + ruleset
         else:
@@ -23,7 +24,13 @@ class ClientState:
         self.turn_phase = 'inactive'  # hard coded start phase as 'not my turn'
         self.round = -1  # Start with the 'no current round value'
         self.name = "guest"
+        self.player_index = 0 # needed for Liverpool.
         self.reset()  # Start with state cleared for a fresh round
+        # Will need to know player index in Liverpool because prepare cards buttons shared.
+
+    def getPlayerIndex(self, player_names):
+        """Store the extra hands dealt to player for use after first hand is cleared"""
+        self.player_index = player_names.index(self.name)
 
     def dealtHands(self, hands):
         """Store the extra hands dealt to player for use after first hand is cleared"""
@@ -66,9 +73,11 @@ class ClientState:
         for card in card_list:
             self.hand_cards.append(card)
 
-    def playCards(self, prepared_cards):
+    def playCards(self, prepared_cards, player_index = 0, visible_cards=[{}]):
         """Move cards from hand to visible"""
-        # First check that all the cards are in your hand
+        #todo: in this method should I rename visible_cards to cards_on_board ?
+        # First check that all the cards are in your hand.
+        print('in ClientState.py, playCards method')
         tempHand = [x for x in self.hand_cards]
         try:
             for card_group in prepared_cards.values():
@@ -76,11 +85,28 @@ class ClientState:
                     tempHand.remove(card)
         except ValueError:
             raise Exception("Attempted to play cards that are not in your hand")
-        self.rules.canPlay(prepared_cards, self.played_cards, self.round)
-        for key, card_group in prepared_cards.items():
-            for card in card_group:
-                self.hand_cards.remove(card)
-                self.played_cards.setdefault(key, []).append(card)
+        #todo: put variable in rulesets regarding whether you can play on others groups.
+        # for HandAndFoot it would be false, and for Liverpool it would be true.
+        # that would determine whether self.played_cards = visible cards or cards that player played.
+        if self.ruleset == 'HandAndFoot':
+            self.rules.canPlay(prepared_cards, self.played_cards, self.round)
+            for key, card_group in prepared_cards.items():
+                for card in card_group:
+                    self.hand_cards.remove(card)
+                    self.played_cards.setdefault(key, []).append(card)
+        elif self.ruleset == 'Liverpool':
+            self.rules.canPlay(prepared_cards, visible_cards, self.round, player_index)
+            for key, card_group in prepared_cards.items():
+                for card in card_group:
+                    self.hand_cards.remove(card)
+                    self.played_cards.setdefault(key, []).append(card)
+                    # todo:  Need to replace local record of played_cards with visible cards.
+                    # This will have ripple effects in rules when merging played cards with visible cards.
+                #TODO: debug THE NEXT 2 LINES!!!
+                #  self.played_cards = visible_card[key0][key1]
+                # self.played_cards.setdefault(key[1], []).append(card)
+        print('at line 108 in clientState, played_cards: ')
+        print(self.played_cards)
     
     def getValidKeys(self, card):
         """Get the keys that this card can be prepared with"""

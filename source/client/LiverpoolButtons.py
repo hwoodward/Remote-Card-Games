@@ -12,12 +12,13 @@ If a button is clicked, then typically 1 or 2 methods are called. The first init
 and when necessary a 2nd updates the display to reflect the action taken.  
 Discards are confirmed within the GUI, and that code is currently split between this file and HandView.
 
-This file is Liverpool specific because different games may need additional buttons, and may need them arranged
+This file is game specific because different games need different buttons, and may need them arranged
  differently, but most of this code should be useful for other games.
 """
 
 
-def CreateButtons(hand_view):
+def CreateButtons(hand_view, num_players=1):
+    hand_view.num_players = num_players
     """This creates the buttons and text used for game. """
     hand_view.draw_pile = ClickImg(UIC.Back_Img, 10, 25, UIC.Back_Img.get_width(), UIC.Back_Img.get_height(), 0)
     hand_view.ready_yes_btn = \
@@ -34,9 +35,11 @@ def CreateButtons(hand_view):
     hand_view.sort_ah_btn = Btn.Button(UIC.White, 1025, 75, 100, 20, text=' (Aces high)')
     #  For liverpool need multiple buttons to assign cards to appropriate set/run.
     #  and need to do this at beginning of each round, so those buttons are in separate method: newRound
-    hand_view.btn_keys = []
-    hand_view.assign_cards_btns = {} # [[]]
-    hand_view.assigned_cards = {}
+    # btns = a list  of lists. Index of outer list = player_index for each player, index of inner list = # of group.
+    hand_view.assign_cards_btns = [[]]
+    # assigned cards is a list of dictionaries.
+    # Index of list = player_index for each player, key of dictionary= # of button (set or run).
+    hand_view.assigned_cards = [] # this will be a list of dictionaries. Key inside dictionaries will be set/run no.
     hand_view.clear_prepared_cards_btn = Btn.Button(UIC.White, 320, 53, 225, 25, text='Clear prepared cards')
     hand_view.clear_selected_cards_btn = Btn.Button(UIC.White, 200, 90, 225, 25, text='Clear selected cards')
     hand_view.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 53, 225, 25, text='Play prepared cards')
@@ -47,43 +50,67 @@ def CreateButtons(hand_view):
     return
 
 
-def newRound(hand_view, sets_runs_tuple, num_players=1):
+def newRound(hand_view, sets_runs_tuple):
     """ At start of each round this creates buttons used to assign cards."""
 
+    # Currently
     # Unlike columns for players (found in TableView.playerByPlayer)
     # it does not refresh if a player leaves mid-round.
-    # todo: consider whether it should update if a player leaves mid-round.
+    # Hope to fix that.
 
-    print(sets_runs_tuple)
-    hand_view.assign_cards_btns = {} # []
-    if num_players > 1:
-        players_sp_w = UIC.Disp_Width / num_players
+    #  For liverpool need multiple buttons to assign cards to appropriate set/run.
+    #  and need to do this at beginning of each round, so those buttons are in separate method: newRound
+    # btns = a list  of lists. Index of outer list = player_index for each player, index of inner list = # of group.
+    hand_view.buttons_per_player = sets_runs_tuple[0] + sets_runs_tuple[1]
+    hand_view.assign_cards_btns = [[]]
+    w = 75  # width of following buttons
+    h = 25  # height of following buttons
+    # assigned cards is a list of dictionaries.
+    # Index of list = player_index for each player, key of dictionary= # of group.
+    hand_view.assigned_cards = [] # [{}]
+    if hand_view.num_players > 1:
+        players_sp_w = UIC.Disp_Width / hand_view.num_players
     else:
         players_sp_w = UIC.Disp_Width
     players_sp_h = UIC.Disp_Height / 8
     players_sp_top = (UIC.Disp_Height / 5) + players_sp_h
-    for idx in range(num_players):
-        w = 75  # width of following buttons
-        h = 25  # height of following buttons
+    for idx in range(hand_view.num_players):
+        hand_view.assign_cards_btns.append([])
+        hand_view.assigned_cards.append({})
+        print('at line 80')
+        print(hand_view.assigned_cards)
+        # hand_view.assigned_cards[idx] = a dictionary with an entry for each set/run (for each button).
         for setnum in range(sets_runs_tuple[0]):
+            hand_view.assign_cards_btns[idx].append([])
             txt = "set " + str(setnum+1)
             x = 100 + (players_sp_w*idx)
             y = players_sp_top + (players_sp_h*setnum)
             prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
-            btn_key = (idx, setnum)
-            hand_view.btn_keys.append(btn_key)
-            hand_view.assign_cards_btns[btn_key] = prepare_card_btn
-            hand_view.assigned_cards[btn_key] = []  # this list will contain cards in a set.
+            hand_view.assign_cards_btns[idx][setnum] = prepare_card_btn
+            hand_view.assigned_cards[idx][setnum]= []  # key setnum in dictionary is an empty list now,  a set later.
+            # note that in controller prepared_cards is single dictionary, and
+            # keys are (idx, setnum)
+            # ''' debugging:
+            print('at line 88 in liverpool buttons')
+            print(hand_view.assigned_cards)
+            print(hand_view.assigned_cards[idx])
+            print(hand_view.assigned_cards[idx][setnum])
         for runnum in range(sets_runs_tuple[1]):
+            hand_view.assign_cards_btns[idx].append([])
             txt = "run " + str(runnum+1)
             jdx = sets_runs_tuple[0] + runnum
             x = 100 + (players_sp_w * idx)
             y = players_sp_top + (players_sp_h * jdx)
             prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
-            btn_key = (idx, jdx)
-            hand_view.btn_keys.append(btn_key)
-            hand_view.assign_cards_btns[btn_key] = prepare_card_btn
-            hand_view.assigned_cards[btn_key] = []  # this list will contain cards in a run.
+            hand_view.assign_cards_btns[idx][jdx] = prepare_card_btn
+            hand_view.assigned_cards[idx][jdx] = []  # key jdx in dictionary is an empty list now,  a run later..
+            ''' debug: '''
+            print('debug in Liverpool buttons line95 ' + str(idx) + ' ' + str(jdx) + txt)
+            print('at line 105 in liverpool buttons')
+            print(hand_view.assigned_cards)
+            print(hand_view.assigned_cards[idx])
+            print(hand_view.assigned_cards[idx][setnum])
+            # '''
             #  oneplayers_assignbtns.append(prepare_card_btn)
 
 
@@ -108,14 +135,18 @@ def ButtonDisplay(hand_view):
     if hand_view.controller._state.round == -1:
         hand_view.ready_yes_btn.draw(hand_view.display, hand_view.ready_yes_btn.outline_color)
         hand_view.ready_no_btn.draw(hand_view.display, hand_view.ready_no_btn.outline_color)
+        hand_view.need_updated_button = True # flags that will need to update assign buttons.
     hand_view.sort_status_btn.draw(hand_view.display, hand_view.sort_status_btn.outline_color)
     hand_view.sort_suit_al_btn.draw(hand_view.display, hand_view.sort_suit_al_btn.outline_color)
     hand_view.sort_al_btn.draw(hand_view.display, hand_view.sort_al_btn.outline_color)
     hand_view.sort_suit_ah_btn.draw(hand_view.display, hand_view.sort_suit_ah_btn.outline_color)
     hand_view.sort_ah_btn.draw(hand_view.display, hand_view.sort_ah_btn.outline_color)
-    for key in hand_view.btn_keys:
-        prepare_card_btn = hand_view.assign_cards_btns[key]
-        prepare_card_btn.draw(hand_view.display, prepare_card_btn.outline_color)
+    # todo: check behavior for case when a player drops out
+    if not hand_view.need_updated_buttons:
+        for idx in range(hand_view.num_players):
+            for jdx in range(hand_view.buttons_per_player):
+                prepare_card_btn = hand_view.assign_cards_btns[idx][jdx]
+                prepare_card_btn.draw(hand_view.display, prepare_card_btn.outline_color)
     hand_view.clear_prepared_cards_btn.draw(hand_view.display, hand_view.clear_prepared_cards_btn.outline_color)
     hand_view.clear_selected_cards_btn.draw(hand_view.display, hand_view.clear_selected_cards_btn.outline_color)
     hand_view.play_prepared_cards_btn.draw(hand_view.display, hand_view.play_prepared_cards_btn.outline_color)
@@ -148,7 +179,7 @@ def ClickedButton(hand_view, pos):
         )
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.play_prepared_cards_btn.isOver(pos):
-        hand_view.controller.play()
+        hand_view.controller.play(hand_view.player_index, hand_view.visible_cards)
     elif hand_view.clear_prepared_cards_btn.isOver(pos):
         hand_view.controller.clearPreparedCards()
         hand_view.hand_info = HandManagement.ClearPreparedCardsInHandView(hand_view.hand_info)
@@ -171,33 +202,34 @@ def ClickedButton(hand_view, pos):
         hand_view.hand_info = hand_view.last_round_hand
         hand_view.ready_color_idx = 2  # color of outline will be: UIC.outline_colors(ready_color_idx)
         hand_view.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
-    else:
+    elif not hand_view.need_updated_buttons:
         #  loop through all the buttons which prepare cards by assigning them to a particular run or set
-        #Todo: this currently only supports sets, need to expand to support runs, too.
-        for key in hand_view.btn_keys:
-            prepare_card_btn = hand_view.assign_cards_btns[key]
-            if prepare_card_btn.isOver(pos):
-                # put all selected cards in a list
-                hand_view.wrapped_cards_to_prep = hand_view.gatherSelected()
-                hand_view.wild_cards = hand_view.controller.automaticallyPrepareCards(hand_view.wrapped_cards_to_prep)
-                # wild_cards contains a list of lists.
-                # The outer list contains [card that could not be automatically prepared,
-                # list of possible options for that card]
-                #       wild_cards[k][0] rank should be 0 (a joker)) for all k.
-                #       wild_cards[k][1] is list of playable card values (might be anything in list of 1 to 13).
-                #       Might make wild_cards[k][1] more sophisticated, so to add to a run of spades = [2,3,4,5]
-                #       wild_cards[k][1] would be [1,6,7,8,9,10,11,12,13] << need number > 6 because other cards
-                #       might also be prepared.
-                hand_view.num_wilds = len(hand_view.wild_cards)
-                hand_view.prepped_cards = hand_view.controller.getPreparedCards()
-                for wrappedcard in hand_view.wrapped_cards_to_prep:
-                    if wrappedcard.card in hand_view.prepped_cards:
-                        wrappedcard.status = 2
-                        wrappedcard.img_clickable.changeOutline(4)
-                # This concludes handling of the automatically prepared cards.
-                # If there are cards that could not be automatically prepared, then HandView.nextEvent
-                # will be looking for keystrokes (buttons are not involved), and HandView.assignWilds will
-                # take care of assigning values and marking wilds as prepared.
+        #todo: this currently only supports sets, need to expand to support runs, too.
+        for idx in range(hand_view.num_players):
+            for jdx in range(hand_view.buttons_per_player):
+                if hand_view.assign_cards_btns[idx][jdx].isOver(pos):
+                    # put all selected cards in a list
+                    hand_view.wr_crds_to_prep = hand_view.gatherSelected()
+                    hand_view.wild_cards = hand_view.controller.assignCardsToGroup((idx,jdx), hand_view.wr_crds_to_prep)                   # wild_cards contains wild_cards that could not be automatically assigned. Wilds assigned to sets
+                    # automatically assigned the value of the card.numbers of the naturals in that set.
+                    # Runs are trickier.  hand_view.wild_cards is a list of lists --
+                    #       The outer list contains [card that could not be automatically prepared,
+                    #       list of possible options for that card]
+                    #       wild_cards[k][0] rank should be 0 (a joker)) for all k.
+                    #       wild_cards[k][1] is list of playable card values (might be anything in list of 1 to 13).
+                    #       Might make wild_cards[k][1] more sophisticated, so to add to a run of spades = [2,3,4,5]
+                    #       wild_cards[k][1] would be [1,6,7,8,9,10,11,12,13] << need number > 6 because other cards
+                    #       might also be prepared.
+                    hand_view.num_wilds = len(hand_view.wild_cards)
+                    hand_view.prepped_cards = hand_view.controller.getPreparedCards()
+                    for wrappedcard in hand_view.wr_crds_to_prep:
+                        if wrappedcard.card in hand_view.prepped_cards:
+                            wrappedcard.status = 2
+                            wrappedcard.img_clickable.changeOutline(4)
+                    # This concludes handling of the automatically prepared cards.
+                    # If there are cards that could not be automatically prepared, then HandView.nextEvent
+                    # will be looking for keystrokes (buttons are not involved), and HandView.assignWilds will
+                    # take care of assigning values and marking wilds as prepared.
     return
 
 
@@ -242,13 +274,15 @@ def MouseHiLight(hand_view, pos):
     else:
         hand_view.sort_suit_ah_btn.outline_color = UIC.Gray  # remove highlighted outline
 
-    #  loop through all the assign card buttons
-    for key in hand_view.btn_keys:
-        prepare_card_btn = hand_view.assign_cards_btns[key]
-        if prepare_card_btn.isOver(pos):
-            prepare_card_btn.outline_color = UIC.Black  # set outline color
-        else:
-            prepare_card_btn.outline_color = UIC.Gray  # remove highlighted outline
+    #  loop through all the assign card buttons (they aren't created until round has begun).
+    if not hand_view.need_updated_buttons:
+        for idx in range(hand_view.num_players):
+            for jdx in range(hand_view.buttons_per_player):
+                # prepare_card_btn = hand_view.assign_cards_btns[idx][jdx]
+                if hand_view.assign_cards_btns[idx][jdx].isOver(pos):
+                    hand_view.assign_cards_btns[idx][jdx].outline_color = UIC.Black  # set outline color
+                else:
+                    hand_view.assign_cards_btns[idx][jdx].outline_color = UIC.Gray  # remove highlighted outline
     if hand_view.clear_prepared_cards_btn.isOver(pos):
         hand_view.clear_prepared_cards_btn.outline_color = UIC.Bright_Red  # set outline color
     else:

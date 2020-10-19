@@ -3,7 +3,7 @@ from common.Card import Card
 from PodSixNet.Connection import connection, ConnectionListener
 
 Turn_Phases = ['inactive', 'draw', 'forcedAction', 'play']
-Forbidden_Names = ['guest']
+Forbidden_Names = ['guest','']
 
 class Controller(ConnectionListener):
     """ This client connects to a GameServer which will host a cardgame
@@ -15,42 +15,49 @@ class Controller(ConnectionListener):
 
     def __init__(self, clientState):
         self._state = clientState
-        self.prepared_cards = {} #This is the dict of cards prepared to be played
+        self.prepared_cards = {}     #This is the dict of cards prepared to be played
+        self.prepared_cards_list =[] # liverpool needs list instead of a single dictionary.
         self.setName()
         self.ready = False
         self.note = "Game is beginning."
+        # needed for Liverpool:
+        self.Meld_Threshold = self._state.rules.Meld_Threshold
+        self.player_index = 0
 
     ### Player Actions ###
     def setName(self):
         """Set up a display name and send it to the server"""
 
         # to prevent duplicate names, displayname = 'guest' is forbidden.
+        # Forbidden names are defined at the beginning of this controller.
         # May as well allow other names to be forbidden, too (for fun :) )
         # if name is in list of forbidden names, then changeName is called.
         displayName = input("Enter a display name: ")
         if displayName in Forbidden_Names:
-            self.note = "Sorry, but that name is forbidden."
-            self.changeName()
+            self.note = "Sorry, but that name ('"+displayName+"') is forbidden."
+            self._state.name = self.changeName()
         else:
             self._state.name = displayName
             connection.Send({"action": "displayName", "name": displayName})
 
     def checkNames(self, player_names):
         # Check that no names are duplicated.
-        if player_names.count(self._state.name) > 1 :
+        moniker = self._state.name
+        if player_names.count(moniker) > 1 :
             self.note = self._state.name + ' is already taken.'
-            self.changeName()
+            moniker = self.changeName()
+        return moniker
 
     def changeName(self):
         # Check that no names are duplicated.
         name2 = "Bob" + str(random.randint(101, 999))
         self.note =self.note + ' ' + self._state.name + ' you shall now be named: ' + name2
-        print(self.note)
         # it is possible (though unlikely) that two players might still end up with the
         # same name due to timing, (or 1/898 chance that the same Bob name is chosen)
         # but we do not deal with these corner cases.
         self._state.name = name2
         connection.Send({"action": "displayName", "name": name2})
+        return name2
 
     def setReady(self, readyState):
         """Update the player's ready state with the server"""
@@ -101,18 +108,20 @@ class Controller(ConnectionListener):
             connection.Send({"action": "pickUpPile"})
 
     def makeForcedPlay(self, top_card):
-        """Complete the required play for picking up the pile"""
+        """Complete the required play for picking up the pile, used in HandAndFoot but not Liverpool"""
         self.note = "Performing the play required to pick up the pile"
         #Get key for top_card (we know it can be auto-keyed), and then prepare it
         key = self._state.getValidKeys(top_card)[0]
-        self.prepared_cards.setdefault(key, []).append(top_card) #Can't just call prepared card b/c of turn phase checking
+        self.prepared_cards.setdefault(key, []).append(top_card)
+        #Can't just call prepared card b/c of turn phase checking
         #Set turn phase to allow play and then immediately make play
         self._state.turn_phase = Turn_Phases[3]
         self.play()
 
     def automaticallyPrepareCards(self, selected_cards):
-        """Prepare selected cards to be played
+        """HandAndFoot specific: Prepare selected cards to be played.
         
+        Assumes all groups are sets.
         Fully prepares natural cards
         Returns options for where to play wild cards
         Returns message that you can't play 3s
@@ -135,15 +144,44 @@ class Controller(ConnectionListener):
                 else:
                     user_input_cards.append([card, key_opts])
         return user_input_cards
-        
+
+    def assignCardsToGroup(self, assigned_key, selected_cards):
+        """Liverpool Specific: Prepare selected cards to be played by assigning them to key based on button clicked.
+
+        Prepares card -- assigned_key is key of assignment button clicked.
+        If key is below Meld_Threshold[round][0] (set in rules) than it's a set, else it's a run.
+        (Key is integer corresponding to set or run needed for that round,
+         Meld_Threshold[round] is a tuple: (#sets, #runs) required for that round.
+        Returns options for where to play wild cards if cannot be automatically assigned.
+        """
+        #todo: edit so that it checks rules and properly returns options.
+        wilds_in_run = [] # this will be empty for sets and valid numbers for runs.
+        sets_runs = self.Meld_Threshold[self._state.round]
+        if assigned_key[1] < sets_runs[0]:
+            print('this should be a set')
+        else:
+            print('this should be a run')
+        for wrappedcard in selected_cards:
+            card = wrappedcard.card
+            self.prepareCard(assigned_key, card)
+            #todo: assign jokers if a run. (automatically if in the middle, choose if on end).
+            #todo: rule checking
+        return wilds_in_run
+
     def prepareCard(self, key, card):
         """Prepare the selected card with the specified key"""
         if self._state.turn_phase == Turn_Phases[2]:
             self.note = "You can't change prepared cards while waiting to finish picking up the pile"
             return
         self.prepared_cards.setdefault(key, []).append(card)
-        #self.note = "You have the following cards prepared to play: {0}".format(self.prepared_cards) #Is this format readable enough?
-        
+        #todo: remove following:
+        #''' following for debugging:
+        for key, card_group in self.prepared_cards.items():
+            print(key)
+            for card in card_group:
+                print(card)
+        # '''
+
     def clearPreparedCards(self):
         """Clears prepared cards"""
         if self._state.turn_phase == Turn_Phases[2]:
@@ -151,14 +189,15 @@ class Controller(ConnectionListener):
             return
         self.prepared_cards = {}
         self.note = "You have no cards prepared to play"
-        
-    def play(self):
+
+    def play(self, player_index=0, visible_cards=[{}]):
         """Send the server the current set of visible cards"""
+        # player_index needed for liverpool rules checking.
         if self._state.turn_phase != Turn_Phases[3]:
             self.note = "You can only play on your turn after you draw"
             return
         try:
-            self._state.playCards(self.prepared_cards)
+            self._state.playCards(self.prepared_cards, player_index, visible_cards)
             self.clearPreparedCards()
             self.handleEmptyHand(False)
             self.sendPublicInfo()
