@@ -79,16 +79,12 @@ class HandView:
 
     def update(self, player_index=0, num_players=1, visible_cards = []):
         """This updates the view of the hand, between rounds it displays a message. """
-        '''
-        player_index and num_players needed for Liverpool.
-        self.this_player_name = this_player_name
-        self.player_names = player_names
-        self.player_index = player_names.index(this_player_name)
-        '''
+
+        # player_index and num_players needed for Liverpool but not HandAndFoot.
         self.visible_cards = visible_cards
         # this is a list (one per player) of dictionaries (one key per player button)
         self.player_index = player_index
-        self.num_players = num_players # len(player_names)
+        self.num_players = num_players
         if self.controller._state.round == -1:
             self.mesgBetweenRounds(self.help_text)
             if self.round_advance:

@@ -37,7 +37,6 @@ def RunClient():
     gameboard = CreateDisplay(playername)
     if ruleset == 'Liverpool' or ruleset == 'HandAndFoot':
         tableView = TableView(gameboard.display, ruleset)
-        print('at this point in runClient.')
     else:
         print('that ruleset is not supported')
     handView = HandView(gameControl, gameboard.display, ruleset)
@@ -49,7 +48,7 @@ def RunClient():
         gameControl.Pump()
         tableView.Pump()
         tableView.playerByPlayer(current_round)
-        note = "adding your name to list of player names"
+        note = "Connect and then add your name to list of player names..."
         gameboard.render(note)
         playername = gameControl.checkNames(tableView.player_names)
     if ruleset == 'Liverpool' or ruleset == 'HandAndFoot':
@@ -69,7 +68,6 @@ def RunClient():
             # because Liverpool handView needs info on other players (HandAndFoot did not).
             if  ruleset == 'Liverpool':
                 visible_cards = tableView.visible_cards
-                # debug: print(visible_cards)
                 handView.update(player_index, len(tableView.player_names), visible_cards)
             else:
                 handView.update()

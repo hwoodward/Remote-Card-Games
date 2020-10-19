@@ -148,13 +148,13 @@ class Controller(ConnectionListener):
     def assignCardsToGroup(self, assigned_key, selected_cards):
         """Liverpool Specific: Prepare selected cards to be played by assigning them to key based on button clicked.
 
+        # todo: implement this!!
         Prepares card -- assigned_key is key of assignment button clicked.
         If key is below Meld_Threshold[round][0] (set in rules) than it's a set, else it's a run.
         (Key is integer corresponding to set or run needed for that round,
          Meld_Threshold[round] is a tuple: (#sets, #runs) required for that round.
         Returns options for where to play wild cards if cannot be automatically assigned.
         """
-        #todo: edit so that it checks rules and properly returns options.
         wilds_in_run = [] # this will be empty for sets and valid numbers for runs.
         sets_runs = self.Meld_Threshold[self._state.round]
         if assigned_key[1] < sets_runs[0]:
@@ -165,7 +165,6 @@ class Controller(ConnectionListener):
             card = wrappedcard.card
             self.prepareCard(assigned_key, card)
             #todo: assign jokers if a run. (automatically if in the middle, choose if on end).
-            #todo: rule checking
         return wilds_in_run
 
     def prepareCard(self, key, card):
@@ -174,13 +173,6 @@ class Controller(ConnectionListener):
             self.note = "You can't change prepared cards while waiting to finish picking up the pile"
             return
         self.prepared_cards.setdefault(key, []).append(card)
-        #todo: remove following:
-        #''' following for debugging:
-        for key, card_group in self.prepared_cards.items():
-            print(key)
-            for card in card_group:
-                print(card)
-        # '''
 
     def clearPreparedCards(self):
         """Clears prepared cards"""
@@ -192,7 +184,7 @@ class Controller(ConnectionListener):
 
     def play(self, player_index=0, visible_cards=[{}]):
         """Send the server the current set of visible cards"""
-        # player_index needed for liverpool rules checking.
+        # player_index and visible_cards needed for liverpool rules checking.
         if self._state.turn_phase != Turn_Phases[3]:
             self.note = "You can only play on your turn after you draw"
             return

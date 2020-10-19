@@ -49,7 +49,7 @@ class Card:
         return "{0} of {1}".format(self.number, self.suit)
 
     def __repr__(self):
-        return "({0}, {1})".format(self.number, self.suit)
+        return "({0}, {1}, {2})".format(self.number, self.suit, self.deck)
 
     def __eq__(self, other):
         return (self.number == other.number) and (self.suit == other.suit) and (self.deck == other.deck)

@@ -68,43 +68,29 @@ def canPlayGroup(key, card_group, this_round=0):
     """
     if len(card_group) == 0:
         return True  # Need to allow empty groups to be "played" due to side-effects of how we combined dictionaries
-    print('line 71 in Liverpool.py')
-    print(key)
     if key[1] < Meld_Threshold[this_round][0]:   # then this is a set.
-        print('in canPlayGroup')
-        print(key)
+        #todo: fix required length of set!
         # check if this is a valid set.
-        if len(card_group) < 3:
-            raise Exception("Too few cards in set - minimum is 3")
+        if len(card_group) < 1:
+            raise Exception("Too few cards in set - minimum is 1")
         # check that group contains only wilds and one card_number.
         card_numbers = []
-        print('in Liverpool.py')
+        num_cards = len(card_group)
         for card in card_group:
-            print(card)
-            print(card.number)
             if not isWild(card):
-                print('debug - point A')
-                print(card_numbers)
                 card_numbers.append(card.number)
-                print(card_numbers)
-                print(card.number)
-            else:
-                print(card)
-                print('debug - at point B, thinks this card is Wild')
+        num_naturals = len(card_numbers)
         unique_numbers = list(set(card_numbers))
         if len(unique_numbers) > 1:
             raise Exception("Cards in a set must all have the same rank (except wilds).")
         # check that have more naturals than wilds.
-        typeDiff = 0
         unique_number = unique_numbers[0]
-        for card in card_group:
-            if isWild(card):
-                typeDiff -= 1
-            elif card.number == unique_number:
-                typeDiff += 1
+        if num_naturals <= (num_cards - num_naturals):
+            text = "Too many wilds in set of " + str(unique_number) + "'s"
+            raise Exception(text)
     else:
-        print('not checking runs')
-        return True
+        print('in canPlayGroup, not checking runs')
+        print(key)
     '''
         # check that this is a valid run.
         if len(card_group) < 4:
@@ -121,26 +107,25 @@ def canPlayGroup(key, card_group, this_round=0):
         return True
     raise Exception("Too many wilds in {0} group.".format(key))
     '''
+    return True
+
 
 
 def canMeld(prepared_cards, round_index, player_index):
-    """Determines if a set of card groups is a legal meld"""
+    """Determines if a set of card groups is a legal meld, called from canPlay."""
     #
     # This section differs from HandAndFoot.
-    print('canMeld--return True no matter what.')
     # debugging - still need to debug canMeld routine, but want to get past it for now....
-    if True:
-        return True
     required_groups =  Meld_Threshold[round_index][0] + Meld_Threshold[round_index][1]
     valid_groups = 0
     print(prepared_cards)
     for key, card_group in prepared_cards.items():
         print('in liverpool.py canMeld')
         print(key)
+        print(card_group)
+        print(player_index)
         if canPlayGroup(key, card_group, round_index) and key[0] == player_index:
-            print('in if canPlayGroup indent')
             valid_groups = valid_groups + 1
-            print(key, required_groups, valid_groups)
     if required_groups > valid_groups :
         raise Exception("Must have all the required sets and runs to meld")
     return True
@@ -154,32 +139,41 @@ def canPlay(prepared_cards, visible_cards, player_index, round_index):
     """Confirms if playing the selected cards is legal"""
     # Has player already melded -- if so visible_cards[player_index] will NOT be empty and
     #
-    print('current state: rules are not checked, '
-          'but cards are played, disappear from hand, but only first one is displayed on board.'
-          'Unfortunately, when you try to play on another player the cards appear on your board'
-          ' (need to fix indexing bug)')
-    # if not visible_cards[player_index]:   # empty dicts evaluate to false (as does None)
-    #     return canMeld(prepared_cards, round_index, player_index)
+    print('In canPlay -- noticed that Meld wasnot working properly in 2nd round')
+    print(' visible_cards[1] was:  {(0, 1): [], (0, 0): []}')
+    print(' I thought server would have reset this to {} ')
+    print(' Might be able to create work around, but fixing in server would be better.')
+    print(visible_cards)
+    print(player_index)
+    if not visible_cards[player_index]:   # empty dicts evaluate to false (as does None)
+        return canMeld(prepared_cards, round_index, player_index)
     # Combine dictionaries to get the final played cards if suggest cards played
     # in Liverpool.
     # prepared cards is a dictionary where key = tuple. ( player index, group number)
     # (where a group is a set or run) on that player's board.
     # visible cards is a list of dictionaries. List index is player index
     # and key in dictionary is group number.
-    i_tot = len(visible_cards)
     all_visible_one_dictionary = {}
-    for idx in range(i_tot):
-        temp_dictionary_v = visible_cards[idx]
-        # gathering all of prepared_cards for player idx's groups into single dictionary.
+    for temp_dict_v_s in visible_cards:
+        # temp_dict_v_s is a dictionary with keys = tuple and elements= list of serialzied cards from one player.
+        # temp_dictionary_v is same dictionary EXCEPT the serialized cards have been deserialized.
+        temp_dictionary_v = {}
+        for key, s_cards in temp_dict_v_s.items():
+            card_list = [Card.deserialize(c) for c in s_cards]
+            temp_dictionary_v[key] = card_list
+        # gathering all played cards from all players into single dictionary.
         temp_dictionary = all_visible_one_dictionary
         all_visible_one_dictionary = (combineCardDicts(temp_dictionary, temp_dictionary_v))
+    # gathering all played and prepared_cards into single dictionary (needed for rule checking).
     combined_cards = combineCardDicts(all_visible_one_dictionary, prepared_cards)
     for key, card_group in combined_cards.items():
         canPlayGroup(key, card_group)
     return True
 
 def combineCardDicts(dict1, dict2):
-    """Combine two dictionaries of cards, such as played and to be played cards"""
+    """Combine two dictionaries of cards, such as played and to be played cards.
+
+    This should work for both cards and serialized cards."""
     combined_cards = {}
     for key in set(dict1).union(dict2):
         combo_list = []

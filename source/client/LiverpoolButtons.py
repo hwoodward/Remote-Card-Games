@@ -77,8 +77,6 @@ def newRound(hand_view, sets_runs_tuple):
     for idx in range(hand_view.num_players):
         hand_view.assign_cards_btns.append([])
         hand_view.assigned_cards.append({})
-        print('at line 80')
-        print(hand_view.assigned_cards)
         # hand_view.assigned_cards[idx] = a dictionary with an entry for each set/run (for each button).
         for setnum in range(sets_runs_tuple[0]):
             hand_view.assign_cards_btns[idx].append([])
@@ -87,14 +85,9 @@ def newRound(hand_view, sets_runs_tuple):
             y = players_sp_top + (players_sp_h*setnum)
             prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
             hand_view.assign_cards_btns[idx][setnum] = prepare_card_btn
-            hand_view.assigned_cards[idx][setnum]= []  # key setnum in dictionary is an empty list now,  a set later.
-            # note that in controller prepared_cards is single dictionary, and
-            # keys are (idx, setnum)
-            # ''' debugging:
-            print('at line 88 in liverpool buttons')
-            print(hand_view.assigned_cards)
-            print(hand_view.assigned_cards[idx])
-            print(hand_view.assigned_cards[idx][setnum])
+            hand_view.assigned_cards[idx][setnum]= []
+            # key setnum in dictionary is an empty list now, a group of 3 cards with same number later.
+            # note that in controller prepared_cards is single dictionary, and keys are (idx, setnum)
         for runnum in range(sets_runs_tuple[1]):
             hand_view.assign_cards_btns[idx].append([])
             txt = "run " + str(runnum+1)
@@ -104,14 +97,6 @@ def newRound(hand_view, sets_runs_tuple):
             prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
             hand_view.assign_cards_btns[idx][jdx] = prepare_card_btn
             hand_view.assigned_cards[idx][jdx] = []  # key jdx in dictionary is an empty list now,  a run later..
-            ''' debug: '''
-            print('debug in Liverpool buttons line95 ' + str(idx) + ' ' + str(jdx) + txt)
-            print('at line 105 in liverpool buttons')
-            print(hand_view.assigned_cards)
-            print(hand_view.assigned_cards[idx])
-            print(hand_view.assigned_cards[idx][setnum])
-            # '''
-            #  oneplayers_assignbtns.append(prepare_card_btn)
 
 
 def ButtonDisplay(hand_view):

@@ -75,7 +75,8 @@ class ClientState:
 
     def playCards(self, prepared_cards, player_index = 0, visible_cards=[{}]):
         """Move cards from hand to visible"""
-        #todo: in this method should I rename visible_cards to cards_on_board ?
+
+        # cards in visible_cards are serialized, cards in prepared_cards are not.
         # First check that all the cards are in your hand.
         print('in ClientState.py, playCards method')
         tempHand = [x for x in self.hand_cards]
@@ -95,10 +96,13 @@ class ClientState:
                     self.hand_cards.remove(card)
                     self.played_cards.setdefault(key, []).append(card)
         elif self.ruleset == 'Liverpool':
-            self.rules.canPlay(prepared_cards, visible_cards, self.round, player_index)
+            self.rules.canPlay(prepared_cards, visible_cards, player_index, self.round)
+            # unlike self.played_cards used in HandAndFoot, visible_cards is obtained
+            # from controller, and contains serialized cards.
             for key, card_group in prepared_cards.items():
                 for card in card_group:
                     self.hand_cards.remove(card)
+                    # 19oct - don't think liverpool really uses played_cards other than in my print statement...
                     self.played_cards.setdefault(key, []).append(card)
                     # todo:  Need to replace local record of played_cards with visible cards.
                     # This will have ripple effects in rules when merging played cards with visible cards.
@@ -107,7 +111,7 @@ class ClientState:
                 # self.played_cards.setdefault(key[1], []).append(card)
         print('at line 108 in clientState, played_cards: ')
         print(self.played_cards)
-    
+
     def getValidKeys(self, card):
         """Get the keys that this card can be prepared with"""
         return self.rules.getKeyOptions(card)
