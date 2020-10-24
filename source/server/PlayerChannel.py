@@ -10,7 +10,7 @@ class PlayerChannel(Channel):
         """
         self.name = "guest"
         #visible cards and hand status are public info
-        self.visible_cards = {}
+        self.visible_cards = {}  # cards on board, in serialized format.
         self.hand_status = [] #order of information in this is specified by the ruleset
         self.scores = []
         self.ready = False #for consensus transitions
@@ -88,5 +88,6 @@ class PlayerChannel(Channel):
     def Network_publicInfo(self, data):
         """This is refreshed public information data from the client"""
         self.visible_cards = data["visible_cards"]
+
         self.hand_status = data["hand_status"]
         self._server.Send_publicInfo()

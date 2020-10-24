@@ -5,7 +5,6 @@ from client.ClientState import ClientState
 from client.Controller import Controller
 from client.CreateDisplay import CreateDisplay
 from client.TableView import TableView            # this should support both Liverpool and HandAndFoot
-# from client.TableView_HF import TableView_HF      # this is for HandAndFoot
 from client.HandView import HandView
 # imports below added so that can generate executable using pyinstaller.
 import common.HandAndFoot
@@ -67,8 +66,8 @@ def RunClient():
             # Might also need to add visible_cards to playerByPlayer (?)
             # because Liverpool handView needs info on other players (HandAndFoot did not).
             if  ruleset == 'Liverpool':
-                visible_cards = tableView.visible_cards
-                handView.update(player_index, len(tableView.player_names), visible_cards)
+                visible_scards = tableView.visible_scards
+                handView.update(player_index, len(tableView.player_names), visible_scards)
             else:
                 handView.update()
             note = gameControl.note

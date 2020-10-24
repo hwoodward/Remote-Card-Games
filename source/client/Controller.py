@@ -23,6 +23,7 @@ class Controller(ConnectionListener):
         # needed for Liverpool:
         self.Meld_Threshold = self._state.rules.Meld_Threshold
         self.player_index = 0
+        self.visible_scards = [{}] # in Liverpool both HandView and TableView use data:visible cards.
 
     ### Player Actions ###
     def setName(self):
@@ -157,10 +158,12 @@ class Controller(ConnectionListener):
         """
         wilds_in_run = [] # this will be empty for sets and valid numbers for runs.
         sets_runs = self.Meld_Threshold[self._state.round]
+        '''
         if assigned_key[1] < sets_runs[0]:
             print('this should be a set')
         else:
             print('this should be a run')
+        '''
         for wrappedcard in selected_cards:
             card = wrappedcard.card
             self.prepareCard(assigned_key, card)
@@ -182,14 +185,15 @@ class Controller(ConnectionListener):
         self.prepared_cards = {}
         self.note = "You have no cards prepared to play"
 
-    def play(self, player_index=0, visible_cards=[{}]):
-        """Send the server the current set of visible cards"""
-        # player_index and visible_cards needed for liverpool rules checking.
+    def play(self, player_index=0, visible_scards=[{}]):
+        """Send the server the current set of played cards"""
+        # player_index and visible_scards needed for liverpool rules checking.
+        #
         if self._state.turn_phase != Turn_Phases[3]:
             self.note = "You can only play on your turn after you draw"
             return
         try:
-            self._state.playCards(self.prepared_cards, player_index, visible_cards)
+            self._state.playCards(self.prepared_cards, player_index, visible_scards)
             self.clearPreparedCards()
             self.handleEmptyHand(False)
             self.sendPublicInfo()
@@ -295,6 +299,18 @@ class Controller(ConnectionListener):
             return
         self._state.turn_phase = Turn_Phases[1]
         self.note = "Your turn has started. You may draw or attempt to pick up the pile"
+        #
+        # if playing with a shared board, then need to update played cards played.
+        if self._state.rules == 'Liverpool':
+            _state.first_play_this_turn = True  # must serialize visible_cards one time at beginning of turn.
+            # todo: get rid of _state.first_play_this_turn and perform serializaiton below.
+            # todo: have Network_startTurn send visible_cards for previous player's turn.
+            # send played_cards back to server, so that visible_cards[active player] is up to date.
+            _state.played_cards = visible_scards[0]  # in Liverpool all players' cards are included.
+            print('at line 310 in controller.py')
+            for key, vc in _state.played_cards():
+                print(vc)
+
         self.sendPublicInfo() #Let everyone know its your turn.
 
     def Network_newCards(self, data):
@@ -310,7 +326,7 @@ class Controller(ConnectionListener):
         self._state.round = data["round"]
         self._state.reset()
         hand_list = [[Card.deserialize(c) for c in hand] for hand in data["hands"]]
-        #TODO: we want to allow the player to choose the order of the hands eventually
+        #TODO: in HandAndFoot we want to allow the player to choose the order of the hands eventually
         self._state.dealtHands(hand_list)
         self.sendPublicInfo() #More cards in hand now, need to update public information
 

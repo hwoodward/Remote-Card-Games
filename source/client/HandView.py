@@ -77,12 +77,10 @@ class HandView:
                               'When ready to start playing click on the YES button on the lower right.']
         self.RuleSetsButtons.CreateButtons(self)
 
-    def update(self, player_index=0, num_players=1, visible_cards = []):
+    def update(self, player_index=0, num_players=1, visible_scards = []):
         """This updates the view of the hand, between rounds it displays a message. """
 
-        # player_index and num_players needed for Liverpool but not HandAndFoot.
-        self.visible_cards = visible_cards
-        # this is a list (one per player) of dictionaries (one key per player button)
+        self.visible_scards = visible_scards
         self.player_index = player_index
         self.num_players = num_players
         if self.controller._state.round == -1:

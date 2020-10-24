@@ -164,7 +164,7 @@ def ClickedButton(hand_view, pos):
         )
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.play_prepared_cards_btn.isOver(pos):
-        hand_view.controller.play(hand_view.player_index, hand_view.visible_cards)
+        hand_view.controller.play(hand_view.player_index, hand_view.visible_scards)
     elif hand_view.clear_prepared_cards_btn.isOver(pos):
         hand_view.controller.clearPreparedCards()
         hand_view.hand_info = HandManagement.ClearPreparedCardsInHandView(hand_view.hand_info)

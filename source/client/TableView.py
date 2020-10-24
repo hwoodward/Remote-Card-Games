@@ -21,20 +21,16 @@ class TableView(ConnectionListener):
         self.ruleset = ruleset
         print('in Tableview: ruleset '+ self.ruleset)
         self.player_names = []
-        self.visible_cards = []
+        self.visible_scards = []        # contains list of serialized cards (from server)
         self.hand_status = []
         self.compressed_info = {}
-        # self.this_player_index = -1   # code review note -- this variable needed for Liverpool
-        # todo: check if still need variable above.
+        # self.this_player_index = -1   # code review note --is this variable needed for Liverpool?
         if self.ruleset == 'Liverpool':
             self.Meld_Threshold = Meld_Threshold_LP
             self.wild_numbers = wild_numbers_LP
-            print(self.Meld_Threshold)
-            print(self.wild_numbers)
         elif self.ruleset == 'HandAndFoot':
             self.Meld_Threshold = Meld_Threshold_HF
             self.wild_numbers = wild_numbers_HF
-            print('thinks ruleset is HandAndFoot')
         else:
             print(self.ruleset + ' is not supported')
         self.playerByPlayer(0)
@@ -44,9 +40,9 @@ class TableView(ConnectionListener):
         self.round_index = round_index
         # Loop through players and display visible cards associated with each players' melded groups.
         if self.ruleset == 'HandAndFoot':
-            self.compressSets(self.visible_cards)
+            self.compressSets(self.visible_scards)
         elif self.ruleset == 'Liverpool':
-            self.compressGroups(self.visible_cards)
+            self.compressGroups(self.visible_scards)
         num_players = len(self.player_names)
         # currently set-up with one player per column. May need to change that for more players.
         if num_players > 1:
@@ -112,14 +108,14 @@ class TableView(ConnectionListener):
             bk_grd_rect = (bk_grd_rect[0] + players_sp_w, bk_grd_rect[1], bk_grd_rect[2], bk_grd_rect[3])
             color_index = (color_index + 1) % len(UIC.table_grid_colors)
 
-    def compressSets(self, v_cards):
+    def compressSets(self, v_scards):
         """ HandAndFoot specific: Don't have space to display every card. Summarize sets of cards here. """
 
         self.compressed_info = {}
-        for idx in range(len(v_cards)):
+        for idx in range(len(v_scards)):
             summary = {}
             key_player = self.player_names[idx]
-            melded = dict(v_cards[idx])
+            melded = dict(v_scards[idx])
             for key in melded:
                 set = melded[key]
                 length_set = len(set)
@@ -132,65 +128,63 @@ class TableView(ConnectionListener):
                     summary[key] = (length_set, (length_set - wild_count), wild_count)
             self.compressed_info[key_player] = summary
 
-    def compressGroups(self, v_cards):
+    def compressGroups(self, v_scards):
         """ Liverpool specific: Don't have space to display every card. Summarize groups of cards here. """
 
         # In Liverpool:
         # visible cards structure:
-        # a list of dictionaries where each entry in list corresponds to dictionary of serialized cards
-        # played by THAT player with key =(player, group) tuple.
-        # Note this makes compressGroups more complex than complessSets used in HandAndFoot.
-        # It simplifies key structure enormously and avoids making server game specific (beyond Ruleset).
-        # Probable unintentional side effect:
-        #   -- if a player drops out his plays on other groups will disappear.
-        i_mt = int(self.Meld_Threshold[self.round_index][0])
+        # a list containing zero or 1 dictionary where each entry in dictionary is a list of serialized cards
+        # played with key =(player, group) tuple.  Cards are sorted with wilds in runs appearing where the
+        # card they represent would have appeared.
+        #
+        i_num_sets = int(self.Meld_Threshold[self.round_index][0])
         self.compressed_info = {}
+        i_tot = len(self.player_names)
         for player_name in self.player_names:
-            self.compressed_info[player_name]=[]
-        all_visible_one_dictionary = {}
-        i_tot = len(v_cards)
+            self.compressed_info[player_name] = {}
         #  for each key need to gather s_cards from all players (all idx).  s_card=card.serialize
-        for idx in range(i_tot):
-            temp_dictionary_v = v_cards[idx]
-            temp_dictionary = all_visible_one_dictionary
-            all_visible_one_dictionary = (combineCardDicts(temp_dictionary, temp_dictionary_v))
         for idx in range(i_tot):
             summary = {}
             key_player = self.player_names[idx]
-            for key, card_group in all_visible_one_dictionary.items():
-                text = ''
-                if key[0] == idx:
-                    if key[1] < i_mt:
-                        # this is a set
-                        card_numbers = []
-                        for s_card in card_group:
-                            if not s_card[0] in self.wild_numbers:
-                                card_numbers.append(s_card[0])
-                        unique_numbers = list(set(card_numbers))
-                        if len(unique_numbers) > 0:
-                            unique_number = int(unique_numbers[0])
-                        else:
-                            unique_number = 666 # this should never happen.
-                        text = 'SET of ' + str(unique_number) + "'s: "
-                        for s_card in card_group:
-                            if not s_card[0] in self.wild_numbers:
-                                text = text + str(s_card[1]) +  ','
+            if len(v_scards) > 0:
+                all_visible_one_dictionary = v_scards[0]
+                for key, card_group in all_visible_one_dictionary.items():
+                    text = ''
+                    if key[0] == idx:
+                        if key[1] < i_num_sets:
+                            # this is a set
+                            card_numbers = []
+                            for s_card in card_group:
+                                if not s_card[0] in self.wild_numbers:
+                                    card_numbers.append(s_card[0])
+                            unique_numbers = list(set(card_numbers))
+                            if len(unique_numbers) > 0:
+                                unique_number = int(unique_numbers[0])
                             else:
-                                text = text + 'Wild' + ','
-                    else:
-                        # rewrite stuff below with structure more like what's used above.
-                        this_run = card_group
-                        l_this_run = len(this_run)
-                        if l_this_run > 0:
-                            idx_c = 0
-                            while this_run[idx_c] in self.wild_numbers and idx_c < l_this_run:
-                                idx_c = idx_c + 1
-                            card_suit = str(this_run[idx_c][1])
-                            text = 'Run in ' + card_suit + ": "
-                            for idx_c in range(l_this_run):
-                                text = text + str(this_run[idx_c][0]) + ','
-                        #todo: replace text above with something prettier.
-                    summary[key[1]] = text
+                                # this should never happen.
+                                unique_number = 666
+                                print('bug in TableView')
+                            text = 'SET of ' + str(unique_number) + "'s: "
+                            for s_card in card_group:
+                                if not s_card[0] in self.wild_numbers:
+                                    text = text + str(s_card[1]) +  ','
+                                else:
+                                    text = text + 'Wild' + ','
+                        else:
+                            # todo: rewrite stuff below with structure more like what's used above.
+                            # this is a run
+                            this_run = card_group
+                            l_this_run = len(this_run)
+                            if l_this_run > 0:
+                                idx_c = 0
+                                while this_run[idx_c] in self.wild_numbers and idx_c < l_this_run:
+                                    idx_c = idx_c + 1
+                                card_suit = str(this_run[idx_c][1])
+                                text = 'Run in ' + card_suit + ": "
+                                for idx_c in range(l_this_run):
+                                    text = text + str(this_run[idx_c][0]) + ','
+                            #todo: replace text above with something prettier.
+                        summary[key[1]] = text
                 self.compressed_info[key_player] = summary
 
     def display_melded_summary_HF(self, screen_loc_info, melded_summary):
@@ -257,7 +251,7 @@ class TableView(ConnectionListener):
            'hand_status': [['inactive', 12, 1], [True, 14, 1]]}
         where 'inactive' is an example of a play state (possible states: 'inactive', 'draw', 'forcedAction', 'play' '''
         self.player_names = data["player_names"]
-        self.visible_cards = data["visible_cards"]
+        self.visible_scards = data["visible_cards"]
         self.hand_status = data["hand_status"]
         # todo: do I need next line?
         self.playerByPlayer(0)

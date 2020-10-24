@@ -10,6 +10,8 @@ import math
 
 Game_Name = "Liverpool"
 
+#todo: move Shared_Board from GamerServer.py to this file.
+# currently in GamerServer.py Shared_Board = True for ruleset == Liverpool.
 Draw_Size = 1
 Pickup_Size = 1
 Discard_Size = 1
@@ -46,12 +48,10 @@ def isWild(card):
         return False
 
 
-# todo below is for checking on sets, but for liverpool will also have runs.
+# todo: below is for checking on sets in HandAndFoot (not used for Liverpool sets)
+#  for Liverpool runs will need this (though might be able to use something more sophisticated).
 # player will probably have to state which set a card goes with, so this may be extraneous.
-#  FOR LIVERPOOL KEY SHOULD NOT BE RANK, BUT POSSIBLE VALUE GIVEN
-#  INDEX OF BUTTON USED TO PREPARE CARD.  FOR SETS THIS WILL BE RANK CARD.NUMBER FOR
-#  EXISTING SET, AND FOR RUN IT WILL BE PLACE IN
-#  RUN=(NUMBER BETWEEN MIN-1 AND MAX+1) THAT HASN'T BEEN TAKEN.
+#  In Liverpool wild will need to be (NUMBER BETWEEN MIN-1 AND MAX+1) THAT HASN'T BEEN TAKEN.
 def getKeyOptions(card):
     """returns the possible keys for the groups the card can go in"""
     if not isWild(card):
@@ -66,13 +66,13 @@ def canPlayGroup(key, card_group, this_round=0):
     returns True if it can, otherwise raises an exception with an explanation.
     In Liverpool key of prepared (=assigned) cards = key of button = (name, button #)
     """
+    print('in canPlayGroup, now checking sets and runs, but eased required length for faster testing.')
     if len(card_group) == 0:
         return True  # Need to allow empty groups to be "played" due to side-effects of how we combined dictionaries
     if key[1] < Meld_Threshold[this_round][0]:   # then this is a set.
-        #todo: fix required length of set!
         # check if this is a valid set.
         if len(card_group) < 1:
-            raise Exception("Too few cards in set - minimum is 1")
+            raise Exception("Too few cards in set - minimum is 1 (will change to 3 later)")
         # check that group contains only wilds and one card_number.
         card_numbers = []
         num_cards = len(card_group)
@@ -89,24 +89,38 @@ def canPlayGroup(key, card_group, this_round=0):
             text = "Too many wilds in set of " + str(unique_number) + "'s"
             raise Exception(text)
     else:
-        print('in canPlayGroup, not checking runs')
-        print(key)
-    '''
         # check that this is a valid run.
-        if len(card_group) < 4:
-            raise Exception("Too few cards in run - minimum is 4")
-    typeDiff = 0
-    for card in card_group:
-        if isWild(card):
-            typeDiff -= 1
-        elif card.number == unique_number: # < not used for runs
-            typeDiff += 1
-        else:
-            raise Exception("Illegal card in group: {0} is not wild and is not part of the {1} group".format(card, key))
-    if typeDiff > 0:
-        return True
-    raise Exception("Too many wilds in {0} group.".format(key))
-    '''
+        if len(card_group) < 2:
+            #todo:  for debugging only require  < 2, will need to change that to 4 later.
+            raise Exception("Too few cards in run - minimum is 2 (for now) 4 (final version)")
+        suits_in_run = []
+        numbers_in_run = []
+        for card in card_group:
+            if not isWild(card):
+                suits_in_run.append(card.suit)
+                numbers_in_run.append(card.number)
+        # num_naturals = len(suits_in_run)
+        unique_suits = list(set(suits_in_run))
+        if len(unique_suits) > 1:
+            raise Exception("Cards in a run must all have the same suit (except wilds).")
+        print(numbers_in_run)
+        numbers_in_run.sort()
+        print(numbers_in_run)
+        '''
+        pseudeo code:
+        for idx in range range(len(numbers_in_run)-1)
+            if card(index+1)-card(index) > 1:
+                num_wilds = num_wilds - 1
+                if num_wilds < 0
+                raise exception -- cards are not continous and you don't have enough wilds to fix it.
+        
+            This should work for both cards and serialized cards."""
+            
+        WANT TO PRESERVE ORDERING OF SET SO THAT WILDS ARE IN PROPER POSITION -- THIS IS ANOTHER ARGUMENT FOR CHANGING
+        STRUCTURE OF VISIBLE_CARDS ON SERVER WHEN PLAYING LIVERPOOL.  (MAKE A variable: 
+        ruleset.rummy  = True/False, and use one structure for visible_cards for True (Liverpool) 
+        and another for Rummy=False (HandAndFoot).
+        '''
     return True
 
 
@@ -118,18 +132,12 @@ def canMeld(prepared_cards, round_index, player_index):
     # debugging - still need to debug canMeld routine, but want to get past it for now....
     required_groups =  Meld_Threshold[round_index][0] + Meld_Threshold[round_index][1]
     valid_groups = 0
-    print(prepared_cards)
     for key, card_group in prepared_cards.items():
-        print('in liverpool.py canMeld')
-        print(key)
-        print(card_group)
-        print(player_index)
         if canPlayGroup(key, card_group, round_index) and key[0] == player_index:
             valid_groups = valid_groups + 1
     if required_groups > valid_groups :
         raise Exception("Must have all the required sets and runs to meld")
     return True
-
 
 def canPickupPile(top_card, prepared_cards, played_cards, round_index):
     """Determines if the player can pick up the pile with their suggested play-always True for Liverpool"""
@@ -137,37 +145,30 @@ def canPickupPile(top_card, prepared_cards, played_cards, round_index):
 
 def canPlay(prepared_cards, visible_cards, player_index, round_index):
     """Confirms if playing the selected cards is legal"""
-    # Has player already melded -- if so visible_cards[player_index] will NOT be empty and
-    #
-    print('In canPlay -- noticed that Meld wasnot working properly in 2nd round')
-    print(' visible_cards[1] was:  {(0, 1): [], (0, 0): []}')
-    print(' I thought server would have reset this to {} ')
-    print(' Might be able to create work around, but fixing in server would be better.')
-    print(visible_cards)
-    print(player_index)
-    if not visible_cards[player_index]:   # empty dicts evaluate to false (as does None)
+
+    # what groups have already been played?
+    played_groups = []
+    for key, cards in visible_cards[0].items():
+        if len(cards) > 0:
+            played_groups.append(key)
+    print('line 154 in Liverpool.py, canPlay method - played_groups:')
+    print(played_groups)
+    # does player attempt to play on another player's groups before that player has melded ?
+    for key, cards in prepared_cards.items():
+        if len(cards) > 0:
+            group_key = key
+            if not group_key[0] == player_index and group_key not in played_groups:
+                raise Exception("You are not allowed to begin another player's sets or runs.")
+                print('line 162 of Liverpool.py, group_key')
+                print(group_key)
+    # Has player already melded? -- if so visible_cards[player_index] will NOT be empty.
+    if (player_index,0) not in played_groups:
+        # if a player has already melded than (player_index,0) will have dictionary entry with cards.
         return canMeld(prepared_cards, round_index, player_index)
-    # Combine dictionaries to get the final played cards if suggest cards played
-    # in Liverpool.
-    # prepared cards is a dictionary where key = tuple. ( player index, group number)
-    # (where a group is a set or run) on that player's board.
-    # visible cards is a list of dictionaries. List index is player index
-    # and key in dictionary is group number.
-    all_visible_one_dictionary = {}
-    for temp_dict_v_s in visible_cards:
-        # temp_dict_v_s is a dictionary with keys = tuple and elements= list of serialzied cards from one player.
-        # temp_dictionary_v is same dictionary EXCEPT the serialized cards have been deserialized.
-        temp_dictionary_v = {}
-        for key, s_cards in temp_dict_v_s.items():
-            card_list = [Card.deserialize(c) for c in s_cards]
-            temp_dictionary_v[key] = card_list
-        # gathering all played cards from all players into single dictionary.
-        temp_dictionary = all_visible_one_dictionary
-        all_visible_one_dictionary = (combineCardDicts(temp_dictionary, temp_dictionary_v))
     # gathering all played and prepared_cards into single dictionary (needed for rule checking).
-    combined_cards = combineCardDicts(all_visible_one_dictionary, prepared_cards)
+    combined_cards = combineCardDicts(visible_cards[0], prepared_cards)
     for key, card_group in combined_cards.items():
-        canPlayGroup(key, card_group)
+        canPlayGroup(key, card_group, round_index)
     return True
 
 def combineCardDicts(dict1, dict2):

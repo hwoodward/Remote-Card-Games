@@ -10,6 +10,7 @@ import math
 
 Game_Name = "Hand and Foot"
 
+# In GamerServer.py Shared_Board = False for ruleset = HandAndFoot
 Draw_Size = 2
 Pickup_Size = 8
 Discard_Size = 1
