@@ -132,9 +132,16 @@ def canMeld(prepared_cards, round_index, player_index):
     # debugging - still need to debug canMeld routine, but want to get past it for now....
     required_groups =  Meld_Threshold[round_index][0] + Meld_Threshold[round_index][1]
     valid_groups = 0
+    print('in canMeld')
     for key, card_group in prepared_cards.items():
-        if canPlayGroup(key, card_group, round_index) and key[0] == player_index:
-            valid_groups = valid_groups + 1
+        if key[0] == player_index:
+            if canPlayGroup(key, card_group, round_index):
+                #if key[1] >= Meld_Threshold[round_index][0]:
+                # processed_group = processRuns(card_group)  # sorts cards, assigns wilds, and checks some more rules.
+                # Called in canPlayGroup, so not needed here.
+                # else:
+                # processed_group = card_group  # no need to sort sets here, do that when actually play cards.
+                valid_groups = valid_groups + 1
     if required_groups > valid_groups :
         raise Exception("Must have all the required sets and runs to meld")
     return True
