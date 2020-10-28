@@ -24,12 +24,13 @@ class ClientState:
         self.turn_phase = 'inactive'  # hard coded start phase as 'not my turn'
         self.round = -1  # Start with the 'no current round value'
         self.name = "guest"
-        self.player_index = 0 # needed for Liverpool.
+        # Will need to know player index in Liverpool because prepare cards buttons shared, but designated player
+        # has to initiate play in that player's sets and runs.
+        self.player_index = 0 # needed for Liverpool, will update when play cards.
         self.reset()  # Start with state cleared for a fresh round
-        # Will need to know player index in Liverpool because prepare cards buttons shared.
 
     def getPlayerIndex(self, player_names):
-        """Store the extra hands dealt to player for use after first hand is cleared"""
+        """This will udpate player index if another player drops out. """
         self.player_index = player_names.index(self.name)
 
     def dealtHands(self, hands):
@@ -64,7 +65,10 @@ class ClientState:
         """Clear out round specific state to prepare for next round to start"""
         self.hand_list = []
         self.hand_cards = []
-        self.played_cards = {}
+        self.played_cards = {}    # in HandAndFoot this is dictionary of cards played by this client.
+        #                           in Liverpool it is a dictionary containing cards played by all cards, hence
+        #                           it is derived by processing data: visible cards in visible_scards[{...}]
+        # self.visible_scards = [{}]  # Liverpool:  reset this so it won't cause server to be out of date.
         self.went_out = False
         self.discard_info = [None, 0]
 
@@ -73,10 +77,11 @@ class ClientState:
         for card in card_list:
             self.hand_cards.append(card)
 
-    def playCards(self, prepared_cards, player_index = 0, visible_scards=[{}]):
-        """Move cards from hand to board"""
+    def playCards(self, prepared_cards, visible_scards=[{}], player_index=0):
+        """Move cards from hand to board if play follows rules, else inform what rule is broken."""
 
         # First check that all the cards are in your hand.
+        self.player_index = player_index
         tempHand = [x for x in self.hand_cards]
         try:
             for card_group in prepared_cards.values():
@@ -95,42 +100,52 @@ class ClientState:
                     self.played_cards.setdefault(key, []).append(card)
         elif self.ruleset == 'Liverpool':
             # unlike in HandAndFoot, where self.played_cards was used to check rules.
-            # in Liverpool need to consider all of the played cards.
-            # This will be true for all games with Shared_Board == True
-            # Played cards are in visible_scards, which is obtained
-            # from controller, and contains serialized cards.
-            # To reduce computations, don't deserialize them until click on play cards button.
-            visible_cards = [{}]
+            # in Liverpool and other shared board games need to consider all of the played cards.
+            # Played cards (in deserialized form) are in visible_scards (in serialized form), which is obtained
+            # from controller.
+            # (Path taken by visible_scards:
+            #          Tableview gets the serialized cards every msec to keep display up to date,
+            #          In handview.update tableview.visible_scards list is passed to handview.visible_scards
+            #          No need to process this unless playing cards, in which case visible_scards passed
+            #          to controller and then to clientState, where only list item is deserialized and put in
+            #          dictionary self.played_cards
             print('in ClientState, line 104')
             for key, scard_group in visible_scards[0].items():
                 card_group=[]
                 for scard in scard_group:
-                    # card = scard.deserialize()
                     card = Card(scard[0], scard[1], scard[2])
-                    # card = 'debugging'
-                    print(scard)
                     card_group.append(card)
-                visible_cards[0][key]=card_group
-                print(visible_cards)
-
-            #visible_cards[0] = {key: [scard.deserialize() for scard in scard_group] for (key, scard_group) in
-            #                    visible_scards[0].items()}
-            self.played_cards = visible_cards[0]  # in Liverpool all players' cards are included.
-            print("line 108 in ClientState.py, played_cards: ")
+                self.played_cards[key] = card_group
+                print(self.played_cards)
+            print('line line 112 in clientstate')
+            raw_dictionary = self.played_cards
+            self.played_cards = self.rules.restoreRunAssignment(raw_dictionary, self.round)
+            # restoreRunAssignment processes self.played_cards that are in runs so that positions of
+            # Wilds and Aces are maintained.
+            # This is done in rules because it will be specific to Liverpool (other shared_board games
+            # will have different rules, such as whether Aces can be both high and low...)
+            print('line line 120 in clientstate')
             for key, card_group in self.played_cards.items():
                 for card in card_group:
                     print(card)
-            self.rules.canPlay(prepared_cards, visible_cards, player_index, self.round)
-            print("line 112 in ClientState.py, prepared cards: ")
+                    print(card.tempnumber)
+            self.rules.canPlay(prepared_cards, self.played_cards, self.player_index, self.round)
+            # If no exception raised, then must put cards in order prior to transmitting them to server.
+            combined_cards = self.rules.combineCardDicts(self.played_cards, prepared_cards)
+            for k_group, card_group in combined_cards.items():
+                if k_group[1] >= self.rules.Meld_Threshold[self.round][0]:
+                    card_group.sort(key=lambda wc: wc.tempnumber)
+                else:
+                    print('need to sort sets')
+                    # card_group.sort(key=lambda wc: wc.suit)  < jokers don't sort this way, need to remove
+                    # jokers, sort the rest and then add jokers to the end.
+            # unlike HandAndFoot, self.played_cards includes cards played by everyone.
+            self.played_cards = combined_cards
+            print("line 141 in ClientState.py, prepared cards: ")
             for key, card_group in prepared_cards.items():
                 for card in card_group:
                     self.hand_cards.remove(card)
-                    self.played_cards.setdefault(key, []).append(card)
-                    # todo: need to sort cards here (or in Liverpool.;py)
-                    #  -- have to figure out how to designate wilds nominal value.
-                    # if its in the middle that's easy but Aces and wilds need to be set high or low.
-                    # can do that in a separate method...
-            # unlike HandAndFoot, self.played_cards includes cards played by everyone.
+
 
     def getValidKeys(self, card):
         """Get the keys that this card can be prepared with"""

@@ -11,10 +11,13 @@ class Card:
 
         if suit is None:
             self.number = 0  # Jokers are always 0
+            self.tempnumber = 0 # for some card games want to be able to track values of wild cards
         elif number not in range(1, 14):  # range includes start but not stop number
             raise ValueError("Invalid card number")
         else:
             self.number = number
+            self.tempnumber = number  #  Use tempnumber for sorting (in some games Aces can hi/lo) and tracking wilds.
+            # tempnumber is not included in serialization.
 
         self.deck = deck
 
@@ -24,6 +27,10 @@ class Card:
         if self.suit in ['Hearts', 'Diamonds']:
             return 'Red'
         return None  # For jokers
+
+    def assignWild(self, value):
+        self.tempnumber = int(value)
+        return self
 
     def serialize(self):
         """translate into a format podsixnet can translate"""
