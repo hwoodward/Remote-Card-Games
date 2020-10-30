@@ -16,12 +16,8 @@ class GameServer(Server, ServerState):
         self.players = []
         self.in_round = False
         self.game_over = False
-        # todo: Shared_Board should probably be set in Ruleset.py, not here.
-        if ruleset == "Liverpool":
-            self.Shared_Board = True
+        if self.rules.Shared_Board:      #  True for Liverpool, False for HandAndFoot.
             self.visible_cards_now = {}
-        else:
-            self.Shared_Board = False
         print('Server launched')
 
     def Connected(self, channel, addr):
@@ -114,14 +110,17 @@ class GameServer(Server, ServerState):
         #NOTE: visible_cards needs to be serialized form to be transmitted.
         # On server keep them in serialized form.
 
-        if self.Shared_Board:
-            # Liverpool -- each player can play on any players cards.
+        if self.rules.Shared_Board:
+            # Shared_Board is True: (e.g. Liverpool) - each player can play on any players cards.
             self.v_cards = [p.visible_cards for p in self.players]
             if len(self.v_cards) == 0:
                 self.v_cards = [{}]
             # v_cards contains a dictionary from each player/client
             # each dictionary contains all the played cards that player/client is aware of.
             # set self.visible_cards_now to the dictionary in v_cards with the most cards.
+            #
+            # todo: consider whether checking the length is the best way to determine which dictionary is most
+            # recent version of visible_cards.
             max_len = -1
             self.visible_cards_now = {}
             for v_cards_dict in self.v_cards:
@@ -134,7 +133,7 @@ class GameServer(Server, ServerState):
             # Next line must be long (no line breaks) or it doesn't work properly.
             self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players],"visible_cards": [self.visible_cards_now],"hand_status": [p.hand_status for p in self.players]})
         else:
-            # HandAndFoot -- each player can only play on their own cards.
+            # Shared_Board is False: (e.g. HandAndFoot) -- each player can only play on their own cards.
             # Next line must be long (no line breaks) or it doesn't work properly.
             self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
 
