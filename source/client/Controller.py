@@ -16,14 +16,13 @@ class Controller(ConnectionListener):
     def __init__(self, clientState):
         self._state = clientState
         self.prepared_cards = {}     #This is the dict of cards prepared to be played
-        self.prepared_cards_list =[] # liverpool needs list instead of a single dictionary.
         self.setName()
         self.ready = False
         self.note = "Game is beginning."
-        # needed for Liverpool:
+        # variables needed for games with Shared_Board == True (i.e. Liverpool):
         self.Meld_Threshold = self._state.rules.Meld_Threshold
         self.player_index = 0
-        self.visible_scards = [{}] # in Liverpool both HandView and TableView use data:visible cards.
+        self.visible_scards = [{}] # if Shared_Board both HandView and TableView use data:visible cards.
 
     ### Player Actions ###
     def setName(self):
@@ -105,11 +104,11 @@ class Controller(ConnectionListener):
                 self._state.turn_phase = Turn_Phases[2] #Set turn phase to reflect forced action
                 self.note = "Waiting for new cards to make required play"
             else:
-                self._state.turn_phase = Turn_Phases[3] # Liverpool doesn't force actions upon pile pickup.
+                self._state.turn_phase = Turn_Phases[3] # No action required if rules.play_pick_up = False
             connection.Send({"action": "pickUpPile"})
 
     def makeForcedPlay(self, top_card):
-        """Complete the required play for picking up the pile, used in HandAndFoot but not Liverpool"""
+        """Complete the required play for picking up the pile, (used in HandAndFoot but not Liverpool)"""
         self.note = "Performing the play required to pick up the pile"
         #Get key for top_card (we know it can be auto-keyed), and then prepare it
         key = self._state.getValidKeys(top_card)[0]
@@ -147,28 +146,16 @@ class Controller(ConnectionListener):
         return user_input_cards
 
     def assignCardsToGroup(self, assigned_key, selected_cards):
-        """Liverpool Specific: Prepare selected cards to be played by assigning them to key based on button clicked.
+        """Assign cards to specific groups based on button clicked.
 
-        # todo: implement this!!
-        Prepares card -- assigned_key is key of assignment button clicked.
-        If key is below Meld_Threshold[round][0] (set in rules) than it's a set, else it's a run.
-        (Key is integer corresponding to set or run needed for that round,
-         Meld_Threshold[round] is a tuple: (#sets, #runs) required for that round.
-        Returns options for where to play wild cards if cannot be automatically assigned.
+         Wilds are assigned to group, but if value ambiguous it is not determined until group is played.
+         This method is needed in games where player explicitly assigns cards to groups (such as Liverpool).
+         In games that are purely set-based (such as Hand and Foot) this is not used.
         """
-        wilds_in_run = [] # this will be empty for sets and valid numbers for runs.
-        sets_runs = self.Meld_Threshold[self._state.round]
-        '''
-        if assigned_key[1] < sets_runs[0]:
-            print('this should be a set')
-        else:
-            print('this should be a run')
-        '''
         for wrappedcard in selected_cards:
             card = wrappedcard.card
             self.prepareCard(assigned_key, card)
-            #todo: assign jokers if a run. (automatically if in the middle, choose if on end).
-        return wilds_in_run
+        return
 
     def prepareCard(self, key, card):
         """Prepare the selected card with the specified key"""
@@ -187,7 +174,7 @@ class Controller(ConnectionListener):
 
     def play(self, player_index=0, visible_scards=[{}]):
         """Send the server the current set of played cards"""
-        # player_index and visible_scards needed for liverpool rules checking.
+        # player_index and visible_scards needed for rules checking in games with Shared_Board.
         #
         if self._state.turn_phase != Turn_Phases[3]:
             self.note = "You can only play on your turn after you draw"
@@ -299,18 +286,6 @@ class Controller(ConnectionListener):
             return
         self._state.turn_phase = Turn_Phases[1]
         self.note = "Your turn has started. You may draw or attempt to pick up the pile"
-        #
-        # if playing with a shared board, then need to update played cards played.
-        if self._state.rules == 'Liverpool':
-            _state.first_play_this_turn = True  # must serialize visible_cards one time at beginning of turn.
-            # todo: get rid of _state.first_play_this_turn and perform serializaiton below.
-            # todo: have Network_startTurn send visible_cards for previous player's turn.
-            # send played_cards back to server, so that visible_cards[active player] is up to date.
-            _state.played_cards = visible_scards[0]  # in Liverpool all players' cards are included.
-            print('at line 310 in controller.py')
-            for key, vc in _state.played_cards():
-                print(vc)
-
         self.sendPublicInfo() #Let everyone know its your turn.
 
     def Network_newCards(self, data):

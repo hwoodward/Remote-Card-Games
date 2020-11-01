@@ -62,12 +62,13 @@ class HandView:
         # if someone joins between rounds, then they won't know the meld requirement until the round begins because
         # self.controller._state.round = -1 until play commences.  At that point the help_text is no longer printed.
         # Correct meld requirement will be written in lower right corner once play commences.
-        # For Liverpool the correct "prepare cards" buttons must be created, so I don't think it will support a player
+        #
+        #  For Liverpool the correct "prepare cards" buttons must be created, so I don't think it will support a player
         # joining in the middle, unless they know what round they're joining in.
-        # Todo: implement solution where when you start game and enter liverpool, you are also asked to enter
+        # todo: implement solution where when you start game and enter liverpool, you are also asked to enter
         #  round number.  May need to clarify that round 0 = round with 2 sets to meld.
         #
-        # help_text is game specific.  May wish to move it to Ruleset.
+        # todo: help_text is should be game specific.  Move it to Ruleset.
         self.help_text = ['Welcome to a the game.  Meld requirement is: '
                           + str(self.Meld_Threshold[self.round_index]) + '.',
                               'To draw click on the deck of cards (upper left).',
@@ -102,10 +103,6 @@ class HandView:
                     score = 0
                     self.controller.lateJoinScores(score)
                 self.round_index = self.controller._state.round
-            # For Liverpool need to recreate 'prepare cards' buttons when commence each round.
-            if self.ruleset == 'Liverpool' and self.need_updated_buttons:
-                self.RuleSetsButtons.newRound(self, self.Meld_Threshold[self.round_index])
-                self.need_updated_buttons = False
             self.round_advance = True
             # reset outline colors on ready buttons to what they need to be at the start of the "between rounds" state.
             self.ready_color_idx = 2
