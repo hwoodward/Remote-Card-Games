@@ -14,6 +14,7 @@ class PlayerChannel(Channel):
         self.hand_status = [] #order of information in this is specified by the ruleset
         self.scores = []
         self.ready = False #for consensus transitions
+        self.want_card = None  # for games with Buy_Option = True
         Channel.__init__(self, *args, **kwargs)
 
     def scoreForRound(self, round):
@@ -65,6 +66,12 @@ class PlayerChannel(Channel):
         cards = self._server.drawCards()
         self.Send_newCards(cards)
 
+    def Network_drawWithBuyOption(self, data):
+        self._server.cardBuyingResolution()
+        cards = self._server.drawCards()
+        self.Send_newCards(cards)
+
+
     def Network_pickUpPile(self, data):
         cards = self._server.pickUpPile()
         self.Send_newCards(cards)
@@ -91,3 +98,10 @@ class PlayerChannel(Channel):
 
         self.hand_status = data["hand_status"]
         self._server.Send_publicInfo()
+
+    ### Actions related to Buying Discards ###
+
+    def Network_buyResponse(self, data):
+        self.want_card = data["want_card"]
+
+

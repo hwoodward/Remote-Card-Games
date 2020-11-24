@@ -1,6 +1,7 @@
 import importlib
 from common.Card import Card
-
+# from client.RunManagement import processRuns
+# from client.RunManagement import restoreRunAssignment
 
 class ClientState:
     """ This class store client state for access by different listeners
@@ -11,7 +12,6 @@ class ClientState:
 
     def __init__(self, ruleset = None):
         """Initialize a state tracker for a given client"""
-        self.ruleset = ruleset
         if ruleset is not None:
             rule_module = "common." + ruleset
         else:
@@ -65,11 +65,13 @@ class ClientState:
         """Clear out round specific state to prepare for next round to start"""
         self.hand_list = []
         self.hand_cards = []
-        self.played_cards = {}    # if self.rules.Shared_Board is False (HandAndFoot) this is dictionary of
-        #                               cards played by this client.
-        #                           if self.rules.Shared_Board is True (Liverpool) it is a dictionary containing
-        #                           cards played by all players, hence it is derived from
-        #                           data: visible cards, which is processed in method:  in visible_scards[{...}]
+        #   If self.rules.Shared_Board is False (HandAndFoot) this is dictionary of
+        #   cards played by this client.
+        #   If self.rules.Shared_Board is True (Liverpool)
+        #   it is a dictionary containing cards played by all players, hence it is derived from
+        #   data: visible cards, which is processed in method: visible_scards[{...}]
+
+        self.played_cards = {}
         self.went_out = False
         self.discard_info = [None, 0]
 
@@ -78,11 +80,10 @@ class ClientState:
         for card in card_list:
             self.hand_cards.append(card)
 
-    def playCards(self, prepared_cards, visible_scards=[{}], player_index=0):
+    def playCards(self, prepared_cards, processed_full_board={}):
         """Move cards from hand to board if play follows rules, else inform what rule is broken."""
 
         # First check that all the cards are in your hand.
-        self.player_index = player_index
         tempHand = [x for x in self.hand_cards]
         try:
             for card_group in prepared_cards.values():
@@ -90,7 +91,6 @@ class ClientState:
                     tempHand.remove(card)
         except ValueError:
             raise Exception("Attempted to play cards that are not in your hand")
-        # Check ruleset to determine whether self.played_cards = all visible cards or cards that this client played.
         if not self.rules.Shared_Board:
             self.rules.canPlay(prepared_cards, self.played_cards, self.round)
             for key, card_group in prepared_cards.items():
@@ -98,43 +98,8 @@ class ClientState:
                     self.hand_cards.remove(card)
                     self.played_cards.setdefault(key, []).append(card)
         elif self.rules.Shared_Board:
-            # Review Notes
-            # todo: move these to documentation
-            #  unlike in HandAndFoot, where self.played_cards was used to check rules.
-            # in Liverpool and other shared board games need to consider all of the played cards.
-            # Played cards (in deserialized form) are in visible_scards (in serialized form), which is obtained
-            # from controller.
-            # (Path taken by visible_scards:
-            #          Tableview gets the serialized cards every msec to keep display up to date,
-            #          In handview.update tableview.visible_scards list is passed to handview.visible_scards
-            #          No need to process this unless playing cards, in which case visible_scards passed
-            #          to controller and then to clientState, where only list item is deserialized and put in
-            #          dictionary self.played_cards
-            self.played_cards = self.rules.restoreRunAssignment(visible_scards[0], self.round)
-            # restoreRunAssignment converts all serialized cards to cards and processes self.played_cards
-            # that are in runs so that positions of Wilds and Aces are maintained.
-            # Review Note:  This is put in rules because I can imagine other shared board games
-            # will have different rules, such as whether Aces can be both high and low.
-            #
-            # todo:
-            #  tried to get canPlay to return combined dictionary, but then got error that indicated line below was
-            # converting self.played_cards into a boolean (?). Commented out next line and changed return combined_cards
-            # to return True in rules.canPlay.  This means need to process runs again.
-            # If no exception raised, wanted canPlay to return cards in proper order, ready to be transmitted to server.
-            # todo: debug  next line.
-            # self.played_cards  = self.rules.canPlay(prepared_cards, self.played_cards, self.player_index, self.round)
-            self.rules.canPlay(prepared_cards, self.played_cards, self.player_index, self.round)
-
-            combined_cards = self.rules.combineCardDicts(self.played_cards, prepared_cards)
-            self.played_cards = {}
-            for k_group, card_group in combined_cards.items():
-                if k_group[1] >= self.rules.Meld_Threshold[self.round][0]:
-                    processed_group = self.rules.processRuns(card_group)  # process runs from combined_cards
-                else:
-                    #todo: need to sort sets
-                    processed_group = card_group
-                self.played_cards[k_group] = processed_group
-            # unlike HandAndFoot, self.played_cards includes cards played by everyone.
+            self.rules.canPlay(processed_full_board, self.round)
+            self.played_cards = processed_full_board
             for key, card_group in prepared_cards.items():
                 for card in card_group:
                     self.hand_cards.remove(card)

@@ -1,10 +1,11 @@
 import sys
 from time import sleep
+from time import time
 from PodSixNet.Connection import connection, ConnectionListener
 from client.ClientState import ClientState
 from client.Controller import Controller
 from client.CreateDisplay import CreateDisplay
-from client.TableView import TableView            # this should support both Liverpool and HandAndFoot
+from client.TableView import TableView
 from client.HandView import HandView
 # imports below added so that can generate executable using pyinstaller.
 import common.HandAndFoot
@@ -28,16 +29,17 @@ def RunClient():
     print(host)
     print(port)
     ruleset = str(input("Enter the ruleset[Liverpool] ") or "Liverpool")
+    if not ruleset == 'Liverpool' and not ruleset == 'HandAndFoot':
+        print(ruleset + ' is not supported, enter Liverpool OR HandAndFoot')
+        exit()
+    # todo: check that server and client agree -- perhaps get ruleset from server?
     print(ruleset)
     connection.DoConnect((host, int(port)))
     clientState = ClientState(ruleset)
     gameControl = Controller(clientState)
     playername = gameControl.getName()
     gameboard = CreateDisplay(playername)
-    if ruleset == 'Liverpool' or ruleset == 'HandAndFoot':
-        tableView = TableView(gameboard.display, ruleset)
-    else:
-        print('that ruleset is not supported')
+    tableView = TableView(gameboard.display, ruleset)
     handView = HandView(gameControl, gameboard.display, ruleset)
     current_round = handView.round_index
     while(len(tableView.player_names) < 1) or (tableView.player_names.count('guest') > 0 ):
@@ -47,34 +49,44 @@ def RunClient():
         gameControl.Pump()
         tableView.Pump()
         tableView.playerByPlayer(current_round)
-        note = "Connect and then add your name to list of player names..."
+        note = "You should connect once you've entered your name. Otherwise it is possible you have the wrong server or port#..."
         gameboard.render(note)
-        playername = gameControl.checkNames(tableView.player_names)
-    if ruleset == 'Liverpool' or ruleset == 'HandAndFoot':
-        while True:
-            # Primary game loop.
-            this_round = handView.round_index
-            player_index = tableView.player_names.index(playername)
+    playername = gameControl.checkNames(tableView.player_names)
+    # games with Shared_Board=True need to insure name on server and client agree.
+    print('line 58' + playername)
+    if clientState.rules.Shared_Board:
+        clientState.player_index = -99
+        while clientState.player_index == -99:
+            try:
+                clientState.player_index = tableView.player_names.index(playername)
+            except Exception as err:
+                print('at line 63 in RunClient'+ str(clientState.player_index))
+                note = "{0}   waiting for name in player_names to update...".format(err)
             gameboard.refresh()
-            handView.nextEvent()
             connection.Pump()
             gameControl.Pump()
             tableView.Pump()
-            tableView.playerByPlayer(this_round)
-            # note for code review:
-            # - for Liverpool need to put handView.update on TOP of playerByPlayer.
-            # Might also need to add visible_cards to playerByPlayer (?)
-            # because Liverpool handView needs info on other players (HandAndFoot did not).
-            if  ruleset == 'Liverpool':
-                visible_scards = tableView.visible_scards
-                handView.update(player_index, len(tableView.player_names), visible_scards)
-            else:
-                handView.update()
-            note = gameControl.note
+            tableView.playerByPlayer(current_round)
             gameboard.render(note)
             sleep(0.001)
-    else:
-        print('that ruleset is not supported.')
+    while True:
+        # Primary game loop.
+        this_round = handView.round_index
+        gameboard.refresh()
+        handView.nextEvent()
+        connection.Pump()
+        gameControl.Pump()
+        tableView.Pump()
+        tableView.playerByPlayer(this_round)
+        if  clientState.rules.Shared_Board:
+            player_index = tableView.player_names.index(playername)
+            visible_scards = tableView.visible_scards
+            handView.update(player_index, len(tableView.player_names), visible_scards)
+        else:
+            handView.update()
+        note = gameControl.note
+        gameboard.render(note)
+        sleep(0.001)
 
 if __name__ == "__main__":
     if len(sys.argv) != 1:

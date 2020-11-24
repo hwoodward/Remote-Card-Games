@@ -2,6 +2,7 @@ import pygame
 import client.Button as Btn
 import client.UIConstants as UIC
 from client.UICardWrapper import UICardWrapper
+from time import sleep
 
 """This file contains methods used in displaying, selecting and sorting the hand"""
 
@@ -33,10 +34,8 @@ def WrapHand(hand_view, updated_hand, wrapped_hand):
             if newcard:
                 card_xy = (card_xy[0] + hand_view.hand_scaling[1], card_xy[1])
                 card_wrapped = UICardWrapper(card, card_xy, hand_view.hand_scaling[0])
-                card_wrapped.key = UICardWrapper.sortKey(card_wrapped, 0)
-                #todo - above used for H&F, see if need to update further for H&F to still run.
+                # todo: consider combining keys into single list. Also consider generating keys in constructor.
                 card_wrapped.key = card_wrapped.sortKey(0)
-                # todo: in HandAndFoot, edit  so that key is set here instead of in UICardWrapper.
                 card_wrapped.key_LP = [card_wrapped.sortKey(1), card_wrapped.sortKey(2),
                                        card_wrapped.sortKey(3), card_wrapped.sortKey(4) ]
             updated_wrapped_hand.append(card_wrapped)
@@ -134,7 +133,8 @@ def MouseHiLight(wrapped_hand, pos):
 def ManuallyAssign(hand_view):
     """ Cards that cannot be automatically assigned to sets must be manually assigned.
 
-    For HandAndFoot only wild cards need to be manually assigned.
+    Used in HandAndFoot (HandAndFootButtons.py contains methods that eventually trigger this method).
+    Only wild cards need to be manually assigned.
     For other games it may be more complex (e.g. games with runs and sets)
     At this time only set-based games like HandAndFoot are supported.
     """
@@ -171,4 +171,82 @@ def ManuallyAssign(hand_view):
             hand_view.wild_cards = hand_view.wild_cards[1:]
         hand_view.num_wilds = len(hand_view.wild_cards)
     return
+'''
+def wildsHiLo_step1(hand_view):
+    """ Used in Liverpool and other games with runs to assign wilds.
+
+    Assigning wilds is as automated as possible, so this is only used to determine
+    if wilds are high or low.  There should be at most one wild card in unassigned_wilds.
+    """
+    # hand_view.controller.unassigned_wilds_dict
+    # self.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
+
+    for k_group, group_info in hand_view.controller.unassigned_wilds_dict.items():
+        processed_group = group_info[0]
+        unassigned_wilds = group_info[2]
+        if len(unassigned_wilds) > 0:
+            textnote = "USE KEY STROKES!! For the " + str(processed_group[1].suit) + " run: "
+            for card in processed_group:
+                textnote = textnote + str(card.number) + ','
+            textnote = textnote + "should the wild be high or low?  type H or L ? (type q to quit this play entirely)."
+            print(textnote)
+            hand_view.controller.note = textnote
+            hand_view.bad_strokes = 0
+    return
+
+def wildsHiLo_step2(hand_view):
+    """ Used in Liverpool and other games with runs to assign wilds.
+
+    Assigning wilds is as automated as possible, so this is only used to determine
+    if wilds are high or low.  There should be at most one wild card in unassigned_wilds.
+    """
+    # hand_view.controller.unassigned_wilds_dict
+    # self.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
+
+    key_list = []
+    for k_group in hand_view.controller.unassigned_wilds_dict.keys():
+        key_list.append(k_group)
+    print('in HandManagement at line 208, next line is key_list')
+    print(key_list)
+    if len(key_list) > 0:
+        k_group = key_list[0]
+        group_info = hand_view.controller.unassigned_wilds_dict[k_group]
+        processed_group = group_info[0]
+        wild_options = group_info[1]
+        unassigned_wilds = group_info[2]
+        if len(unassigned_wilds) > 0:
+            this_wild = unassigned_wilds[0]
+            if hand_view.event.type == pygame.KEYDOWN:
+                if hand_view.event.key == pygame.K_l:
+                    this_wild.tempnumber = wild_options[0]
+                    del hand_view.controller.unassigned_wilds_dict[k_group]
+                elif hand_view.event.key == pygame.K_h:
+                    this_wild.tempnumber = wild_options[1]
+                    del hand_view.controller.unassigned_wilds_dict[k_group]
+                elif hand_view.event.key == pygame.K_q:
+                    hand_view.controller.unassigned_wilds_dict = {}
+                    raise Exception('You canceled this play, hit play again when ready.')
+                else:
+                    hand_view.bad_strokes = hand_view.bad_strokes + 1
+                    if hand_view.bad_strokes > 4:
+                        hand_view.controller.note = 'Invalid response more than 3 times, made wild card high'
+                        this_wild.tempnumber = wild_options[1]
+                        del hand_view.controller.unassigned_wilds_dict[k_group]
+                print('in HandManagement_wildHiLo, wild assignment:'+str(this_wild.tempnumber))
+                processed_group.append(this_wild)
+                processed_group.sort(key=lambda wc: wc.tempnumber)
+                hand_view.controller.processed_full_board[k_group] = processed_group
+            hand_view.num_wilds = len(hand_view.controller.unassigned_wilds_dict.keys())
+            if hand_view.num_wilds > 0:
+                wildsHiLo_step1(hand_view)
+            else:
+                print("look at these todos")
+                # todo: this is where cards should be played.  As code now stands cards get played once they're processed
+                # todo: even if num_wilds > 0.  Need to simply put if statement there, too.
+        else:
+            print('In HandManagement.wildsHiLo_step2.')
+            print('Why is there an entry in hand_view.controller.unassigned_wilds_dict with no unassigned_wilds?')
+    return
+'''
+
 

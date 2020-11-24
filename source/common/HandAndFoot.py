@@ -10,11 +10,12 @@ import math
 
 Game_Name = "Hand and Foot"
 
-Shared_Board = False
+Shared_Board = False  # you can only play on the sets you meld, not on other players.
+Buy_Option = False  # in Liverpool you can purchase top discard, in HandAndFoot you cannot.
+play_pick_up = True  # must play some cards in order to pick-up the pile.
 Draw_Size = 2
 Pickup_Size = 8
 Discard_Size = 1
-play_pick_up = True  # must play some cards in order to pick-up the pile.
 wild_numbers = [0, 2]
 
 Meld_Threshold = [50, 90, 120, 150]
@@ -23,7 +24,14 @@ Number_Rounds = len(Meld_Threshold)  # For convenience
 Deal_Size = 11
 Hands_Per_Player = 2
 notes = ["You can only pick up the pile at the start of your turn."]
-
+help_text = ['Welcome to a Hand And Foot!  Meld requirement is: '+  str(Meld_Threshold[0]) + '.',
+                              'To draw click on the deck of cards (upper left).',
+                              'To discard select ONE card & double click on discard button. ',
+                              'To pick up discard prepare 2 matching cards in hand and click on discard pile. ',
+                              "Cumulative score will display beneath player's cards",
+                              'When ready to start playing click on the YES button on the lower right.']
+wild_instructions = 'Use the keyboard to designate your prepared wild cards \r\n '
+wild_instructions = wild_instructions + '(use 0 for 10 and J, Q, or K for facecards).'
 
 def numDecks(numPlayers):
     """Specify how many decks of cards to put in the draw pile"""

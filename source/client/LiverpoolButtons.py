@@ -33,9 +33,6 @@ def CreateButtons(hand_view, num_players=1):
     hand_view.sort_al_btn = Btn.Button(UIC.White, 850, 75, 175, 20, text=' by  no. (Aces=1) ')
     hand_view.sort_suit_ah_btn = Btn.Button(UIC.White, 1025, 50, 100, 20, text=' (Aces high)')
     hand_view.sort_ah_btn = Btn.Button(UIC.White, 1025, 75, 100, 20, text=' (Aces high)')
-    #  For liverpool need multiple buttons to assign cards to appropriate set/run.
-    #  and need to do this at beginning of each round, so those buttons are in separate method: newRound
-    # btns = a list  of lists. Index of outer list = player_index for each player, index of inner list = # of group.
     hand_view.assign_cards_btns = [[]]  # list of card groups (each group is a set or run) for each player.
     hand_view.clear_prepared_cards_btn = Btn.Button(UIC.White, 320, 53, 225, 25, text='Clear prepared cards')
     hand_view.clear_selected_cards_btn = Btn.Button(UIC.White, 200, 90, 225, 25, text='Clear selected cards')
@@ -48,11 +45,15 @@ def CreateButtons(hand_view, num_players=1):
 
 
 def newRound(hand_view, sets_runs_tuple):
-    """ At start of each round this creates buttons used to assign cards."""
+    """ At start of each round (after all players hit OK) this creates buttons used to assign cards."""
 
     #  For liverpool need multiple buttons to assign cards to appropriate set/run.
     #  and need to do this at beginning of each round, so those buttons are in this separate method.
     # btns = a list  of lists. Index of outer list = player_index for each player, index of inner list = # of group.
+    # Buttons are used as keys in Dictionary of visible cards. (e.g. for  k_group, card_group in visible_cards.items())
+    # k_group is a tuple of (player index, group number) and corresponds to one of the buttons about to be created.
+    # Groups that are sets are always before groups that are runs (code depends on that).
+    #
     hand_view.buttons_per_player = sets_runs_tuple[0] + sets_runs_tuple[1]
     hand_view.assign_cards_btns = [[]]
     w = 75  # width of following buttons
@@ -63,27 +64,36 @@ def newRound(hand_view, sets_runs_tuple):
         players_sp_w = UIC.Disp_Width
     players_sp_h = UIC.Disp_Height / 8
     players_sp_top = (UIC.Disp_Height / 5) + players_sp_h
-    for idx in range(hand_view.num_players):
+    for idx in range(hand_view.num_players - 1):
         hand_view.assign_cards_btns.append([])
+    for idx in range(hand_view.num_players):
         for setnum in range(sets_runs_tuple[0]):
-            hand_view.assign_cards_btns[idx].append([])
+            # hand_view.assign_cards_btns[idx].append([])
             txt = "set " + str(setnum+1)
             x = 100 + (players_sp_w*idx)
             y = players_sp_top + (players_sp_h*setnum)
             prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
-            hand_view.assign_cards_btns[idx][setnum] = prepare_card_btn
+            hand_view.assign_cards_btns[idx].append(prepare_card_btn)
         for runnum in range(sets_runs_tuple[1]):
-            hand_view.assign_cards_btns[idx].append([])
             txt = "run " + str(runnum+1)
             jdx = sets_runs_tuple[0] + runnum
             x = 100 + (players_sp_w * idx)
             y = players_sp_top + (players_sp_h * jdx)
             prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
-            hand_view.assign_cards_btns[idx][jdx] = prepare_card_btn
+            # hand_view.assign_cards_btns[idx][jdx] = prepare_card_btn
+            hand_view.assign_cards_btns[idx].append(prepare_card_btn)
 
 
 def ButtonDisplay(hand_view):
     """ This updates draw pile and action buttons. It is called in HandView.update each render cycle. """
+
+    # at beginning of round of Liverpool (or other shared_board game) create new buttons.
+    # Review note - wait until all players hit OK else it crashes if you hit OK and then another player joins,
+    # because then you won't have buttons for that player.  Note if a player leaves mid round then the sets and runs
+    # that disappear are those of the player on the far right.
+    if hand_view.need_updated_buttons and not hand_view.controller._state.round == -1:
+        hand_view.RuleSetsButtons.newRound(hand_view, hand_view.Meld_Threshold[hand_view.round_index])
+        hand_view.need_updated_buttons = False
     loc_xy = (hand_view.draw_pile.x, hand_view.draw_pile.y)
     hand_view.draw_pile.draw(hand_view.display, loc_xy, hand_view.draw_pile.outline_color)
     # update discard info and redraw
@@ -127,7 +137,10 @@ def ClickedButton(hand_view, pos):
         if hand_view.pickup_pile.isOver(pos):
             hand_view.controller.pickUpPile(notes[0])
     if hand_view.draw_pile.isOver(pos):
-        hand_view.controller.draw()
+        if hand_view.pickup_pile_sz > 0:
+            hand_view.controller.drawWithBuyOption()  # use different method for Liverpool than HandAndFoot
+        else:
+            hand_view.controller.draw()              # unless pile is empty (at start of each round)
     elif hand_view.sort_al_btn.isOver(pos):
         hand_view.hand_info.sort(key=lambda wc: wc.key_LP[1])
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
@@ -146,7 +159,37 @@ def ClickedButton(hand_view, pos):
         )
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.play_prepared_cards_btn.isOver(pos):
-        hand_view.controller.play(hand_view.player_index, hand_view.visible_scards)
+        # todo: Review question  - in Liverpool process of playing cards a bit more complicated than in HandAndFoot,
+        #  this will be true for other games with a SharedBoard.
+        #  Perhaps should create method in controller that combines all the steps below?
+        # Review note: Playing cards is a 3 step process:
+        # 0.  Verify it's your turn (or run risk of using obsolete version of visible_scards to create processed_cards).
+        # 1.  process cards, this will set tempnumbers properly and put them in dictionary controller.processed_cards.
+        #    in the process, some rules of runs are verified (have meld requirement, not playing on other players,
+        #    no repeats of cards in runs, and Aces can't turn corners).
+        # 2. Assign any ambiguous wild cards (they are wilds that end up at the ends of runs).
+        # 3. Double check additional rules, including Liverpool specific rules.  If pass, then play the cards.
+        my_turn = hand_view.controller.turnCheck()
+        hand_view.controller.processed_full_board = {}
+        if my_turn:
+            try:
+                # calculate  hand_view.controller.processed_full_board
+                hand_view.controller.processCards(hand_view.visible_scards)
+            except Exception as err:
+                hand_view.controller.note = "{0}".format(err)
+                return
+            finally:
+                # In Liverpool and other shared_board games reset Aces and Wilds in prepared cards, so they can be reassigned.
+                hand_view.controller.resetPreparedWildsAces()
+            hand_view.num_wilds = len(hand_view.controller.unassigned_wilds_dict.keys())
+            # hand_view.nextEvents will only look for keystrokes until hand_view.num_wilds is zero.
+            if hand_view.num_wilds > 0:
+                # hand_view.controller.note = 'Play will not complete until you designate wild cards using key strokes.'
+                # HandManagement.wildsHiLo_step1(hand_view)
+                hand_view.controller.note = 'In this branch of code you should never get here...'
+            else:
+                # final rules check, if pass, then play (will use played_cards dictionary to send update to server).
+                hand_view.controller.play()
     elif hand_view.clear_prepared_cards_btn.isOver(pos):
         hand_view.controller.clearPreparedCards()
         hand_view.hand_info = HandManagement.ClearPreparedCardsInHandView(hand_view.hand_info)
@@ -162,9 +205,6 @@ def ClickedButton(hand_view, pos):
         hand_view.hand_info = []
         hand_view.ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
         hand_view.not_ready_color_idx = 8  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
-        if  hand_view.need_updated_buttons:
-            hand_view.RuleSetsButtons.newRound(hand_view, hand_view.Meld_Threshold[hand_view.round_index])
-            hand_view.need_updated_buttons = False
     elif hand_view.controller._state.round == -1 and hand_view.ready_no_btn.isOver(pos):
         hand_view.controller.setReady(False)
         # if you don't want last round's hand to reappear, then
@@ -174,7 +214,7 @@ def ClickedButton(hand_view, pos):
         hand_view.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(not_ready_color_idx)
     elif not hand_view.need_updated_buttons:
         #  loop through all the buttons which prepare cards by assigning them to a particular run or set
-        for idx in range(hand_view.num_players):
+        for idx in range(len(hand_view.assign_cards_btns)):
             for jdx in range(hand_view.buttons_per_player):
                 if hand_view.assign_cards_btns[idx][jdx].isOver(pos):
                     # put all selected cards in a list

@@ -3,6 +3,8 @@ from server.ServerState import ServerState
 
 from PodSixNet.Server import Server
 from PodSixNet.Channel import Channel
+from time import time, sleep
+
 
 class GameServer(Server, ServerState):
     channelClass = PlayerChannel
@@ -88,6 +90,41 @@ class GameServer(Server, ServerState):
         newIndex = (self.turn_index + 1) % len(self.players)
         self.turn_index = newIndex
         self.players[self.turn_index].Send({"action": "startTurn"})
+        if self.rules.Buy_Option:
+            self.Send_buyingOpportunity()
+
+    def cardBuyingResolution(self):
+        """ Resolve who gets to purchase card for games with Buy_Option = True
+        This is called when upon player drawing cards. """
+        timelimit = time() + self.rules.purchase_time
+        buying_phase = True # else this routine would not be called
+        i_max = len(self.players) - 2
+        index = (self.turn_index + 1) % len(self.players)
+        icount = 0
+        while buying_phase and icount < i_max:
+            while self.players[index].want_card is None and time() < timelimit:
+                # wait patiently(?) while updating information from players.
+                # todo: discuss whether timer should start from time card is discarded, or
+                #  time next player attempts to draw.  Latter would enable players to give one another more time.
+                #  Currently done from time of discard, therefore, may want a longer purchase_time...
+                self.Pump()
+                sleep(0.0001)
+            if self.players[index].want_card:
+                self.Send_buyingResult(self.players[index].name)
+                # send cards
+                cards = self.players[index]._server.drawCards()   # note number of cards is same as DrawSize
+                cards = cards + self.players[index]._server.pickUpPile()   # number of cards is same as Pickup_Size
+                self.players[index].Send_newCards(cards)
+                self.Send_discardInfo()
+                buying_phase = False
+            elif not self.players[index].want_card:
+                index = index + 1 % len(self.players)
+                icount = icount + 1
+
+
+
+
+    ######################################################
 
     def Send_broadcast(self, data):
         """Send data to every connected player"""
@@ -142,4 +179,25 @@ class GameServer(Server, ServerState):
         """Send the update to the discard pile"""
         info = self.getDiscardInfo()
         self.Send_broadcast({"action": "discardInfo", "top_card": info[0].serialize(), "size": info[1]})
+
+    def Send_buyingOpportunity(self):
+        """ Let eligible players know there's a buying opportunity
+
+        Used in games with with Buy_Option = True (i.e. Liverpool)
+        where you can buy the top discard if the next player doesn't want
+        it.  If there are N players, then N-2 players are eligible to buy card
+        (neither player who discarded, nor current active player are eligible).
+        """
+        for p in self.players:
+            p.want_card = None     # reset all buying responses to None
+        info = self.getDiscardInfo()
+        i_max = len(self.players) - 2
+        for i_count in range(i_max):
+            index = (self.turn_index + i_count + 1) % len(self.players)
+            self.players[index].Send({"action": "buyingOpportunity", "top_card": info[0].serialize()})
+
+    def Send_buyingResult(self, buyer):
+        """ Broadcast who purchased what card in last auction."""
+        info = self.getDiscardInfo()  # be sure to send this before giving the player the top card.
+        self.Send_broadcast({"action": "buyingResult", "top_card": info[0].serialize(), "buyer": buyer})
 
