@@ -58,7 +58,8 @@ def processRuns(card_group, wild_numbers):
                 elif isWild(card_group[-1], wild_numbers):
                     this_wild = card_group.pop(-1)
                     this_wild.tempnumber = this_wild.number
-                    groups_wilds.append(card)
+                    groups_wilds.append(this_wild)
+                    card_group.append(card)
                 else:
                     raise Exception('Card value already in the run.')
             else:
@@ -179,7 +180,7 @@ def processRuns(card_group, wild_numbers):
     return card_group, possible_wild_assignments, groups_wilds
 
 def restoreRunAssignment(visible_scards_dictionary, wild_numbers, numsets):
-    """ assign values to Wild cards and Aces in runs from server.
+    """ Convert scards to cards and assign values to Wild cards and Aces in runs from server.
 
     Needed to maintain integrity of Wilds' assigned values in runs.  Server does not know tempnumbers
     (for backwards compatability not changing json between server and client).

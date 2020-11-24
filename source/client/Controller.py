@@ -194,16 +194,6 @@ class Controller(ConnectionListener):
         self.prepared_cards = {}
         self.note = "You have no cards prepared to play"
 
-    def turnCheck(self):
-        """Verify it's the player's turn before processing cards,
-
-        else visible_scards may become obsolete during processing."""
-        if self._state.turn_phase != Turn_Phases[3]:
-            self.note = "You can only play on your turn and only after you draw"
-            return False
-        else:
-            return True
-
     def play(self):
         """Send the server the current set of played cards"""
         # player_index and visible_scards needed for rules checking in games with Shared_Board.
@@ -213,17 +203,12 @@ class Controller(ConnectionListener):
             return
         try:
             if self._state.rules.Shared_Board:
-                # self.processCards sets card.tempnumber in runs.
-                # processed_cards = self.processCards(visible_scards)
-                # moved calling this method to Liverpool buttons. processed_cards = self.processCards(visible_scards)
-                # because need to call wildsHiLO between it and next call.
+                # Some rule checking on runs is performed in self.processCards (called before this).
                 self._state.playCards(self.prepared_cards, self.processed_full_board)
             else:
                 self._state.playCards(self.prepared_cards, {})
             self.clearPreparedCards()
             self.handleEmptyHand(False)
-            for (key, card_group) in self._state.played_cards.items():
-                print(card_group)
             self.sendPublicInfo()
         except Exception as err:
             self.note = "{0}".format(err)
@@ -239,6 +224,38 @@ class Controller(ConnectionListener):
             for card in card_group:
                 card.tempnumber = card.number
 
+    def sharedBoardPrepAndPlay(self, visible_scards):
+        # Review note: Playing cards is a 4 step process:
+        # 1.  Verify it's your turn (or run risk of using obsolete version of visible_scards to create processed_cards).
+        # 2.  process cards, this will set tempnumbers properly and put them in dictionary controller.processed_cards.
+        #    in the process, some rules of runs are verified (have meld requirement, not playing on other players,
+        #    no repeats of cards in runs, and Aces can't turn corners).
+        # 3. Assign any ambiguous wild cards (they are wilds that end up at the ends of runs).
+        # 4. Double check additional rules, including Liverpool specific rules.  If pass, then play the cards.
+
+        # Verify it's the player's turn before processing cards, else visible_scards may become obsolete during processing.
+        if self._state.turn_phase != Turn_Phases[3]:
+            self.note = "You can only play on your turn and only after you draw"
+            return
+        self.processed_full_board = {}
+        try:
+            # calculate  self.processed_full_board
+            self.processCards(visible_scards)
+        except Exception as err:
+            self.note = "{0}".format(err)
+            return
+        finally:
+            # In Liverpool and other shared_board games reset Aces and Wilds in prepared cards,
+            # so they can be reassigned if play fails.
+            self.resetPreparedWildsAces()
+        num_wilds = len(self.unassigned_wilds_dict.keys())
+        if num_wilds > 0:
+            # self.note = 'Play will not complete until you designate wild cards using key strokes.'
+            # HandManagement.wildsHiLo_step1(hand_view)
+            self.note = 'In this branch of code you should never get here, as wilds automatically played high....'
+        else:
+            # final rules check, if pass, then play (will use played_cards dictionary to send update to server).
+            self.play()
 
     def processCards(self, visible_scards):
         """ Combine prepared cards and cards already on shared board.
@@ -251,8 +268,7 @@ class Controller(ConnectionListener):
         """
         # before combining prepared cards with played cards, check that player is not BEGINNING
         # another player's groups.
-        #todo: calling this method must be done with a try:...
-        played_groups = []    # list of keys corresponding to card groups that have been begun.
+        played_groups = []    # will contain list of keys corresponding to card groups that have been begun.
         for key, card_group in visible_scards[0].items():
             if len(card_group) > 0:
                 played_groups.append(key)

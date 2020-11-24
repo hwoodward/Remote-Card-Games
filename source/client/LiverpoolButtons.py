@@ -159,39 +159,7 @@ def ClickedButton(hand_view, pos):
         )
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.play_prepared_cards_btn.isOver(pos):
-        # todo: Review question  - in Liverpool process of playing cards a bit more complicated than in HandAndFoot,
-        #  this will be true for other games with a SharedBoard.
-        #  Perhaps should create method in controller that combines all the steps below?
-
-        # todo: is my_turn really necessary -- HandAndFoot also required that it be your turn to play...
-        # Review note: Playing cards is a 3 step process:
-        # 0.  Verify it's your turn (or run risk of using obsolete version of visible_scards to create processed_cards).
-        # 1.  process cards, this will set tempnumbers properly and put them in dictionary controller.processed_cards.
-        #    in the process, some rules of runs are verified (have meld requirement, not playing on other players,
-        #    no repeats of cards in runs, and Aces can't turn corners).
-        # 2. Assign any ambiguous wild cards (they are wilds that end up at the ends of runs).
-        # 3. Double check additional rules, including Liverpool specific rules.  If pass, then play the cards.
-        my_turn = hand_view.controller.turnCheck()
-        hand_view.controller.processed_full_board = {}
-        if my_turn:
-            try:
-                # calculate  hand_view.controller.processed_full_board
-                hand_view.controller.processCards(hand_view.visible_scards)
-            except Exception as err:
-                hand_view.controller.note = "{0}".format(err)
-                return
-            finally:
-                # In Liverpool and other shared_board games reset Aces and Wilds in prepared cards, so they can be reassigned.
-                hand_view.controller.resetPreparedWildsAces()
-            hand_view.num_wilds = len(hand_view.controller.unassigned_wilds_dict.keys())
-            # hand_view.nextEvents will only look for keystrokes until hand_view.num_wilds is zero.
-            if hand_view.num_wilds > 0:
-                # hand_view.controller.note = 'Play will not complete until you designate wild cards using key strokes.'
-                # HandManagement.wildsHiLo_step1(hand_view)
-                hand_view.controller.note = 'In this branch of code you should never get here...'
-            else:
-                # final rules check, if pass, then play (will use played_cards dictionary to send update to server).
-                hand_view.controller.play()
+        hand_view.controller.sharedBoardPrepAndPlay(hand_view.visible_scards)
     elif hand_view.clear_prepared_cards_btn.isOver(pos):
         hand_view.controller.clearPreparedCards()
         hand_view.hand_info = HandManagement.ClearPreparedCardsInHandView(hand_view.hand_info)

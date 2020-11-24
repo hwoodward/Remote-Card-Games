@@ -53,14 +53,12 @@ def RunClient():
         gameboard.render(note)
     playername = gameControl.checkNames(tableView.player_names)
     # games with Shared_Board=True need to insure name on server and client agree.
-    print('line 58' + playername)
     if clientState.rules.Shared_Board:
         clientState.player_index = -99
         while clientState.player_index == -99:
             try:
                 clientState.player_index = tableView.player_names.index(playername)
             except Exception as err:
-                print('at line 63 in RunClient'+ str(clientState.player_index))
                 note = "{0}   waiting for name in player_names to update...".format(err)
             gameboard.refresh()
             connection.Pump()
