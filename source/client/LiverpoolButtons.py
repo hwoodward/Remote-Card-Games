@@ -162,6 +162,8 @@ def ClickedButton(hand_view, pos):
         # todo: Review question  - in Liverpool process of playing cards a bit more complicated than in HandAndFoot,
         #  this will be true for other games with a SharedBoard.
         #  Perhaps should create method in controller that combines all the steps below?
+
+        # todo: is my_turn really necessary -- HandAndFoot also required that it be your turn to play...
         # Review note: Playing cards is a 3 step process:
         # 0.  Verify it's your turn (or run risk of using obsolete version of visible_scards to create processed_cards).
         # 1.  process cards, this will set tempnumbers properly and put them in dictionary controller.processed_cards.

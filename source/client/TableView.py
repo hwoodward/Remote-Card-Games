@@ -11,11 +11,7 @@ from common.Liverpool import wild_numbers as wild_numbers_LP
 
 
 class TableView(ConnectionListener):
-    """ This displays publicly available info on all the players.
-
-    HandAndFoot specific version is in TableView_HF. This version ALSO supports Liverpool
-    """
-    # todo: eliminate TableView_HF from GitHub repository.
+    """ This displays publicly available info on all the players. """
 
     def __init__(self, display, ruleset):
         self.display = display

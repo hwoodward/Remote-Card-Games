@@ -211,11 +211,7 @@ class Controller(ConnectionListener):
         if self._state.turn_phase != Turn_Phases[3]:
             self.note = "You can only play on your turn after you draw"
             return
-        #todo: remove this note, and if True: statement.
-        # when debugging sometimes useful to replace 'try:' with 'if True:'  and comment out except block.
-        #
         try:
-        # if True:
             if self._state.rules.Shared_Board:
                 # self.processCards sets card.tempnumber in runs.
                 # processed_cards = self.processCards(visible_scards)
@@ -229,15 +225,11 @@ class Controller(ConnectionListener):
             for (key, card_group) in self._state.played_cards.items():
                 print(card_group)
             self.sendPublicInfo()
-        # '''
         except Exception as err:
             self.note = "{0}".format(err)
             return
-            # '''
-        # Review note, tried to put this in exception block above, but it wasn't called....
-        #todo: still not called, see if can figure out why....is there another try: statement?
         finally:
-        # In Liverpool and other shared_board games reset Aces and Wilds in prepared cards, so they can be reassigned.
+            # In Liverpool and other shared_board games reset Aces and Wilds in prepared cards, so they can be reassigned.
             if self._state.rules.Shared_Board:
                 self.resetPreparedWildsAces()
 
