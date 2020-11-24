@@ -22,7 +22,7 @@ wild_numbers = [0]
 
 # Liverpool: number of sets and runs required to meld.  Order is important! (code relies on sets being first).
 # first element below is temporary (for testing).
-Meld_Threshold = [(0,2), (2,0), (1,1), (0,2), (3,0), (2,1), (1,2), (0,3)]
+Meld_Threshold = [(2,0), (1,1), (0,2), (3,0), (2,1), (1,2), (0,3)]
 Number_Rounds = len(Meld_Threshold)  # For convenience
 Deal_Size = 11
 Hands_Per_Player = 1
@@ -65,7 +65,7 @@ def canPlayGroup(key, card_group, this_round):
 
     if key[1] < Meld_Threshold[this_round][0]:   # then this is a set.
         # check if this is a valid set.
-        if len(card_group) < 1:
+        if len(card_group) < 3:
             raise Exception("Too few cards in set - minimum is 1 (will change to 3 later)")
         # check that group contains only wilds and one card_number.
         card_numbers = []
@@ -86,16 +86,14 @@ def canPlayGroup(key, card_group, this_round):
         # check that this processed run follows rules
         # Note processRuns also has rule checking (rules around assigning Wilds and placing
         # Aces hi/lo are done in that method).
-        if len(card_group) < 2:
-            # todo:  for debugging only require  < 2, will need to change that to 4 later.
-            raise Exception("Too few cards in run - minimum is 2 (for now) 4 (final version)")
+        if len(card_group) < 4:
+            raise Exception("Too few cards in run - minimum is 4")
         suits_in_run = []
         for card in card_group:
             if not isWild(card):
                 suits_in_run.append(card.suit)
         unique_suits = list(set(suits_in_run))
-        if len(unique_suits) > 4:  # testing > 1:
-            #todo: for testing not requiring one suit.  Fix this later.
+        if len(unique_suits) > 1:
             raise Exception("Cards in a run must all have the same suit (except wilds).")
     return True
 

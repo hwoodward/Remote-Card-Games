@@ -416,10 +416,6 @@ class Controller(ConnectionListener):
 
     def Network_buyingOpportunity(self, data):
         self.buying_opportunity = True
-        #  Ignore this when between rounds or when there are no cards in discard pile.
-        #todo: remove 2 lines below because almost certainly unnecessary.
-        #  if self._state.round == -1 or self._state.discard_info[1] == 0:
-        #     return
         self.note = "The {0} is for sale, Do you want to buy it? [y/n]".format(Card.deserialize(data["top_card"]))
 
     def Network_newCards(self, data):
@@ -428,9 +424,9 @@ class Controller(ConnectionListener):
         if self._state.turn_phase == Turn_Phases[2]:
             #This is the result of a pickup and we have a forced action
             self.makeForcedPlay(card_list[0])
-        # review note -- in Liverpool the note below
-        # overwrites message on who bought card, AND was appearing on board of the person who bought card.
         if not self._state.rules.Buy_Option:
+            # review note -- in Liverpool the note below
+            # overwrites message on who bought card, AND was appearing on board of the person who bought card.
             self.note = "You can now play cards or discard"
         self.sendPublicInfo() #More cards in hand now, need to update public information
 
@@ -463,4 +459,3 @@ class Controller(ConnectionListener):
         buyer = data["buyer"]
         purchase = Card.deserialize(data["top_card"])
         self.note = "{0} has purchased {1}".format(buyer, purchase)
-
