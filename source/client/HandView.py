@@ -107,44 +107,53 @@ class HandView:
             self.hand_info = HandManagement.WrapHand(self, self.current_hand, self.hand_info)
         HandManagement.ShowHolding(self, self.hand_info)  # displays hand
         self.RuleSetsButtons.ButtonDisplay(self)
-    '''
-    def nextEvent(self):
-        """This short circuits next when Shared_Board is True and turn phase = forced play.
 
-        IN this scheme nextEvent below is renamed nextEventOriginal.  Not at all certain this is the right approach.
+    def nextEventWildsOnBoard(self):
+        """This runs instead of most of nextEvent when Shared_Board is True and there are ambiguous wild cards.
+
         It is looking for key strokes to designate ambiguous wild cards in runs.
-        The mouse is ignored until you designate all the wilds (turn phase goes back to play)
-        or cancel playing the currently prepared cards entirely."""
+        The mouse is ignored until you designate all the wilds (turn phase goes back to play)."""
 
         if self.controller._state.rules.Shared_Board and self.num_wilds > 0:
             for self.event in pygame.event.get():
-                # in Shared_Board games, check if there are wilds that need to be updated. All other events are ignored
-                # until play is finished.
-                HandManagement.wildsHiLo_step2(self)
-                #todo: remove next line once stable...
-                print('in handview, line 130.')
-        else:
-            self.nextEventOriginal()
-    '''
+                if self.event.type == pygame.QUIT:
+                    # The window crashed, we should handle this
+                    print("pygame crash, AAAHHH")
+                    pygame.quit()
+                    quit()
+                else:
+                    # in Shared_Board games, check if there are wilds that need to be updated.
+                    # All other events are ignored until play is finished.
+                    HandManagement.wildsHiLo_step2(self)
+
     def nextEvent(self):
         """This submits the next user input to the controller,
 
         In games with Shared_Board = False (e.g. HandAndFoot) key strokes don't do anything
         unless designating values for prepared wild cards, at which time the mouse is ignored
-        unless you want to clear the prepared cards."""
+        unless you want to clear the prepared cards.
+        In games with Shared_Board = True  wilds on board might change designation upon other cards being played.
+        IF designation cannot be handled automatically (= if wild can be at the beginning or end of a run) then
+        it must be designated before play is completed.
+        This is done in nextEvenWildsOnBoard.  All other events are ignored until num_wilds == 0 OR play is canceled."""
+
+        if self.controller._state.rules.Shared_Board:
+            self.num_wilds = len(self.controller.unassigned_wilds_dict.keys())
+            if self.num_wilds > 0:
+                self.nextEventWildsOnBoard()
 
         for self.event in pygame.event.get():
-            if not self.controller._state.rules.Shared_Board and self.num_wilds > 0:
-                wild_instructions = 'Use the keyboard to designate your prepared wild cards \r\n '
-                wild_instructions = wild_instructions + '(use 0 for 10 and J, Q, or K for facecards).'
-                self.controller.note = wild_instructions
-            pos = pygame.mouse.get_pos()
-
             if self.event.type == pygame.QUIT:
                 # The window crashed, we should handle this
                 print("pygame crash, AAAHHH")
                 pygame.quit()
                 quit()
+
+            if not self.controller._state.rules.Shared_Board and self.num_wilds > 0:
+                wild_instructions = 'Use the keyboard to designate your prepared wild cards \r\n '
+                wild_instructions = wild_instructions + '(use 0 for 10 and J, Q, or K for facecards).'
+                self.controller.note = wild_instructions
+            pos = pygame.mouse.get_pos()
 
             if self.event.type == pygame.MOUSEBUTTONDOWN:
                 self.RuleSetsButtons.ClickedButton(self, pos)

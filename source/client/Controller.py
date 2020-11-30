@@ -243,16 +243,13 @@ class Controller(ConnectionListener):
             self.processCards(visible_scards)
         except Exception as err:
             self.note = "{0}".format(err)
-            return
-        finally:
-            # In Liverpool and other shared_board games reset Aces and Wilds in prepared cards,
-            # so they can be reassigned if play fails.
+            # if play fails reset Aces and Wilds in prepared cards so they can be reassigned.
             self.resetPreparedWildsAces()
-        num_wilds = len(self.unassigned_wilds_dict.keys())
-        if num_wilds > 0:
-            # self.note = 'Play will not complete until you designate wild cards using key strokes.'
-            # HandManagement.wildsHiLo_step1(hand_view)
-            self.note = 'In this branch of code you should never get here, as wilds automatically played high....'
+            return
+        self.num_wilds = len(self.unassigned_wilds_dict.keys())
+        if self.num_wilds > 0:
+            self.note = 'Play will not complete until you designate wild cards using key strokes' \
+                        ' [h for hi, l for low].'
         else:
             # final rules check, if pass, then play (will use played_cards dictionary to send update to server).
             self.play()
@@ -312,12 +309,7 @@ class Controller(ConnectionListener):
                         print("How odd --wild is unassigned only when it can be played at either end. Hence there should be only 1.")
                         print(processed_group)
                     else:
-                        # todo:  for now arbitrarily having unassigned_wilds assigned to be high. Eventually player should choose.
-                        this_wild = unassigned_wilds[0]
-                        this_wild.tempnumber = wild_options[1]
-                        processed_group.append(this_wild)
-                        #  todo: unassigned_wilds_dict should prove useful when get wildsHiLo working.
-                        #   self.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
+                        self.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
             else:
                 #todo: need to sort sets?  get user feedback.
                 processed_group = card_group

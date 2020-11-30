@@ -22,7 +22,8 @@ wild_numbers = [0]
 
 # Liverpool: number of sets and runs required to meld.  Order is important! (code relies on sets being first).
 # first element below is temporary (for testing).
-Meld_Threshold = [(0,1), (2,0), (1,1), (0,2), (3,0), (2,1), (1,2), (0,3)]
+# todo: on server side enable starting game in later rounds.
+Meld_Threshold = [(2,0), (1,1), (0,2), (3,0), (2,1), (1,2), (0,3)]
 Number_Rounds = len(Meld_Threshold)  # For convenience
 Deal_Size = 11
 Hands_Per_Player = 1
