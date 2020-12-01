@@ -144,7 +144,6 @@ class TableView(ConnectionListener):
         #  for each key need to gather s_cards from all players (all idx).  s_card=card.serialize
         for idx in range(i_tot):
             summary = {}
-            # todo: make the TableView display in Liverpool prettier.
             key_player = self.player_names[idx]
             if len(v_scards) > 0:
                 all_visible_one_dictionary = v_scards[0]
@@ -161,7 +160,7 @@ class TableView(ConnectionListener):
                             unique_numbers = list(set(card_numbers))
                             if len(unique_numbers) == 1:
                                 unique_number = int(unique_numbers[0])
-                                text = 'SET of ' + str(unique_number) + "'s: "
+                                text = str(unique_number) + "'s: "
                             elif len(unique_numbers) > 1:
                                 # this should never happen.
                                 print('bug in program -- set had multiple non-wild numbers')
@@ -179,7 +178,7 @@ class TableView(ConnectionListener):
                                     text = text + str(s_card[0]) + ','
                                 else:
                                     text = text + 'Wild,'
-                            text = 'Run in ' + card_suit + ": " + text
+                            text = card_suit + ": " + text
                         summary[key[1]] = text
             self.compressed_info[key_player] = summary
 

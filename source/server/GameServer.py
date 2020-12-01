@@ -107,6 +107,8 @@ class GameServer(Server, ServerState):
                 # todo: discuss whether timer should start from time card is discarded, or
                 #  time next player attempts to draw.  Latter would enable players to give one another more time.
                 #  Currently done from time of discard, therefore, may want a longer purchase_time...
+                # 1 dec 2020: ran test on localhost with 8 clients.  They kept disconnecting, error message indicates
+                # problem in this method at line 105 "while self.players....
                 self.Pump()
                 sleep(0.0001)
             if self.players[index].want_card:

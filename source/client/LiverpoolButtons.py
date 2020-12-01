@@ -70,14 +70,14 @@ def newRound(hand_view, sets_runs_tuple):
         for setnum in range(sets_runs_tuple[0]):
             # hand_view.assign_cards_btns[idx].append([])
             txt = "set " + str(setnum+1)
-            x = 100 + (players_sp_w*idx)
+            x = 10 + (players_sp_w*idx)
             y = players_sp_top + (players_sp_h*setnum)
             prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
             hand_view.assign_cards_btns[idx].append(prepare_card_btn)
         for runnum in range(sets_runs_tuple[1]):
             txt = "run " + str(runnum+1)
             jdx = sets_runs_tuple[0] + runnum
-            x = 100 + (players_sp_w * idx)
+            x = 10 + (players_sp_w * idx)
             y = players_sp_top + (players_sp_h * jdx)
             prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
             # hand_view.assign_cards_btns[idx][jdx] = prepare_card_btn
