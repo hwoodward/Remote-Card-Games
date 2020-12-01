@@ -57,7 +57,7 @@ def newRound(hand_view, sets_runs_tuple):
     hand_view.buttons_per_player = sets_runs_tuple[0] + sets_runs_tuple[1]
     hand_view.assign_cards_btns = [[]]
     w = 75  # width of following buttons
-    h = 25  # height of following buttons
+    h = 20  # height of following buttons
     if hand_view.num_players > 1:
         players_sp_w = UIC.Disp_Width / hand_view.num_players
     else:
