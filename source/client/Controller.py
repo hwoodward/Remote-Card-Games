@@ -311,8 +311,17 @@ class Controller(ConnectionListener):
                     else:
                         self.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
             else:
-                #todo: need to sort sets?  get user feedback.
-                processed_group = card_group
+                # Cards are a set.  Code below sorts set by suit. Jokers have no suit, and
+                # if wild won't sort properly with others, so wilds are split off separately.
+                wilds_in_group = []
+                not_wilds = []
+                for card in card_group:
+                    if card.number in  self._state.rules.wild_numbers:
+                        wilds_in_group.append(card)
+                    else:
+                        not_wilds.append(card)
+                not_wilds.sort(key=lambda wc:wc.suit)
+                processed_group = wilds_in_group + not_wilds
             # unlike HandAndFoot, self.played_cards includes cards played by everyone.
             # have gone through all prepared cards w/o error, will use processed_full_board to update
             # _state.played_cards once all wilds assigned (unassigned wilds found in self.unassigned_wilds_dict)
