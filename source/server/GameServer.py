@@ -9,12 +9,13 @@ from time import time, sleep
 class GameServer(Server, ServerState):
     channelClass = PlayerChannel
 
-    def __init__(self, localaddr, ruleset):
+    def __init__(self, localaddr, ruleset, startinground):
         """This overrides the library server init
         It's a place to do any 'on launch' actions for the server
         """
         Server.__init__(self, localaddr=localaddr)
         ServerState.__init__(self, ruleset)
+        self.starting_round = int(startinground)
         self.players = []
         self.in_round = False
         self.game_over = False
@@ -53,7 +54,10 @@ class GameServer(Server, ServerState):
 
     def nextRound(self):
         """Start the next round of play"""
-        self.round += 1
+        if self.round == -1:
+            self.round = self.starting_round
+        else:
+            self.round += 1
         self.in_round = True
         if self.round > self.rules.Number_Rounds-1: #Need to take one off Number_Rounds because we index from zero
             #Game is over
