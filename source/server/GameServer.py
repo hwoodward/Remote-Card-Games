@@ -124,8 +124,6 @@ class GameServer(Server, ServerState):
                 icount = icount + 1
 
 
-
-
     ######################################################
 
     def Send_broadcast(self, data):
@@ -176,6 +174,9 @@ class GameServer(Server, ServerState):
             # Next line must be long (no line breaks) or it doesn't work properly.
             self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
 
+
+    def Send_pickUpAnnouncement(self, name, top_card):
+            self.Send_broadcast({"action": "pickUpAnnouncement", "player_name": name, "top_card": top_card.serialize()})
 
     def Send_discardInfo(self):
         """Send the update to the discard pile"""

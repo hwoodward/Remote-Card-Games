@@ -476,3 +476,15 @@ class Controller(ConnectionListener):
         buyer = data["buyer"]
         purchase = Card.deserialize(data["top_card"])
         self.note = "{0} has purchased {1}".format(buyer, purchase)
+
+    def Network_pickUpAnnouncement(self, data):
+        player_name = data["player_name"]
+        top_scard = data["top_card"]
+        print(player_name)
+        print(top_scard)
+        top_card = Card.deserialize(top_scard)
+        print(top_card)
+        if self._state.rules.Pickup_Size == 1:
+            self.note =  player_name + ' picked up the ' + str(top_card)
+        else:
+            self.note = player_name + ' picked up the pile on the  ' + str(top_card)

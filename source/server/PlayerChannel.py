@@ -76,6 +76,7 @@ class PlayerChannel(Channel):
         cards = self._server.pickUpPile()
         self.Send_newCards(cards)
         self._server.Send_discardInfo()
+        self._server.Send_pickUpAnnouncement(self.name, cards[0])
     
     def Network_goOut(self, data):
         self._server.Send_endRound(self.name)
