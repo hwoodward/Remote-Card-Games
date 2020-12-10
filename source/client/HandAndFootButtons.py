@@ -91,7 +91,6 @@ def ClickedButton(hand_view, pos):
         )
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.prepare_card_btn.isOver(pos):
-        # CodeReview note: Removed some lines that are no longer necessary now that deck is defined and cards are unique.
         hand_view.wrapped_cards_to_prep = hand_view.gatherSelected()
         hand_view.wild_cards = hand_view.controller.automaticallyPrepareCards(hand_view.wrapped_cards_to_prep)
         # wild_cards contains a list of lists.

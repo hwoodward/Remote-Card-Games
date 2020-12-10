@@ -183,9 +183,10 @@ def wildsHiLo_step1(hand_view):
             textnote = "USE KEY STROKES!! For the " + str(processed_group[1].suit) + " run: "
             for card in processed_group:
                 textnote = textnote + str(card.number) + ','
-            textnote = textnote + "should the wild be high or low?  type H or L ?"
+            textnote = textnote + "should the wild be high or low?  type H or L: "
             hand_view.controller.note = textnote
             hand_view.bad_strokes = 0   # if too many bad key-strokes, make wild automatically high.
+            #todo: debug -- when testing bad strokes discovered they were adding wild cards to the run???!!!
     return
 
 def wildsHiLo_step2(hand_view):
@@ -193,8 +194,9 @@ def wildsHiLo_step2(hand_view):
 
     Assigning wilds is as automated as possible, so this is only used to determine
     if wilds are high or low.  There should be at most one wild card in unassigned_wilds.
+    hand_view.controller.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
+
     """
-    # hand_view.controller.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
 
     key_list = []
     for k_group in hand_view.controller.unassigned_wilds_dict.keys():
