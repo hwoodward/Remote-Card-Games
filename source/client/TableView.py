@@ -160,7 +160,16 @@ class TableView(ConnectionListener):
                             unique_numbers = list(set(card_numbers))
                             if len(unique_numbers) == 1:
                                 unique_number = int(unique_numbers[0])
-                                text = str(unique_number) + "'s: "
+                                if unique_number == 1:
+                                    text = "Aces: "
+                                elif unique_number <= 10:
+                                    text = str(unique_number) + "'s: "
+                                elif unique_number == 11:
+                                    text = "Jacks: "
+                                elif unique_number == 12:
+                                    text = "Queens: "
+                                elif unique_number == 13:
+                                    text = "Kings: "
                             elif len(unique_numbers) > 1:
                                 # this should never happen.
                                 print('bug in program -- set had multiple non-wild numbers')
@@ -175,7 +184,16 @@ class TableView(ConnectionListener):
                             for s_card in card_group:
                                 if not s_card[0] in self.wild_numbers:
                                     card_suit = str(s_card[1])
-                                    text = text + str(s_card[0]) + ','
+                                    if s_card[0] == 1:
+                                        text = text + 'A,'
+                                    elif s_card[0] <= 10:
+                                        text = text + str(s_card[0]) + ','
+                                    elif s_card[0] == 11:
+                                        text = text + 'J,'
+                                    elif s_card[0] == 12:
+                                        text = text + 'Q,'
+                                    elif s_card[0] == 13:
+                                        text = text + 'K,'
                                 else:
                                     text = text + 'Wild,'
                             text = card_suit + ": " + text

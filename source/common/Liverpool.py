@@ -19,11 +19,10 @@ Draw_Size = 1
 Pickup_Size = 1
 Discard_Size = 1
 wild_numbers = [0]
+Refresh_Draw_Pile = 'shuffle_discards'
 
 # Liverpool: number of sets and runs required to meld.  Order is important! (code relies on sets being first).
-# first element below is temporary (for testing).
-# todo: on server side enable starting game in later rounds.
-Meld_Threshold = [(3,0), (2,0), (1,1), (0,2), (3,0), (2,1), (1,2), (0,3)]
+Meld_Threshold = [(2,0), (1,1), (0,2), (3,0), (2,1), (1,2), (0,3)]
 Number_Rounds = len(Meld_Threshold)  # For convenience
 Deal_Size = 11
 Hands_Per_Player = 1

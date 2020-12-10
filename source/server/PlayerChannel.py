@@ -71,7 +71,6 @@ class PlayerChannel(Channel):
         cards = self._server.drawCards()
         self.Send_newCards(cards)
 
-
     def Network_pickUpPile(self, data):
         cards = self._server.pickUpPile()
         self.Send_newCards(cards)

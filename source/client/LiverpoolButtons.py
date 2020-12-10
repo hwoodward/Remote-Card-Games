@@ -142,16 +142,16 @@ def ClickedButton(hand_view, pos):
         else:
             hand_view.controller.draw()              # unless pile is empty (at start of each round)
     elif hand_view.sort_al_btn.isOver(pos):
-        hand_view.hand_info.sort(key=lambda wc: wc.key_LP[1])
+        hand_view.hand_info.sort(key=lambda wc: wc.key[2])
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.sort_ah_btn.isOver(pos):
-        hand_view.hand_info.sort(key=lambda wc: wc.key_LP[0])
+        hand_view.hand_info.sort(key=lambda wc: wc.key[1])
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.sort_suit_al_btn.isOver(pos):
-        hand_view.hand_info.sort(key=lambda wc: wc.key_LP[3])
+        hand_view.hand_info.sort(key=lambda wc: wc.key[4])
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.sort_suit_ah_btn.isOver(pos):
-        hand_view.hand_info.sort(key=lambda wc: wc.key_LP[2])
+        hand_view.hand_info.sort(key=lambda wc: wc.key[3])
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.sort_status_btn.isOver(pos):
         hand_view.hand_info.sort(

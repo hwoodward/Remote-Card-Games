@@ -99,7 +99,7 @@ class GameServer(Server, ServerState):
 
     def cardBuyingResolution(self):
         """ Resolve who gets to purchase card for games with Buy_Option = True
-        This is called when upon player drawing cards. """
+        This is called upon player clicking on draw pile. """
         timelimit = time() + self.rules.purchase_time
         buying_phase = True # else this routine would not be called
         i_max = len(self.players) - 2
@@ -107,12 +107,8 @@ class GameServer(Server, ServerState):
         icount = 0
         while buying_phase and icount < i_max:
             while self.players[index].want_card is None and time() < timelimit:
-                # wait patiently(?) while updating information from players.
-                # todo: discuss whether timer should start from time card is discarded, or
-                #  time next player attempts to draw.  Latter would enable players to give one another more time.
-                #  Currently done from time of discard, therefore, may want a longer purchase_time...
-                # 1 dec 2020: ran test on localhost with 8 clients.  They kept disconnecting, error message indicates
-                # problem in this method at line 105 "while self.players....
+                # wait patiently(?) while updating information from players, timer begins when
+                # next player attempts to draw.
                 self.Pump()
                 sleep(0.0001)
             if self.players[index].want_card:
@@ -123,10 +119,8 @@ class GameServer(Server, ServerState):
                 self.players[index].Send_newCards(cards)
                 self.Send_discardInfo()
                 buying_phase = False
-            elif not self.players[index].want_card:
-                index = index + 1 % len(self.players)
-                icount = icount + 1
-
+            index = (index + 1) % len(self.players)
+            icount = icount + 1
 
     ######################################################
 

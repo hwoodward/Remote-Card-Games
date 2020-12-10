@@ -83,7 +83,7 @@ def ClickedButton(hand_view, pos):
     if hand_view.draw_pile.isOver(pos):
         hand_view.controller.draw()
     elif hand_view.sort_btn.isOver(pos):
-        hand_view.hand_info.sort(key=lambda wc: wc.key)
+        hand_view.hand_info.sort(key=lambda wc: wc.key[0])
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.sort_status_btn.isOver(pos):
         hand_view.hand_info.sort(

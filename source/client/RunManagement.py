@@ -20,10 +20,7 @@ def processRuns(card_group, wild_numbers):
     # it DOES presume that if Aces are not wild, then they are hi or low, but not both.
     # IF ACE CAN BE HIGH OR LOW (very unusual) THAN AUTOMATICALLY MAKING IT LOW.
     """
-    # print("in RunManagement, processRuns")
-    # print(card_group)
     card_group.sort(key=lambda wc: wc.tempnumber)
-    # print(card_group)
     first_card = True
     groups_wilds = []
     temp_run_group = []
@@ -68,21 +65,23 @@ def processRuns(card_group, wild_numbers):
             else:
                 # gap must be 1 card. It's possible to free up a wild later in run then gap of 1 can be closed.
                 gap_flag =True
-    if gap_flag and len(groups_wilds) > 0:
-        temp_run_group = card_group
-        card_group = []
-        card_group.append(temp_run_group[0])
-        for indx in range(len(temp_run_group)-1):
-            card = temp_run_group[indx+1]
-            if temp_run_group[indx].tempnumber == card.tempnumber + 1:
                 card_group.append(card)
-            elif temp_run_group[indx].tempnumber == card.tempnumber + 2:
-                if len(groups_wilds) > 0:
-                    this_wild.pop(groups_wilds[0])
-                    card_group.append(this_wild)
+    if gap_flag:
+        if len(groups_wilds) > 0:
+            temp_run_group = card_group
+            card_group = []
+            card_group.append(temp_run_group[0])
+            for indx in range(len(temp_run_group)-1):
+                card = temp_run_group[indx+1]
+                if temp_run_group[indx].tempnumber + 1 == card.tempnumber:
                     card_group.append(card)
-                else:
-                    raise Exception('too big a gap between numbers')
+                elif temp_run_group[indx].tempnumber + 2 == card.tempnumber:
+                    if len(groups_wilds) > 0:
+                        this_wild = groups_wilds.pop(0)
+                        card_group.append(this_wild)
+                        card_group.append(card)
+        else:
+            raise Exception('too big a gap between numbers')
 
     #  Review note - Handle Aces after other cards, else ran into problem when wanted Ace, Joker, 3...
     # Rare for Ace Hi and Ace low to both be options. If they are, does it make a difference which one they are?

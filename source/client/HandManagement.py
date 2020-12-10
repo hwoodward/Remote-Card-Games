@@ -34,10 +34,6 @@ def WrapHand(hand_view, updated_hand, wrapped_hand):
             if newcard:
                 card_xy = (card_xy[0] + hand_view.hand_scaling[1], card_xy[1])
                 card_wrapped = UICardWrapper(card, card_xy, hand_view.hand_scaling[0])
-                # todo: consider combining keys into single list. Also consider generating keys in constructor.
-                card_wrapped.key = card_wrapped.sortKey(0)
-                card_wrapped.key_LP = [card_wrapped.sortKey(1), card_wrapped.sortKey(2),
-                                       card_wrapped.sortKey(3), card_wrapped.sortKey(4) ]
             updated_wrapped_hand.append(card_wrapped)
         # Should now have all the cards in the updated hand properly wrapped.
         # sort cards by location, so they will display more attractively and so RefreshXY will work properly if called.
@@ -188,7 +184,6 @@ def wildsHiLo_step1(hand_view):
             for card in processed_group:
                 textnote = textnote + str(card.number) + ','
             textnote = textnote + "should the wild be high or low?  type H or L ?"
-            print(textnote)
             hand_view.controller.note = textnote
             hand_view.bad_strokes = 0   # if too many bad key-strokes, make wild automatically high.
     return
@@ -226,13 +221,11 @@ def wildsHiLo_step2(hand_view):
                         hand_view.controller.note = 'Invalid response more than 3 times, made wild card high'
                         this_wild.tempnumber = wild_options[1]
                         del hand_view.controller.unassigned_wilds_dict[k_group]
-                print('in HandManagement_wildHiLo, wild assignment:'+str(this_wild.tempnumber))
                 processed_group.append(this_wild)
                 processed_group.sort(key=lambda wc: wc.tempnumber)
                 hand_view.controller.processed_full_board[k_group] = processed_group
             # reset count of num_wilds.
             hand_view.num_wilds = len(hand_view.controller.unassigned_wilds_dict.keys())
-            print(hand_view.num_wilds)
             if hand_view.num_wilds > 0:
                 wildsHiLo_step1(hand_view)
             else:
