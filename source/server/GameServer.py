@@ -19,7 +19,7 @@ class GameServer(Server, ServerState):
         self.players = []
         self.in_round = False
         self.game_over = False
-        if self.rules.Shared_Board:      #  True for Liverpool, False for HandAndFoot.
+        if self.rules.Shared_Board:
             self.visible_cards_now = {}
         print('Server launched')
 
@@ -165,11 +165,9 @@ class GameServer(Server, ServerState):
                 if temp_length > max_len:
                     self.visible_cards_now = v_cards_dict
                     max_len = temp_length
-            # Next line must be long (no line breaks) or it doesn't work properly.
             self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players],"visible_cards": [self.visible_cards_now],"hand_status": [p.hand_status for p in self.players]})
         else:
             # Shared_Board is False: (e.g. HandAndFoot) -- each player can only play on their own cards.
-            # Next line must be long (no line breaks) or it doesn't work properly.
             self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
 
 
