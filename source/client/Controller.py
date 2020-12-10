@@ -1,5 +1,4 @@
 import random                  # will be used to assign unique names
-#todo: (12/9) remove because I don't think it's used, but first verify stuff works. from time import sleep
 from common.Card import Card
 from client.RunManagement import processRuns
 from client.RunManagement import restoreRunAssignment

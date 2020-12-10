@@ -7,7 +7,6 @@ from common.HandAndFoot import Meld_Threshold as Meld_Threshold_HF
 from common.HandAndFoot import wild_numbers as wild_numbers_HF
 from common.Liverpool import Meld_Threshold as Meld_Threshold_LP
 from common.Liverpool import wild_numbers as wild_numbers_LP
-# from common.Liverpool import combineCardDicts as combineCardDicts
 
 
 class TableView(ConnectionListener):
@@ -24,8 +23,7 @@ class TableView(ConnectionListener):
         if self.ruleset == 'Liverpool':
             self.Meld_Threshold = Meld_Threshold_LP
             self.wild_numbers = wild_numbers_LP
-            self.i_set_num = self.Meld_Threshold[0][0]
-            # unlike Meld_Threshold, this persists after round, until board is cleared of cards.
+            self.i_set_num = self.Meld_Threshold[0][0] #unlike Meld_Threshold, persists after round until board is cleared.
         elif self.ruleset == 'HandAndFoot':
             self.Meld_Threshold = Meld_Threshold_HF
             self.wild_numbers = wild_numbers_HF
