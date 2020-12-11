@@ -1,9 +1,8 @@
 from common.Card import Card
 
-"""This file contains methods used in processing runs for Liverpool.
+"""This file contains methods used in processing runs for Liverpool or other Rummy games.
 
-Some Liverpool specific stuff:
-it assumes that Aces can be Hi or Low but not both (K,A,2 not allowed).
+It assumes that Aces can be Hi or Low but not both (K,A,2 not allowed).
 Enforces rule that you must have two natural cards between wilds in a run.
 
 In order to preserve backwards compatibility with June 2020 distribution, it assumes that card.tempnumber is
@@ -16,17 +15,17 @@ To preserve info on whether Ace is assigned hi or low, if Ace is assigned low, t
 def processRuns(card_group, wild_numbers):
     """ handle sorting of run, including placement of wilds.  Handles minor rule checking.
 
-    # processRuns does not presume length requirement or that all cards are in same suit.
-    # it DOES presume that if Aces are not wild, then they are hi or low, but not both.
+    # processRuns does not check length requirement or that all cards are in same suit.
+    # it DOES require that if Aces are not wild, then they are hi or low, but not both.
     # IF ACE CAN BE HIGH OR LOW (very unusual) THAN AUTOMATICALLY MAKING IT LOW.
     """
-    card_group.sort(key=lambda wc: wc.tempnumber)
+    card_group.sort(key=lambda wc: wc.tempnumber)  # sort group by tempnumber (=card.number for all but wilds and Aces)
     first_card = True
     groups_wilds = []
     temp_run_group = []
     aces_list =[]
     gap_flag = False
-    for card in card_group:                    # separate unassigned wilds and Aces from rest of run.
+    for card in card_group:                       # separate unassigned wilds and Aces from rest of run.
         # pull out wilds that have not been assigned (do this before Aces, in case rules changed so that Aces are wild).
         if card.tempnumber in wild_numbers:
             groups_wilds.append(card)
@@ -44,11 +43,6 @@ def processRuns(card_group, wild_numbers):
             abs_temp_number = abs(card_group[-1].tempnumber)  # Aces designated to be low have tempnumber = -1.
             if card.tempnumber == (abs_temp_number + 1):
                 card_group.append(card)
-            elif card.tempnumber == (abs_temp_number + 2) and len(groups_wilds) > 0:
-                this_wild = groups_wilds.pop(0)
-                this_wild.tempnumber = abs_temp_number + 1
-                card_group.append(this_wild)
-                card_group.append(card)
             elif card.tempnumber == abs_temp_number:
                 if isWild(card, wild_numbers):
                     card.tempnumber = card.number  # reset Wild card back to original value (0 for Jokers)
@@ -60,12 +54,18 @@ def processRuns(card_group, wild_numbers):
                     card_group.append(card)
                 else:
                     raise Exception('Card value already in the run.')
-            elif card.tempnumber > (abs_temp_number + 2):
-                raise Exception('too big a gap between numbers')
+            elif card.tempnumber == (abs_temp_number + 2):
+                if len(groups_wilds) == 0:
+                    # wild cards might be freed up later.  Will check again later.
+                    gap_flag = True
+                    card_group.append(card)
+                else:
+                    this_wild = groups_wilds.pop(0)
+                    this_wild.tempnumber = abs_temp_number + 1
+                    card_group.append(this_wild)
+                    card_group.append(card)
             else:
-                # gap must be 1 card. It's possible to free up a wild later in run then gap of 1 can be closed.
-                gap_flag =True
-                card_group.append(card)
+                raise Exception('too big a gap between numbers')
     if gap_flag:
         if len(groups_wilds) > 0:
             temp_run_group = card_group
@@ -80,81 +80,56 @@ def processRuns(card_group, wild_numbers):
                         this_wild = groups_wilds.pop(0)
                         card_group.append(this_wild)
                         card_group.append(card)
+                    else:
+                        text = 'Too big a gap between' + str(temp_run_group[indx]) + ' and ' + str(card)
+                        raise Exception(text)
         else:
             raise Exception('too big a gap between numbers')
-
-    #  Review note - Handle Aces after other cards, else ran into problem when wanted Ace, Joker, 3...
-    # Rare for Ace Hi and Ace low to both be options. If they are, does it make a difference which one they are?
-    # If run is A?,2,Wild,4...J,Q,K,A? then it does (wild could still be played above King, but not below 2).
     if len(aces_list) > 0:
         if len(aces_list) > 2:
             raise Exception('Cannot play more than 2 Aces in a single run.')
         # Possible Ace(s) replacing a wild card with tempnumber 13 or -1.
         # If have wild in Ace slot then remove it from run.  It will be placed back in run after Aces placed.
-        if isWild(card_group[0], wild_numbers) and abs(card_group[0].tempnumber) == 1:
+        if isWild(card_group[0], wild_numbers) and card_group[0].tempnumber == -1:
             this_wild = card_group.pop(0)
+            this_wild.tempnumber = this_wild.number
             groups_wilds.append(this_wild)
         if isWild(card_group[-1], wild_numbers) and card_group[-1].tempnumber == 13:
             this_wild = card_group.pop(-1)
+            this_wild.tempnumber = this_wild.number
             groups_wilds.append(this_wild)
-        # Can Ace go high but not low?
-        if card_group[-1].tempnumber == 13 and not card_group[0].tempnumber == 2:
-            this_ace = aces_list.pop(0)
-            this_ace.tempnumber = 14
-            card_group.append(this_ace)
-            # Can Ace go low but not high?
-        elif not card_group[-1].tempnumber == 13 and card_group[0].tempnumber == 2:
+        # IF ACE CAN BE HIGH OR LOW, THAN CODE AUTOMATICALLY MAKING IT LOW, RATHER THAN HANDLING CORNER CASE.
+        # Check if Ace can go low.
+        if card_group[0].tempnumber == 2:
             this_ace = aces_list.pop(0)
             this_ace.tempnumber = -1
             card_group.insert(0, this_ace)
-        elif card_group[-1].tempnumber == 13 and card_group[0].tempnumber == 2:
-            if len(aces_list) == 1:
-                print("IF ACE CAN BE HIGH OR LOW THAN AUTOMATICALLY MAKING IT LOW, RATHER THAN HANDLING CORNER CASE.")
-                this_ace = aces_list.pop(0)
-                this_ace.tempnumber = -1
-                card_group.insert(0, this_ace)
-            elif len(aces_list) == 2:
-                this_ace = aces_list.pop(0)
-                this_ace.tempnumber = -1
-                card_group.insert(0, this_ace)
-                this_ace = aces_list.pop(0)
-                this_ace.tempnumber = 14
-                card_group.append(0, this_ace)
+        # If there is still an Ace in the list, check if it can go high.
+        if card_group[-1].tempnumber == 13 and len(aces_list) > 0:
+            this_ace = aces_list.pop(0)
+            this_ace.tempnumber = 14
+            card_group.append(this_ace)
+    # Check if wilds now available and if so, if Aces that previously could not be played can now be played.
+    # will check that don't have jokers too close together later.
     if len(aces_list) > 0 and len(groups_wilds) > 0:
-        # Can Aces that previously could not be played now be played?
-        if len(aces_list) == 2:
-            if len(groups_wilds) >= 2 and card_group[0].tempnumber == 3 and card_group[-1].tempnumber == 12:
-                this_wild = groups_wilds.pop(0)
-                this_wild.tempnumber = 2
-                card_group.insert(0, this_wild)
-                aces_list[0].tempnumber = -1
-                card_group.insert(0, aces_list[0])
-                this_wild = groups_wilds.pop(0)
-                this_wild.tempnumber = 13
-                card_group.append(this_wild)
-                aces_list[1].tempnumber = 14
-                card_group.append(aces_list[1])
-                aces_list = []
-                # will check that don't have jokers too close together later.
-        elif len(aces_list) == 1:
-            if card_group[0].tempnumber == 3 and not isWild(card_group[0], wild_numbers) \
-                    and not isWild(card_group[1], wild_numbers):
-                this_wild = groups_wilds.pop(0)
-                this_wild.tempnumber = 2
-                card_group.insert(0, this_wild)
-                aces_list[0].tempnumber = -1
-                card_group.insert(0, aces_list[0])
-                aces_list = []
-            elif card_group[-1].tempnumber == 12 and not isWild(card_group[-1], wild_numbers) \
-                    and not isWild(card_group[-2], wild_numbers):
-                this_wild = groups_wilds.pop(-1)
-                this_wild.tempnumber = 13
-                card_group.append(this_wild)
-                aces_list[0].tempnumber = 14
-                card_group.append(aces_list[0])
-                aces_list = []
+        if card_group[0].tempnumber == 3:
+            this_wild = groups_wilds.pop(0)
+            this_wild.tempnumber = 2
+            card_group.insert(0, this_wild)
+            this_ace = aces_list.pop(0)
+            this_ace.tempnumber = -1
+            card_group.insert(0, this_ace)
+        # If there is still an Ace in the list, can it go high?
+        if card_group[-1].tempnumber == 12 and len(aces_list) > 0 and len(groups_wilds) > 0:
+            this_wild = groups_wilds.pop(0)
+            this_wild.tempnumber = 13
+            card_group.append(this_wild)
+            this_ace = aces_list.pop(0)
+            this_ace.tempnumber = 14
+            card_group.append(this_ace)
     if len(aces_list) > 0:
         raise Exception('Ace cannot be played')
+    #todo: figure out why couldn't play Ace on 10,J,Q,K,Wild  after making latest edits. Error was Ace cannot be played.
    # Calculate if wild cards can be played  - only possible remaining slots for wilds are at the ends of the current run.
     num_remaining_wilds = len(groups_wilds)
     possible_wild_assignments = []
@@ -232,7 +207,6 @@ def restoreRunAssignment(visible_scards_dictionary, wild_numbers, numsets):
                 card_group[-1].assignWild(14)
             if card_group[0].number in wild_numbers:    # reset tempnumber for wild cards if they are at the beginning.
                 card_group[0].assignWild(card_group[1].tempnumber - 1)
-            # todo: be sure to preserve this in documentation.  If Ace is assigned low, then tempnumber is -1.
             elif card_group[0].number == 1:
                 card_group[0].tempnumber = -1
         return cardgroup_dictionary
