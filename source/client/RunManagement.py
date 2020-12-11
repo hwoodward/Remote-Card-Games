@@ -1,23 +1,16 @@
 from common.Card import Card
 
-"""This file contains methods used in processing runs for Liverpool or other Rummy games.
-
-It assumes that Aces can be Hi or Low but not both (K,A,2 not allowed).
-Enforces rule that you must have two natural cards between wilds in a run.
-
-In order to preserve backwards compatibility with June 2020 distribution, it assumes that card.tempnumber is
-not passed back and forth between the client and server. This only causes ambiguity in wilds and 
-Aces at the ends of runs.   Method restoreRunAssignment takes care of this by assigning
-wilds and Aces on ends of runs the appropriate tempnumber before processRuns is called.
-To preserve info on whether Ace is assigned hi or low, if Ace is assigned low, then tempnumber is set to -1.
-"""
+# This file contains methods used in processing runs for Liverpool or other Rummy games.
 
 def processRuns(card_group, wild_numbers):
     """ handle sorting of run, including placement of wilds.  Handles minor rule checking.
 
-    # processRuns does not check length requirement or that all cards are in same suit.
-    # it DOES require that if Aces are not wild, then they are hi or low, but not both.
-    # IF ACE CAN BE HIGH OR LOW (very unusual) THAN AUTOMATICALLY MAKING IT LOW.
+    processRuns does not check length requirement or that all cards are in same suit.
+    it DOES:
+          require that if Aces are not wild, then they are hi or low, but not both.
+          require that there must be two naturals between wild cards in runs.
+    To preserve info on whether Ace is assigned hi or low, if Ace is assigned low, then tempnumber is set to -1.
+    IF ACE CAN BE HIGH OR LOW (very unusual) THAN AUTOMATICALLY MAKING IT LOW.
     """
     card_group.sort(key=lambda wc: wc.tempnumber)  # sort group by tempnumber (=card.number for all but wilds and Aces)
     first_card = True
@@ -66,13 +59,13 @@ def processRuns(card_group, wild_numbers):
             else:
                 text = 'There is a too big a gap between numbers in run with ' + str(card_group[0])
                 raise Exception(text)
-    # Check if Aces are freeing up additional wild cards.
+    # Check if new Aces will free up additional wild cards.
     if len(aces_list) > 0:
-        if isWild(card_group[0], wild_numbers) and card_group[0].tempnumber == -1:
+        if isWild(card_group[0], wild_numbers) and abs(card_group[0].tempnumber) == 1:
             this_wild = card_group.pop(0)
             this_wild.tempnumber = this_wild.number
             groups_wilds.append(this_wild)
-        if isWild(card_group[-1], wild_numbers) and card_group[-1].tempnumber == 13:
+        if isWild(card_group[-1], wild_numbers) and card_group[-1].tempnumber == 14:
             this_wild = card_group.pop(-1)
             this_wild.tempnumber = this_wild.number
             groups_wilds.append(this_wild)
@@ -104,7 +97,6 @@ def processRuns(card_group, wild_numbers):
     # Now assign Aces that were not previously assigned (Aces cannot be moved once assigned).
     if len(aces_list) > 2:
         raise Exception('Cannot play more than 2 Aces in a single run.')
-
     # Aces can go high or low.  If single Ace can be played in either location (rare) then play it Low.
     elif len(aces_list) > 0:
         lowAceOK = lowAceChk(card_group, groups_wilds, wild_numbers)

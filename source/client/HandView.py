@@ -113,7 +113,7 @@ class HandView:
                 else:
                     # in Shared_Board games, check if there are wilds that need to be updated.
                     # All other events are ignored until play is finished.
-                    HandManagement.wildsHiLo_step2(self)
+                    HandManagement.wildsHiLo_stepA(self)
 
     def nextEvent(self):
         """This submits the next user input to the controller,

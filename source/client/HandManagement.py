@@ -168,28 +168,28 @@ def ManuallyAssign(hand_view):
     return
 
 
-def wildsHiLo_step1(hand_view):
+def wildsHiLo_stepB(hand_view):
     """ Used in Liverpool and other games with runs to assign wilds.
 
     Assigning wilds is as automated as possible, so this is only used to determine
     if wilds are high or low.  There should be at most one wild card in unassigned_wilds.
     """
     # hand_view.controller.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
-
-    for k_group, group_info in hand_view.controller.unassigned_wilds_dict.items():
-        processed_group = group_info[0]
-        unassigned_wilds = group_info[2]
-        if len(unassigned_wilds) > 0:
-            textnote = "USE KEY STROKES!! For the " + str(processed_group[1].suit) + " run: "
-            for card in processed_group:
-                textnote = textnote + str(card.number) + ','
-            textnote = textnote + "should the wild be high or low?  type H or L: "
-            hand_view.controller.note = textnote
-            hand_view.bad_strokes = 0   # if too many bad key-strokes, make wild automatically high.
-            #todo: debug -- when testing bad strokes discovered they were adding wild cards to the run???!!!
+    key = hand_view.key_list_unassigned_wilds[0]
+    group_info = hand_view.controller.unassigned_wilds_dict[key]
+    processed_group = group_info[0]
+    unassigned_wilds = group_info[2]
+    if len(unassigned_wilds) > 0:
+        textnote = "USE KEY STROKES!! For the " + str(processed_group[1].suit) + " run: "
+        for card in processed_group:
+            textnote = textnote + str(card.number) + ','
+        textnote = textnote + "should the wild be high or low?  type H or L: "
+        hand_view.controller.note = textnote
+        hand_view.bad_strokes = 0   # if too many bad key-strokes, make wild automatically high.
+        #todo: debug -- when testing bad strokes discovered they were adding wild cards to the run???!!!
     return
 
-def wildsHiLo_step2(hand_view):
+def wildsHiLo_stepA(hand_view):
     """ Used in Liverpool and other games with runs to assign wilds.
 
     Assigning wilds is as automated as possible, so this is only used to determine
@@ -198,11 +198,11 @@ def wildsHiLo_step2(hand_view):
 
     """
 
-    key_list = []
+    hand_view.key_list_unassigned_wilds = []
     for k_group in hand_view.controller.unassigned_wilds_dict.keys():
-        key_list.append(k_group)
-    if len(key_list) > 0:
-        k_group = key_list[0]
+        hand_view.key_list_unassigned_wilds.append(k_group)
+    if len(hand_view.key_list_unassigned_wilds) > 0:
+        k_group = hand_view.key_list_unassigned_wilds[0]
         group_info = hand_view.controller.unassigned_wilds_dict[k_group]
         processed_group = group_info[0]
         wild_options = group_info[1]
@@ -213,9 +213,15 @@ def wildsHiLo_step2(hand_view):
                 if hand_view.event.key == pygame.K_l:
                     this_wild.tempnumber = wild_options[0]
                     del hand_view.controller.unassigned_wilds_dict[k_group]
+                    processed_group.append(this_wild)
+                    processed_group.sort(key=lambda wc: wc.tempnumber)
+                    hand_view.controller.processed_full_board[k_group] = processed_group
                 elif hand_view.event.key == pygame.K_h:
                     this_wild.tempnumber = wild_options[1]
                     del hand_view.controller.unassigned_wilds_dict[k_group]
+                    processed_group.append(this_wild)
+                    processed_group.sort(key=lambda wc: wc.tempnumber)
+                    hand_view.controller.processed_full_board[k_group] = processed_group
                 else:
                     hand_view.bad_strokes = hand_view.bad_strokes + 1
                     hand_view.controller.note = hand_view.controller.note + 'INVALID KEY STROKE'
@@ -223,17 +229,18 @@ def wildsHiLo_step2(hand_view):
                         hand_view.controller.note = 'Invalid response more than 3 times, made wild card high'
                         this_wild.tempnumber = wild_options[1]
                         del hand_view.controller.unassigned_wilds_dict[k_group]
-                processed_group.append(this_wild)
-                processed_group.sort(key=lambda wc: wc.tempnumber)
-                hand_view.controller.processed_full_board[k_group] = processed_group
+                        processed_group.append(this_wild)
+                        processed_group.sort(key=lambda wc: wc.tempnumber)
+                        hand_view.controller.processed_full_board[k_group] = processed_group
+                        #todo: create a helper functions for this (lots of duplicate code).
             # reset count of num_wilds.
             hand_view.num_wilds = len(hand_view.controller.unassigned_wilds_dict.keys())
             if hand_view.num_wilds > 0:
-                wildsHiLo_step1(hand_view)
+                wildsHiLo_stepB(hand_view)
             else:
                 hand_view.controller.play()
         else:
-            print('In HandManagement.wildsHiLo_step2.')
+            print('In HandManagement.wildsHiLo_stepA.')
             print('Why is there an entry in hand_view.controller.unassigned_wilds_dict with no unassigned_wilds?')
     return
 
