@@ -12,13 +12,13 @@ def processRuns(card_group, wild_numbers):
     To preserve info on whether Ace is assigned hi or low, if Ace is assigned low, then tempnumber is set to -1.
     IF ACE CAN BE HIGH OR LOW (very unusual) THAN AUTOMATICALLY MAKING IT LOW.
     """
-    card_group.sort(key=lambda wc: wc.tempnumber)  # sort group by tempnumber (=card.number for all but wilds and Aces)
-    first_card = True
+    # sort card_group by tempnumber and initialize variables.
+    card_group.sort(key=lambda wc: wc.tempnumber)
     groups_wilds = []
     temp_run_group = []
     aces_list =[]
     gap_flag = False
-    # pull out wilds & Aces that have NOT been assigned (do wilds before Aces, in case rules change so that Aces are wild).
+    # Separate wilds & Aces that have NOT been assigned from other cards (do wilds before Aces in case Aces are wild).
     for card in card_group:
         if card.tempnumber in wild_numbers:
             groups_wilds.append(card)
@@ -26,73 +26,17 @@ def processRuns(card_group, wild_numbers):
             aces_list.append(card)
         else:
             temp_run_group.append(card)
-    card_group  = []                         # rebuild card_group below
-    for card in temp_run_group:
-        if first_card:
-            first_card = False
-            card_group.append(card)
-        else:
-            abs_temp_number = abs(card_group[-1].tempnumber)  # Aces designated to be low have tempnumber = -1.
-            if card.tempnumber == (abs_temp_number + 1):
-                card_group.append(card)
-            elif card.tempnumber == abs_temp_number:
-                if isWild(card, wild_numbers):
-                    card.tempnumber = card.number  # reset Wild card back to original value (0 for Jokers)
-                    groups_wilds.append(card)
-                elif isWild(card_group[-1], wild_numbers):
-                    this_wild = card_group.pop(-1)
-                    this_wild.tempnumber = this_wild.number
-                    groups_wilds.append(this_wild)
-                    card_group.append(card)
-                else:
-                    raise Exception('Card value already in the run.')
-            elif card.tempnumber == (abs_temp_number + 2):
-                if len(groups_wilds) == 0:
-                    # wild cards might be freed up later.  Will check again later.
-                    gap_flag = True
-                    card_group.append(card)
-                else:
-                    this_wild = groups_wilds.pop(0)
-                    this_wild.tempnumber = abs_temp_number + 1
-                    card_group.append(this_wild)
-                    card_group.append(card)
-            else:
-                text = 'There is a too big a gap between numbers in run with ' + str(card_group[0])
-                raise Exception(text)
+    # first pass on run -- check sequence and place or remove wilds.
+    card_group, groups_wilds = buildBaseRun(temp_run_group, groups_wilds, wild_numbers)
     # Check if new Aces will free up additional wild cards.
     if len(aces_list) > 0:
-        if isWild(card_group[0], wild_numbers) and abs(card_group[0].tempnumber) == 1:
-            this_wild = card_group.pop(0)
-            this_wild.tempnumber = this_wild.number
-            groups_wilds.append(this_wild)
-        if isWild(card_group[-1], wild_numbers) and card_group[-1].tempnumber == 14:
-            this_wild = card_group.pop(-1)
-            this_wild.tempnumber = this_wild.number
-            groups_wilds.append(this_wild)
+        card_group, groups_wilds = acesFreeWilds(card_group, groups_wilds, wild_numbers)
+    # second pass on run -- if there were any gaps, see if wilds can fill them in.
     if gap_flag:
         if len(groups_wilds) > 0:
-            temp_run_group = card_group
-            card_group = []  # rebuild card_group below
-            for card in temp_run_group:
-                if first_card:
-                    first_card = False
-                    card_group.append(card)
-            else:
-                abs_temp_number = abs(card_group[-1].tempnumber)  # Aces designated to be low have tempnumber = -1.
-                if card.tempnumber == (abs_temp_number + 1):
-                    card_group.append(card)
-                elif card.tempnumber == (abs_temp_number + 2):
-                    if len(groups_wilds) > 0:
-                        this_wild = groups_wilds.pop(0)
-                        this_wild.tempnumber = abs_temp_number + 1
-                        card_group.append(this_wild)
-                        card_group.append(card)
-                    else:
-                        text = 'Not enough wilds: there is a gap between' \
-                               + str(card_group[-1]) + ' and ' + str(card)
-                        raise Exception(text)
+            card_group, groups_wilds = fillGaps(card_group, groups_wilds)
         else:
-            text = 'There is a gap between numbers in run with ' + str(card_group[0])
+            text = 'There is a gap between numbers in run beginning with ' + str(card_group[0])
             raise Exception(text)
     # Now assign Aces that were not previously assigned (Aces cannot be moved once assigned).
     if len(aces_list) > 2:
@@ -129,29 +73,15 @@ def processRuns(card_group, wild_numbers):
         if hiWildChk(card_group, wild_numbers):
             runslot = card_group[-1].tempnumber + 1
             possible_wild_assignments.append(runslot)
-        # Can wilds be played?
+        # If wilds can be automatically assigned, do it.
         if num_remaining_wilds > len(possible_wild_assignments):
             raise Exception('you cannot play all the wild cards.')
-        num_remaining_wilds = len(groups_wilds)
-        # Can wilds be automatically played?
-        if num_remaining_wilds == 2:
-            groups_wilds[0].tempnumber = possible_wild_assignments[0]
-            groups_wilds[1].tempnumber = possible_wild_assignments[1]
-            card_group.insert(0, groups_wilds[0])
-            card_group.append(groups_wilds[1])
+        if num_remaining_wilds == len(possible_wild_assignments):
+            for this_wild in groups_wilds:
+                this_wild.tempnumber = possible_wild_assignments.pop(0)
+                card_group.append(this_wild)
+            card_group.sort(key=lambda wc: wc.tempnumber)
             groups_wilds=[]
-            possible_wild_assignments=[]
-        elif num_remaining_wilds == 1 and len(possible_wild_assignments) == 1:
-            groups_wilds[0].tempnumber = possible_wild_assignments[0]
-            if possible_wild_assignments[0] < card_group[0].tempnumber:
-                card_group.insert(0, groups_wilds[0])
-            else:
-                card_group.append(groups_wilds[0])
-            groups_wilds=[]
-            possible_wild_assignments=[]
-        num_remaining_wilds = len(groups_wilds)
-        if num_remaining_wilds == 0:
-            possible_wild_assignments = []
         # if num_remaining_wilds == 1 and len(possible_wild_assignments) == 2:
         # Will need to ask player whether to play high or low, controller handles that.
     # Final rules check in processRuns: double check that wilds are not placed too close together.
@@ -205,6 +135,80 @@ def isWild(card, wild_numbers):
         return True
     else:
         return False
+
+def buildBaseRun(temp_run_group, groups_wilds, wild_numbers):
+    # check sequence of cards, free-up and place wild cards as necesseary.
+    # if there's a gap of 1 set gapflag to True (may free up wilds later to fill such a gap).
+    card_group  = []                         # rebuild card_group below
+    first_card = True
+    for card in temp_run_group:
+        if first_card:
+            first_card = False
+            card_group.append(card)
+        else:
+            abs_temp_number = abs(card_group[-1].tempnumber)  # Aces designated to be low have tempnumber = -1.
+            if card.tempnumber == (abs_temp_number + 1):
+                card_group.append(card)
+            elif card.tempnumber == abs_temp_number:
+                if isWild(card, wild_numbers):
+                    card.tempnumber = card.number  # reset Wild card back to original value (0 for Jokers)
+                    groups_wilds.append(card)
+                elif isWild(card_group[-1], wild_numbers):
+                    this_wild = card_group.pop(-1)
+                    this_wild.tempnumber = this_wild.number
+                    groups_wilds.append(this_wild)
+                    card_group.append(card)
+                else:
+                    raise Exception('Card value already in the run.')
+            elif card.tempnumber == (abs_temp_number + 2):
+                if len(groups_wilds) == 0:
+                    # wild cards might be freed up later.  Will check again later.
+                    gap_flag = True
+                    card_group.append(card)
+                else:
+                    this_wild = groups_wilds.pop(0)
+                    this_wild.tempnumber = abs_temp_number + 1
+                    card_group.append(this_wild)
+                    card_group.append(card)
+            else:
+                text = 'There is a too big a gap between numbers in run with ' + str(card_group[0])
+                raise Exception(text)
+    return card_group, groups_wilds
+
+def acesFreeWilds(card_group, groups_wilds, wild_numbers):
+        if isWild(card_group[0], wild_numbers) and abs(card_group[0].tempnumber) == 1:
+            this_wild = card_group.pop(0)
+            this_wild.tempnumber = this_wild.number
+            groups_wilds.append(this_wild)
+        if isWild(card_group[-1], wild_numbers) and card_group[-1].tempnumber == 14:
+            this_wild = card_group.pop(-1)
+            this_wild.tempnumber = this_wild.number
+            groups_wilds.append(this_wild)
+        return card_group, groups_wilds
+
+def fillGaps(temp_run_group, groups_wilds):
+    # fill in any remaining gaps in run with wild cards, or raise exception.
+    card_group = []  # rebuild card_group below
+    first_card = True
+    for card in temp_run_group:
+        if first_card:
+            first_card = False
+            card_group.append(card)
+        else:
+            abs_temp_number = abs(card_group[-1].tempnumber)  # Aces designated to be low have tempnumber = -1.
+            if card.tempnumber == (abs_temp_number + 1):
+                card_group.append(card)
+            elif card.tempnumber == (abs_temp_number + 2):
+                if len(groups_wilds) > 0:
+                    this_wild = groups_wilds.pop(0)
+                    this_wild.tempnumber = abs_temp_number + 1
+                    card_group.append(this_wild)
+                    card_group.append(card)
+                else:
+                    text = 'Not enough wilds: there is a gap between' \
+                           + str(card_group[-1]) + ' and ' + str(card)
+                    raise Exception(text)
+    return card_group, groups_wilds
 
 def lowWildChk(card_group, wild_numbers):
     if card_group[0].tempnumber > 1 and not isWild(card_group[0], wild_numbers) \
