@@ -168,6 +168,7 @@ def ManuallyAssign(hand_view):
     return
 
 
+'''
 def wildsHiLo_stepB(hand_view):
     """ Used in Liverpool and other games with runs to assign wilds.
 
@@ -185,11 +186,13 @@ def wildsHiLo_stepB(hand_view):
             textnote = textnote + str(card.number) + ','
         textnote = textnote + "should the wild be high or low?  type H or L: "
         hand_view.controller.note = textnote
-        hand_view.bad_strokes = 0   # if too many bad key-strokes, make wild automatically high.
+        # hand_view.bad_strokes = 0   # if too many bad key-strokes, make wild automatically high.
         #todo: debug -- when testing bad strokes discovered they were adding wild cards to the run???!!!
+        print('is step B ever called?')
     return
+'''
 
-def wildsHiLo_stepA(hand_view):
+def wildsHiLoGetInput(hand_view):
     """ Used in Liverpool and other games with runs to assign wilds.
 
     Assigning wilds is as automated as possible, so this is only used to determine
@@ -208,41 +211,34 @@ def wildsHiLo_stepA(hand_view):
         wild_options = group_info[1]
         unassigned_wilds = group_info[2]
         if len(unassigned_wilds) > 0:
+            textnote = str(processed_group[0].suit) + ': '
+            for card in processed_group:
+                textnote = textnote + str(card.number) + ','
+            textnote = textnote + "should the wild be high or low?  type H or L: "
+            hand_view.controller.note = textnote
             this_wild = unassigned_wilds[0]
             if hand_view.event.type == pygame.KEYDOWN:
                 if hand_view.event.key == pygame.K_l:
-                    this_wild.tempnumber = wild_options[0]
-                    del hand_view.controller.unassigned_wilds_dict[k_group]
-                    processed_group.append(this_wild)
-                    processed_group.sort(key=lambda wc: wc.tempnumber)
+                    processed_group = processWildChoice(hand_view, this_wild, wild_options[0], processed_group, k_group)
                     hand_view.controller.processed_full_board[k_group] = processed_group
                 elif hand_view.event.key == pygame.K_h:
-                    this_wild.tempnumber = wild_options[1]
-                    del hand_view.controller.unassigned_wilds_dict[k_group]
-                    processed_group.append(this_wild)
-                    processed_group.sort(key=lambda wc: wc.tempnumber)
+                    processed_group = processWildChoice(hand_view, this_wild, wild_options[1], processed_group, k_group)
                     hand_view.controller.processed_full_board[k_group] = processed_group
                 else:
-                    hand_view.bad_strokes = hand_view.bad_strokes + 1
+                    # hand_view.bad_strokes = hand_view.bad_strokes + 1
                     hand_view.controller.note = hand_view.controller.note + 'INVALID KEY STROKE'
-                    if hand_view.bad_strokes > 4:
-                        hand_view.controller.note = 'Invalid response more than 3 times, made wild card high'
-                        this_wild.tempnumber = wild_options[1]
-                        del hand_view.controller.unassigned_wilds_dict[k_group]
-                        processed_group.append(this_wild)
-                        processed_group.sort(key=lambda wc: wc.tempnumber)
-                        hand_view.controller.processed_full_board[k_group] = processed_group
-                        #todo: create a helper functions for this (lots of duplicate code).
             # reset count of num_wilds.
             hand_view.num_wilds = len(hand_view.controller.unassigned_wilds_dict.keys())
-            if hand_view.num_wilds > 0:
-                wildsHiLo_stepB(hand_view)
-            else:
+            if hand_view.num_wilds == 0:
                 hand_view.controller.play()
-        else:
-            print('In HandManagement.wildsHiLo_stepA.')
-            print('Why is there an entry in hand_view.controller.unassigned_wilds_dict with no unassigned_wilds?')
     return
+
+def processWildChoice(hand_view, this_wild, slot_option, processed_group, k_group):
+    this_wild.tempnumber = slot_option
+    del hand_view.controller.unassigned_wilds_dict[k_group]
+    processed_group.append(this_wild)
+    processed_group.sort(key=lambda wc: wc.tempnumber)
+    return processed_group
 
 
 

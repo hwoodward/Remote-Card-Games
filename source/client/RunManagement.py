@@ -17,7 +17,6 @@ def processRuns(card_group, wild_numbers):
     groups_wilds = []
     temp_run_group = []
     aces_list =[]
-    gap_flag = False
     # Separate wilds & Aces that have NOT been assigned from other cards (do wilds before Aces in case Aces are wild).
     for card in card_group:
         if card.tempnumber in wild_numbers:
@@ -27,7 +26,7 @@ def processRuns(card_group, wild_numbers):
         else:
             temp_run_group.append(card)
     # first pass on run -- check sequence and place or remove wilds.
-    card_group, groups_wilds = buildBaseRun(temp_run_group, groups_wilds, wild_numbers)
+    card_group, groups_wilds, gap_flag = buildBaseRun(temp_run_group, groups_wilds, wild_numbers)
     # Check if new Aces will free up additional wild cards.
     if len(aces_list) > 0:
         card_group, groups_wilds = acesFreeWilds(card_group, groups_wilds, wild_numbers)
@@ -141,6 +140,7 @@ def buildBaseRun(temp_run_group, groups_wilds, wild_numbers):
     # if there's a gap of 1 set gapflag to True (may free up wilds later to fill such a gap).
     card_group  = []                         # rebuild card_group below
     first_card = True
+    gap_flag = False
     for card in temp_run_group:
         if first_card:
             first_card = False
@@ -173,7 +173,7 @@ def buildBaseRun(temp_run_group, groups_wilds, wild_numbers):
             else:
                 text = 'There is a too big a gap between numbers in run with ' + str(card_group[0])
                 raise Exception(text)
-    return card_group, groups_wilds
+    return card_group, groups_wilds, gap_flag
 
 def acesFreeWilds(card_group, groups_wilds, wild_numbers):
         if isWild(card_group[0], wild_numbers) and abs(card_group[0].tempnumber) == 1:
