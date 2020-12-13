@@ -38,6 +38,7 @@ def CreateButtons(hand_view, num_players=1):
     hand_view.clear_selected_cards_btn = Btn.Button(UIC.White, 200, 90, 225, 25, text='Clear selected cards')
     hand_view.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 53, 225, 25, text='Play prepared cards')
     hand_view.discard_action_btn = Btn.Button(UIC.Bright_Red, 190, 25, 100, 25, text='discard')
+    hand_view.heart_btn = Btn.Button(UIC.White, 10, (UIC.Disp_Height - 30), 25, 25, text=str(u"\u2665"))
     # do not need discard pile at beginning of game, but do need initialize pickup_pile_sz and _outline
     hand_view.pickup_pile_sz = 0
     hand_view.pickup_pile_outline = UIC.outline_colors[0]
@@ -128,6 +129,7 @@ def ButtonDisplay(hand_view):
     hand_view.clear_selected_cards_btn.draw(hand_view.display, hand_view.clear_selected_cards_btn.outline_color)
     hand_view.play_prepared_cards_btn.draw(hand_view.display, hand_view.play_prepared_cards_btn.outline_color)
     hand_view.discard_action_btn.draw(hand_view.display, hand_view.discard_action_btn.outline_color)
+    hand_view.heart_btn.draw(hand_view.display, hand_view.heart_btn.outline_color)
     return
 
 
@@ -168,6 +170,8 @@ def ClickedButton(hand_view, pos):
     elif hand_view.discard_action_btn.isOver(pos):
         discard_list = hand_view.gatherSelected()
         hand_view.discard_confirm = hand_view.discardConfirmation(hand_view.discard_confirm, discard_list)
+    elif hand_view.heart_btn.isOver(pos):
+        hand_view.controller.note = "Believe in the heart of the cards " + str(u"\u2665")
     # following two buttons only appear at beginning of round, used to notify server ready to begin round.
     elif hand_view.controller._state.round == -1 and hand_view.ready_yes_btn.isOver(pos):
         hand_view.controller.setReady(True)
