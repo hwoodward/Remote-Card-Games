@@ -122,6 +122,27 @@ class GameServer(Server, ServerState):
             index = (index + 1) % len(self.players)
             icount = icount + 1
 
+    def checkVisibleCardsReported(self):
+        """Insure that no played cards were lost in update to self.visible_cards(only used when Shared_Board = True) """
+
+        self.v_cards = [p.visible_cards for p in self.players]
+        if len(self.v_cards) == 0:
+            self.v_cards = [{}]
+        # v_cards contains a dictionary from each player/client
+        # each dictionary contains all the played cards that player/client is aware of.
+        # set self.visible_cards_now to the dictionary in v_cards with the most cards.
+        #
+        max_len = -1
+        self.visible_cards_now = {}
+        for v_cards_dict in self.v_cards:
+            temp_length = 0
+            for key, scard_group in v_cards_dict.items():
+                temp_length = temp_length + len(scard_group)
+            if temp_length > max_len:
+                self.visible_cards_now = v_cards_dict
+                max_len = temp_length
+        return
+
     ######################################################
 
     def Send_broadcast(self, data):
@@ -146,28 +167,11 @@ class GameServer(Server, ServerState):
         # On server keep them in serialized form.
 
         if self.rules.Shared_Board:
-            # Shared_Board is True: (e.g. Liverpool) - each player can play on any players cards.
-            self.v_cards = [p.visible_cards for p in self.players]
-            if len(self.v_cards) == 0:
-                self.v_cards = [{}]
-            # v_cards contains a dictionary from each player/client
-            # each dictionary contains all the played cards that player/client is aware of.
-            # set self.visible_cards_now to the dictionary in v_cards with the most cards.
-            #
-            # todo: consider whether checking the length is the best way to determine which dictionary is most
-            # recent version of visible_cards.
-            max_len = -1
-            self.visible_cards_now = {}
-            for v_cards_dict in self.v_cards:
-                temp_length = 0
-                for key, scard_group in v_cards_dict.items():
-                    temp_length = temp_length + len(scard_group)
-                if temp_length > max_len:
-                    self.visible_cards_now = v_cards_dict
-                    max_len = temp_length
+            # Shared_Board is True: (e.g. Liverpool) -- each player transmits entire board of visible_cards to server.
             self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players],"visible_cards": [self.visible_cards_now],"hand_status": [p.hand_status for p in self.players]})
         else:
-            # Shared_Board is False: (e.g. HandAndFoot) -- each player can only play on their own cards.
+            # Shared_Board is False: (e.g. HandAndFoot) -- each player can only play on their own cards,
+            # so p.visible_cards only contains that player p's fraction of the board.
             self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
 
 

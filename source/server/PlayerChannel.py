@@ -95,7 +95,7 @@ class PlayerChannel(Channel):
     def Network_publicInfo(self, data):
         """This is refreshed public information data from the client"""
         self.visible_cards = data["visible_cards"]
-
+        self._server.checkVisibleCardsReported()  # reset _server.visible_cards_now unless cards lost.
         self.hand_status = data["hand_status"]
         self._server.Send_publicInfo()
 
