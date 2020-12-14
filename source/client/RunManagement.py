@@ -122,7 +122,7 @@ def restoreRunAssignment(visible_scards_dictionary, wild_numbers, numsets):
                 card_group[0].assignWild(card_group[1].tempnumber - 1)
             elif card_group[0].number == 1:
                 card_group[0].assignWild(-1)
-        return cardgroup_dictionary
+    return cardgroup_dictionary
 
 
 def isWild(card, wild_numbers):
