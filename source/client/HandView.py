@@ -9,13 +9,6 @@ import client.HandManagement as HandManagement
 from client.UICardWrapper import UICardWrapper
 import client.UIConstants as UIC
 from common.Card import Card
-from common.Liverpool import Deal_Size as Deal_Size_LP
-from common.HandAndFoot import Deal_Size as Deal_Size_HF
-from common.Liverpool import Meld_Threshold as Meld_Threshold_LP
-from common.HandAndFoot import Meld_Threshold as Meld_Threshold_HF
-from common.Liverpool import help_text as help_text_LP
-from common.HandAndFoot import help_text as help_text_HF
-
 
 
 class HandView:
@@ -29,21 +22,17 @@ class HandView:
     Player can arrange their own hand, and prepare to play cards during other players' turns.
     """
     def __init__(self, controller, display, ruleset):
-        self.ruleset = ruleset
-        if ruleset == 'Liverpool':
-            # todo: replace lines below with xxx = controller._state.rules.xxx and omit imports.
-            self.Meld_Threshold = Meld_Threshold_LP
-            self.RuleSetsButtons = RuleSetsButtons_LP
-            self.deal_size = Deal_Size_LP
-            self.buttons_per_player = self.Meld_Threshold[0][0] +  self.Meld_Threshold[0][1]
-            self.help_text = help_text_LP
-        elif ruleset == 'HandAndFoot':
-            self.Meld_Threshold = Meld_Threshold_HF
-            self.RuleSetsButtons = RuleSetsButtons_HF
-            self.deal_size = Deal_Size_HF
-            self.help_text = help_text_HF
         self.controller = controller
         self.display = display
+        self.ruleset = ruleset
+        self.Meld_Threshold = controller._state.rules.Meld_Threshold
+        self.deal_size = controller._state.rules.Deal_Size
+        self.help_text = controller._state.rules.help_text
+        if ruleset == 'Liverpool':
+            self.buttons_per_player = self.Meld_Threshold[0][0] +  self.Meld_Threshold[0][1]
+            self.RuleSetsButtons = RuleSetsButtons_LP
+        elif ruleset == 'HandAndFoot':
+            self.RuleSetsButtons = RuleSetsButtons_HF
         self.hand_scaling = (UIC.scale, UIC.Card_Spacing)
         self.current_hand = []
         self.last_hand = []
@@ -124,7 +113,7 @@ class HandView:
                 else:
                     # in Shared_Board games, check if there are wilds that need to be updated.
                     # All other events are ignored until play is finished.
-                    HandManagement.wildsHiLo_step2(self)
+                    HandManagement.wildsHiLoGetInput(self)
 
     def nextEvent(self):
         """This submits the next user input to the controller,

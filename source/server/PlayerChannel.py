@@ -71,11 +71,11 @@ class PlayerChannel(Channel):
         cards = self._server.drawCards()
         self.Send_newCards(cards)
 
-
     def Network_pickUpPile(self, data):
         cards = self._server.pickUpPile()
         self.Send_newCards(cards)
         self._server.Send_discardInfo()
+        self._server.Send_pickUpAnnouncement(self.name, cards[0])
     
     def Network_goOut(self, data):
         self._server.Send_endRound(self.name)
@@ -95,7 +95,7 @@ class PlayerChannel(Channel):
     def Network_publicInfo(self, data):
         """This is refreshed public information data from the client"""
         self.visible_cards = data["visible_cards"]
-
+        self._server.checkVisibleCardsReported()  # reset _server.visible_cards_now unless cards lost.
         self.hand_status = data["hand_status"]
         self._server.Send_publicInfo()
 

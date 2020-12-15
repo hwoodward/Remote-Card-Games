@@ -1,7 +1,5 @@
 import importlib
 from common.Card import Card
-# from client.RunManagement import processRuns
-# from client.RunManagement import restoreRunAssignment
 
 class ClientState:
     """ This class store client state for access by different listeners
@@ -24,9 +22,7 @@ class ClientState:
         self.turn_phase = 'inactive'  # hard coded start phase as 'not my turn'
         self.round = -1  # Start with the 'no current round value'
         self.name = "guest"
-        # Will need to know player index in Liverpool because prepare cards buttons shared, but designated player
-        # has to initiate play in that player's sets and runs.
-        self.player_index = 0 # needed for Liverpool, will update when play cards.
+        self.player_index = 0 # needed for games with Shared_Board, will update when play cards.
         self.reset()  # Start with state cleared for a fresh round
 
     def getPlayerIndex(self, player_names):
@@ -97,7 +93,7 @@ class ClientState:
                 for card in card_group:
                     self.hand_cards.remove(card)
                     self.played_cards.setdefault(key, []).append(card)
-        elif self.rules.Shared_Board:
+        else:
             self.rules.canPlay(processed_full_board, self.round)
             self.played_cards = processed_full_board
             for key, card_group in prepared_cards.items():

@@ -10,14 +10,15 @@ def RunServer():
     # get command line argument of server, port
     host, port = sys.argv[1].split(":")
     ruleset_name = sys.argv[2]
-    server = GameServer(localaddr=(host, int(port)), ruleset=ruleset_name)
+    starting_round = sys.argv[3]
+    server = GameServer(localaddr=(host, int(port)), ruleset=ruleset_name, startinground = starting_round )
     while not server.game_over:
         server.Pump()
         sleep(0.0001)
     print("To play again restart server with same command")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         print("Usage:", sys.argv[0], "host:port ruleset")
         print("e.g.", sys.argv[0], "localhost:31425 HandAndFoot")
     else:

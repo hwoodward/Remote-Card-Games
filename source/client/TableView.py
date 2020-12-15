@@ -7,7 +7,6 @@ from common.HandAndFoot import Meld_Threshold as Meld_Threshold_HF
 from common.HandAndFoot import wild_numbers as wild_numbers_HF
 from common.Liverpool import Meld_Threshold as Meld_Threshold_LP
 from common.Liverpool import wild_numbers as wild_numbers_LP
-# from common.Liverpool import combineCardDicts as combineCardDicts
 
 
 class TableView(ConnectionListener):
@@ -24,8 +23,7 @@ class TableView(ConnectionListener):
         if self.ruleset == 'Liverpool':
             self.Meld_Threshold = Meld_Threshold_LP
             self.wild_numbers = wild_numbers_LP
-            self.i_set_num = self.Meld_Threshold[0][0]
-            # unlike Meld_Threshold, this persists after round, until board is cleared of cards.
+            self.i_set_num = self.Meld_Threshold[0][0] #unlike Meld_Threshold, persists after round until board is cleared.
         elif self.ruleset == 'HandAndFoot':
             self.Meld_Threshold = Meld_Threshold_HF
             self.wild_numbers = wild_numbers_HF
@@ -144,7 +142,6 @@ class TableView(ConnectionListener):
         #  for each key need to gather s_cards from all players (all idx).  s_card=card.serialize
         for idx in range(i_tot):
             summary = {}
-            # todo: make the TableView display in Liverpool prettier.
             key_player = self.player_names[idx]
             if len(v_scards) > 0:
                 all_visible_one_dictionary = v_scards[0]
@@ -161,7 +158,16 @@ class TableView(ConnectionListener):
                             unique_numbers = list(set(card_numbers))
                             if len(unique_numbers) == 1:
                                 unique_number = int(unique_numbers[0])
-                                text = 'SET of ' + str(unique_number) + "'s: "
+                                if unique_number == 1:
+                                    text = "Aces: "
+                                elif unique_number <= 10:
+                                    text = str(unique_number) + "'s: "
+                                elif unique_number == 11:
+                                    text = "Jacks: "
+                                elif unique_number == 12:
+                                    text = "Queens: "
+                                elif unique_number == 13:
+                                    text = "Kings: "
                             elif len(unique_numbers) > 1:
                                 # this should never happen.
                                 print('bug in program -- set had multiple non-wild numbers')
@@ -176,10 +182,19 @@ class TableView(ConnectionListener):
                             for s_card in card_group:
                                 if not s_card[0] in self.wild_numbers:
                                     card_suit = str(s_card[1])
-                                    text = text + str(s_card[0]) + ','
+                                    if s_card[0] == 1:
+                                        text = text + 'A,'
+                                    elif s_card[0] <= 10:
+                                        text = text + str(s_card[0]) + ','
+                                    elif s_card[0] == 11:
+                                        text = text + 'J,'
+                                    elif s_card[0] == 12:
+                                        text = text + 'Q,'
+                                    elif s_card[0] == 13:
+                                        text = text + 'K,'
                                 else:
                                     text = text + 'Wild,'
-                            text = 'Run in ' + card_suit + ": " + text
+                            text = card_suit + ": " + text
                         summary[key[1]] = text
             self.compressed_info[key_player] = summary
 
