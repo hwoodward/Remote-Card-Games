@@ -19,6 +19,12 @@ class Button:
         self.text = text
         self.outline_color = UIC.no_outline_color
 
+    def updateText(self, newtext):
+        self.text = newtext
+
+    def updateXposition(self, newX):
+        self.x = newX
+
     def draw(self, win, outline=UIC.no_outline_color):
         # Call this method to draw the button on the screen
         if not outline == UIC.no_outline_color:

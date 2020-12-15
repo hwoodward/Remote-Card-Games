@@ -12,7 +12,14 @@ class UICardWrapper:
         self.img = UICardWrapper.getImage(self.card, card_scaling)
         self.img_clickable = ClickImg(self.img, loc_xy[0], loc_xy[1], self.img.get_width(), self.img.get_height(), 0)
         self.status = 0     # 0 = not selected or prepared, 1 = selected, 2 = prepared (ready for play)
-        self.key = UICardWrapper.sortKey(this_card)
+        self.key = 0         #todo: check that H&F still runs with these modifications to key.
+        self.key_LP = []
+        '''
+        moved the following functionality to HandManagement:
+        self.key = UICardWrapper.sortKey(this_card, 0) 
+        self.key_LP = [UICardWrapper.sortKey(this_card, 1),UICardWrapper.sortKey(this_card, 2), \
+                       UICardWrapper.sortKey(this_card, 3),UICardWrapper.sortKey(this_card, 4)]
+        '''
 
     @staticmethod
     def getImage(card, card_scaling):
@@ -25,21 +32,42 @@ class UICardWrapper:
         img = pygame.transform.rotozoom(img, 0, card_scaling)
         return img
 
-    def sortKey(this_card, sort_option=1):
+    def sortKey(self, sort_option=0):
         """ Calculate score for sorting cards.
 
-        Calculates value for sorting cards. Option 1 optimized  for Hand & Foot game.
-        For Bridge or other games different sorting would probably be preferred, and
-        could create multiple buttons so that user could sort it how they wanted.
+        Calculates value for sorting cards. Option 0 optimized  for Hand & Foot game.
         """
-        if sort_option == 1:
-            key4sorting = this_card.number
-            if key4sorting == 1:
-                key4sorting = 14
-            asuit = this_card.suit
-            key4sorting = 2 * key4sorting
-            if asuit == 'Hearts' or asuit == 'Diamonds':
+        arank = self.card.number
+        asuit = self.card.suit
+        key4sorting = arank
+        if sort_option == 0:            # by number, red, black together (used for Hand and Foot)
+            if arank == 1:
+                arank = 14
+            if asuit=='Spades' or asuit == 'Clubs':
+                key4sorting = 2 * arank
+            else:
+                key4sorting = (2 * arank) - 1
+        elif sort_option == 1 or sort_option == 2:     # by number, aces high or low
+            if sort_option == 1 and arank == 1:
+                arank = 14                           # make aces high
+            key4sorting = 4 * arank
+            if asuit == 'Clubs':
+                key4sorting = key4sorting - 3
+            elif asuit == 'Diamonds':
+                key4sorting = key4sorting - 2
+            elif asuit == 'Spades':
                 key4sorting = key4sorting - 1
+        elif sort_option == 3 or sort_option == 4:    # by suit, aces high or low
+            if sort_option == 3 and arank == 1:
+                arank = 14
+            if asuit == 'Clubs':
+                key4sorting = arank
+            if asuit == 'Diamonds':
+                key4sorting = 15 + arank
+            elif asuit == 'Spades':
+                key4sorting = 30 + arank
+            elif asuit == 'Hearts':
+                key4sorting = 45 + arank
         else:
-            print('only 1 sorting option currently supported')
+            print('only sorting option currently supported are 0 to 4')
         return key4sorting

@@ -7,7 +7,7 @@ added_files = [
      ]
 
 a = Analysis(['RunClient.py'],
-             pathex=['c:\\Users\\sheri\\Documents\\GitHub\\Remote-Card-Games\\source'],
+             pathex=['c:\\Users\\XXXXXXX\\Documents\\GitHub\\Remote-Card-Games\\source'],
              binaries=[],
              datas=[],
              hiddenimports=[],

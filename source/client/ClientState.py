@@ -1,6 +1,7 @@
 import importlib
 from common.Card import Card
-
+# from client.RunManagement import processRuns
+# from client.RunManagement import restoreRunAssignment
 
 class ClientState:
     """ This class store client state for access by different listeners
@@ -23,7 +24,14 @@ class ClientState:
         self.turn_phase = 'inactive'  # hard coded start phase as 'not my turn'
         self.round = -1  # Start with the 'no current round value'
         self.name = "guest"
+        # Will need to know player index in Liverpool because prepare cards buttons shared, but designated player
+        # has to initiate play in that player's sets and runs.
+        self.player_index = 0 # needed for Liverpool, will update when play cards.
         self.reset()  # Start with state cleared for a fresh round
+
+    def getPlayerIndex(self, player_names):
+        """This will udpate player index if another player drops out. """
+        self.player_index = player_names.index(self.name)
 
     def dealtHands(self, hands):
         """Store the extra hands dealt to player for use after first hand is cleared"""
@@ -57,18 +65,25 @@ class ClientState:
         """Clear out round specific state to prepare for next round to start"""
         self.hand_list = []
         self.hand_cards = []
+        #   If self.rules.Shared_Board is False (HandAndFoot) this is dictionary of
+        #   cards played by this client.
+        #   If self.rules.Shared_Board is True (Liverpool)
+        #   it is a dictionary containing cards played by all players, hence it is derived from
+        #   data: visible cards, which is processed in method: visible_scards[{...}]
+
         self.played_cards = {}
         self.went_out = False
         self.discard_info = [None, 0]
-        
+
     def newCards(self, card_list):
         """Update the cards in hand"""
         for card in card_list:
             self.hand_cards.append(card)
 
-    def playCards(self, prepared_cards):
-        """Move cards from hand to visible"""
-        # First check that all the cards are in your hand
+    def playCards(self, prepared_cards, processed_full_board={}):
+        """Move cards from hand to board if play follows rules, else inform what rule is broken."""
+
+        # First check that all the cards are in your hand.
         tempHand = [x for x in self.hand_cards]
         try:
             for card_group in prepared_cards.values():
@@ -76,12 +91,20 @@ class ClientState:
                     tempHand.remove(card)
         except ValueError:
             raise Exception("Attempted to play cards that are not in your hand")
-        self.rules.canPlay(prepared_cards, self.played_cards, self.round)
-        for key, card_group in prepared_cards.items():
-            for card in card_group:
-                self.hand_cards.remove(card)
-                self.played_cards.setdefault(key, []).append(card)
-    
+        if not self.rules.Shared_Board:
+            self.rules.canPlay(prepared_cards, self.played_cards, self.round)
+            for key, card_group in prepared_cards.items():
+                for card in card_group:
+                    self.hand_cards.remove(card)
+                    self.played_cards.setdefault(key, []).append(card)
+        elif self.rules.Shared_Board:
+            self.rules.canPlay(processed_full_board, self.round)
+            self.played_cards = processed_full_board
+            for key, card_group in prepared_cards.items():
+                for card in card_group:
+                    self.hand_cards.remove(card)
+
+
     def getValidKeys(self, card):
         """Get the keys that this card can be prepared with"""
         return self.rules.getKeyOptions(card)
@@ -90,8 +113,8 @@ class ClientState:
         """Confirm a player can pick up the pile with the prepared cards"""
         # check there are enough cards
         if self.discard_info[1] < self.rules.Pickup_Size:
-            raise Exception("Cannot pickup the pile until there are 8 cards")
-        # check prepared cards meet the forced play requirements
+            text = 'Cannot pickup the pile until there are ' + str(self.rules.Pickup_Size) + ' cards.'
+            raise Exception(text)
         return self.rules.canPickupPile(self.discard_info[0], prepared_cards, self.played_cards, self.round)
 
     def discardCards(self, card_list):

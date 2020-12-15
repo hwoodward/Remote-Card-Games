@@ -3,6 +3,8 @@ from server.ServerState import ServerState
 
 from PodSixNet.Server import Server
 from PodSixNet.Channel import Channel
+from time import time, sleep
+
 
 class GameServer(Server, ServerState):
     channelClass = PlayerChannel
@@ -16,6 +18,8 @@ class GameServer(Server, ServerState):
         self.players = []
         self.in_round = False
         self.game_over = False
+        if self.rules.Shared_Board:      #  True for Liverpool, False for HandAndFoot.
+            self.visible_cards_now = {}
         print('Server launched')
 
     def Connected(self, channel, addr):
@@ -59,7 +63,7 @@ class GameServer(Server, ServerState):
         for player in self.players:
             player.Send_deal(self.dealHands(), self.round)
         self.Send_scores()              # need to retransmit all the scores in case a player has joined between rounds
-        self.turn_index = self.round
+        self.turn_index = self.round    # define which player starts the next round.
         self.nextTurn()
 
     def delPlayer(self, player):
@@ -82,11 +86,46 @@ class GameServer(Server, ServerState):
 
 
     def nextTurn(self):
-        """Advance to the next trun"""
+        """Advance to the next turn"""
         newIndex = (self.turn_index + 1) % len(self.players)
         self.turn_index = newIndex
         self.players[self.turn_index].Send({"action": "startTurn"})
-        
+        if self.rules.Buy_Option:
+            self.Send_buyingOpportunity()
+
+    def cardBuyingResolution(self):
+        """ Resolve who gets to purchase card for games with Buy_Option = True
+        This is called when upon player drawing cards. """
+        timelimit = time() + self.rules.purchase_time
+        buying_phase = True # else this routine would not be called
+        i_max = len(self.players) - 2
+        index = (self.turn_index + 1) % len(self.players)
+        icount = 0
+        while buying_phase and icount < i_max:
+            while self.players[index].want_card is None and time() < timelimit:
+                # wait patiently(?) while updating information from players.
+                # todo: discuss whether timer should start from time card is discarded, or
+                #  time next player attempts to draw.  Latter would enable players to give one another more time.
+                #  Currently done from time of discard, therefore, may want a longer purchase_time...
+                self.Pump()
+                sleep(0.0001)
+            if self.players[index].want_card:
+                self.Send_buyingResult(self.players[index].name)
+                # send cards
+                cards = self.players[index]._server.drawCards()   # note number of cards is same as DrawSize
+                cards = cards + self.players[index]._server.pickUpPile()   # number of cards is same as Pickup_Size
+                self.players[index].Send_newCards(cards)
+                self.Send_discardInfo()
+                buying_phase = False
+            elif not self.players[index].want_card:
+                index = index + 1 % len(self.players)
+                icount = icount + 1
+
+
+
+
+    ######################################################
+
     def Send_broadcast(self, data):
         """Send data to every connected player"""
         [p.Send(data) for p in self.players]
@@ -104,14 +143,61 @@ class GameServer(Server, ServerState):
 
     def Send_publicInfo(self):
         """Send the update to the melded cards on the table"""
-        #NOTE: visible_cards needs to be serialized.
-        #Current plan: never deserialize them, the client sends them in serialized and
-        #we leave them serialized in the channel during storage and thus when they go out again
-        self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
+
+        #NOTE: visible_cards needs to be serialized form to be transmitted.
+        # On server keep them in serialized form.
+
+        if self.rules.Shared_Board:
+            # Shared_Board is True: (e.g. Liverpool) - each player can play on any players cards.
+            self.v_cards = [p.visible_cards for p in self.players]
+            if len(self.v_cards) == 0:
+                self.v_cards = [{}]
+            # v_cards contains a dictionary from each player/client
+            # each dictionary contains all the played cards that player/client is aware of.
+            # set self.visible_cards_now to the dictionary in v_cards with the most cards.
+            #
+            # todo: consider whether checking the length is the best way to determine which dictionary is most
+            # recent version of visible_cards.
+            max_len = -1
+            self.visible_cards_now = {}
+            for v_cards_dict in self.v_cards:
+                temp_length = 0
+                for key, scard_group in v_cards_dict.items():
+                    temp_length = temp_length + len(scard_group)
+                if temp_length > max_len:
+                    self.visible_cards_now = v_cards_dict
+                    max_len = temp_length
+            # Next line must be long (no line breaks) or it doesn't work properly.
+            self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players],"visible_cards": [self.visible_cards_now],"hand_status": [p.hand_status for p in self.players]})
+        else:
+            # Shared_Board is False: (e.g. HandAndFoot) -- each player can only play on their own cards.
+            # Next line must be long (no line breaks) or it doesn't work properly.
+            self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
+
 
     def Send_discardInfo(self):
         """Send the update to the discard pile"""
         info = self.getDiscardInfo()
         self.Send_broadcast({"action": "discardInfo", "top_card": info[0].serialize(), "size": info[1]})
 
+    def Send_buyingOpportunity(self):
+        """ Let eligible players know there's a buying opportunity
+
+        Used in games with with Buy_Option = True (i.e. Liverpool)
+        where you can buy the top discard if the next player doesn't want
+        it.  If there are N players, then N-2 players are eligible to buy card
+        (neither player who discarded, nor current active player are eligible).
+        """
+        for p in self.players:
+            p.want_card = None     # reset all buying responses to None
+        info = self.getDiscardInfo()
+        i_max = len(self.players) - 2
+        for i_count in range(i_max):
+            index = (self.turn_index + i_count + 1) % len(self.players)
+            self.players[index].Send({"action": "buyingOpportunity", "top_card": info[0].serialize()})
+
+    def Send_buyingResult(self, buyer):
+        """ Broadcast who purchased what card in last auction."""
+        info = self.getDiscardInfo()  # be sure to send this before giving the player the top card.
+        self.Send_broadcast({"action": "buyingResult", "top_card": info[0].serialize(), "buyer": buyer})
 

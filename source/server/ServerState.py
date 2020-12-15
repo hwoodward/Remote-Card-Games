@@ -77,3 +77,4 @@ class ServerState():
                 hand.append(self.draw_pile.pop())
             all_hands.append(hand)
         return all_hands
+
