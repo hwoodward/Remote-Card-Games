@@ -78,6 +78,18 @@ class GameServer(Server, ServerState):
         """
         player_index = self.players.index(player)
         self.players.remove(player)
+        # if Shared_Board then need to update visible_cards_now dictionary.
+        if self.rules.Shared_Board:
+            # rebuild visible_cards_now with entries with key[0] = player_index removed and keys on other entries adjusted.
+            visible_cards_previous = self.visible_cards_now
+            self.visible_cards_now = {}
+            for old_key, card_group in visible_cards_previous.items():
+                if not old_key[0] == player_index:
+                    if old_key[0] > player_index:
+                        new_key = (old_key[0]-1, old_key[1])
+                    else:
+                        new_key = old_key
+                    self.visible_cards_now[new_key] = card_group
         self.Send_publicInfo()
         #Check for no more players
         if len(self.players) == 0:
