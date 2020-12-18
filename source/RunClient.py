@@ -32,7 +32,7 @@ def RunClient():
     if not ruleset == 'Liverpool' and not ruleset == 'HandAndFoot':
         print(ruleset + ' is not supported, enter Liverpool OR HandAndFoot')
         exit()
-    # todo: check that server and client agree -- perhaps get ruleset from server?
+    # todo: check that server and client agree on game being played -- perhaps get ruleset from server?
     print(ruleset)
     connection.DoConnect((host, int(port)))
     clientState = ClientState(ruleset)
