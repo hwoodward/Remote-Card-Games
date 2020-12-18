@@ -65,7 +65,7 @@ class ClientState:
         #   cards played by this client.
         #   If self.rules.Shared_Board is True (Liverpool)
         #   it is a dictionary containing cards played by all players, hence it is derived from
-        #   data: visible cards, which is processed in method: visible_scards[{...}]
+        #   data: visible cards.
 
         self.played_cards = {}
         self.went_out = False

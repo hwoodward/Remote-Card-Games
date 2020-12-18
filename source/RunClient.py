@@ -49,7 +49,7 @@ def RunClient():
         gameControl.Pump()
         tableView.Pump()
         tableView.playerByPlayer(current_round)
-        note = "You should connect once you've entered your name. Otherwise it is possible you have the wrong server or port#..."
+        note = "This may take a moment. If it seems too long, then it is possible you have the wrong server or port#..."
         gameboard.render(note)
     playername = gameControl.checkNames(tableView.player_names)
     # games with Shared_Board=True need to insure name on server and client agree.

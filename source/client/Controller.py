@@ -222,7 +222,7 @@ class Controller(ConnectionListener):
 
     def sharedBoardPrepAndPlay(self, visible_scards):
         """ Playing cards is a 4 step process:
-         1.  Verify it's your turn (or run risk of using obsolete version of visible_scards to create processed_cards).
+         1.  Verify it's your turn.
          2.  process cards, this will set tempnumbers properly and put them in dictionary controller.processed_cards.
             in the process, some rules of runs are verified (have meld requirement, not playing on other players,
             no repeats of cards in runs, and Aces can't turn corners).
