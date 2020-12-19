@@ -308,6 +308,16 @@ class Controller(ConnectionListener):
             self.processed_full_board[k_group] = processed_group
         return
 
+    def resetProcessedCards(self, visible_scards):
+        """ used in games with Shared_Board True after a player disconnects
+
+        Resets processed_full_board and played_cards to remove disconnected player from board."""
+        numsets = self.Meld_Threshold[self._state.round][0]
+        self.played_cards = restoreRunAssignment(visible_scards[0], self._state.rules.wild_numbers, numsets)
+        self.processed_full_board = self.played_cards
+        self._state.played_cards = self.processed_full_board
+        return
+
     def handleEmptyHand(self, isDiscard):
         """Checks for and handles empty hand. 
         

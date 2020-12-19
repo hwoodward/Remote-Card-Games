@@ -172,6 +172,8 @@ def ClickedButton(hand_view, pos):
         hand_view.discard_confirm = hand_view.discardConfirmation(hand_view.discard_confirm, discard_list)
     elif hand_view.heart_btn.isOver(pos):
         hand_view.controller.note = "Believe in the heart of the cards " + str(u"\u2665")
+        hand_view.controller.note = "debug: visible_scards hand_view.num_players" + \
+                                    str(hand_view.visible_scards) + ' ' + str(hand_view.num_players)
     # following two buttons only appear at beginning of round, used to notify server ready to begin round.
     elif hand_view.controller._state.round == -1 and hand_view.ready_yes_btn.isOver(pos):
         hand_view.controller.setReady(True)

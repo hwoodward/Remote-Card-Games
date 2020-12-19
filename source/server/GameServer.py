@@ -95,8 +95,10 @@ class GameServer(Server, ServerState):
                     self.visible_cards_now[new_key] = card_group
                     # else old_key == player_index and you drop it from dictionary of visible_cards
             visible_cards_reset = self.visible_cards_now
+            for p in self.players:
+                p.visible_cards = self.visible_cards_now
             print(self.visible_cards_now)
-            self.player_dropped = (True, visible_cards_reset)
+            self.player_dropped = (True, visible_cards_reset)  # not certain needed now that I'm resetting p.visible_cards
         self.Send_publicInfo()
         #Check for no more players
         if len(self.players) == 0:
@@ -146,7 +148,10 @@ class GameServer(Server, ServerState):
 
         if self.player_dropped[0]:
             self.visible_cards_now = self.player_dropped[1]
+            for p in self.players:
+                p.visible_cards = self.visible_cards_now
             self.player_dropped = (False, {})
+            print('player dropped, visible_cards_now: '+str(self.visible_cards_now))
         else:
             max_len = 0
             for key, scard_group in self.visible_cards_now.items():
@@ -164,7 +169,7 @@ class GameServer(Server, ServerState):
                 for key, scard_group in v_cards_dict.items():
                     temp_length = temp_length + len(scard_group)
                 if temp_length > max_len:
-                    print('this is where self.visible_cards_now is updating')
+                    print('this is where self.visible_cards_now is updating: '+ str(self.visible_cards_now))
                     self.visible_cards_now = v_cards_dict
                     max_len = temp_length
         return
