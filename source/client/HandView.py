@@ -45,7 +45,6 @@ class HandView:
         self.wild_cards = []
         self.selected_list = []
         self.round_index = 0
-        # self.player_index = 0
         self.round_advance = False
         self.num_players = 1
         # In Liverpool and other Shared_Board games:  prepare cards buttons must be updated each round
@@ -64,12 +63,10 @@ class HandView:
 
         self.visible_scards = visible_scards
         self.controller._state.player_index = player_index
-        # check if a player has disconnected.
-        if self.num_players > num_players:
-            # reset process_cards so that server won't update visible_cards with an obsolete version.
+        # check if a player has disconnected and need to make adjustments to played_cards variables.
+        if self.num_players > num_players and self.controller._state.rules.Shared_Board:
+            # reset process_cards and played_cards so that server won't update visible_cards with an obsolete version.
             self.controller.resetProcessedCards(self.visible_scards)
-            print('retruned from resetProcessedCards')
-            #todo: above was last change made -- some of the other changes might not be necessary.
         self.num_players = num_players
         if self.controller._state.round == -1:
             self.mesgBetweenRounds(self.help_text)

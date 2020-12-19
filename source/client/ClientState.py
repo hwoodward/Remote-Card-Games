@@ -61,11 +61,11 @@ class ClientState:
         """Clear out round specific state to prepare for next round to start"""
         self.hand_list = []
         self.hand_cards = []
-        #   If self.rules.Shared_Board is False (HandAndFoot) this is dictionary of
-        #   cards played by this client.
+        #   If self.rules.Shared_Board is False (HandAndFoot)
+        #   self.played_cards is dictionary of cards played by this client.
         #   If self.rules.Shared_Board is True (Liverpool)
         #   it is a dictionary containing cards played by all players, hence it is derived from
-        #   data: visible cards.
+        #   data: visible_scards.
 
         self.played_cards = {}
         self.went_out = False

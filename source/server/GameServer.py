@@ -21,7 +21,6 @@ class GameServer(Server, ServerState):
         self.game_over = False
         if self.rules.Shared_Board:
             self.visible_cards_now = {}
-            self.player_dropped = (False, {})
         print('Server launched')
 
     def Connected(self, channel, addr):
@@ -87,18 +86,13 @@ class GameServer(Server, ServerState):
             for old_key, card_group in visible_cards_previous.items():
                 if old_key[0] > player_index:
                     new_key = (old_key[0]-1, old_key[1])
-                    print('line90: ' + str(old_key) + str(new_key))
                     self.visible_cards_now[new_key] = card_group
                 elif old_key[0] < player_index:
                     new_key = old_key
-                    print('line93: ' + str(old_key) + str(new_key))
                     self.visible_cards_now[new_key] = card_group
-                    # else old_key == player_index and you drop it from dictionary of visible_cards
-            visible_cards_reset = self.visible_cards_now
+                # else old_key == player_index and you drop it from dictionary of visible_cards
             for p in self.players:
                 p.visible_cards = self.visible_cards_now
-            print(self.visible_cards_now)
-            self.player_dropped = (True, visible_cards_reset)  # not certain needed now that I'm resetting p.visible_cards
         self.Send_publicInfo()
         #Check for no more players
         if len(self.players) == 0:
@@ -146,32 +140,24 @@ class GameServer(Server, ServerState):
     def checkVisibleCardsReported(self):
         """Insure that no played cards were lost in update to self.visible_cards(only used when Shared_Board = True) """
 
-        if self.player_dropped[0]:
-            self.visible_cards_now = self.player_dropped[1]
-            for p in self.players:
-                p.visible_cards = self.visible_cards_now
-            self.player_dropped = (False, {})
-            print('player dropped, visible_cards_now: '+str(self.visible_cards_now))
-        else:
-            max_len = 0
-            for key, scard_group in self.visible_cards_now.items():
-                max_len = max_len + len(scard_group)
-            self.v_cards = [p.visible_cards for p in self.players]
-            if len(self.v_cards) == 0:
-                self.v_cards = [{}]
-            # v_cards contains a dictionary from each player/client
-            # each dictionary contains all the played cards that player/client is aware of.
-            # set self.visible_cards_now to the dictionary in v_cards with the most cards.
-            #
-            max_len = -1
-            for v_cards_dict in self.v_cards:
-                temp_length = 0
-                for key, scard_group in v_cards_dict.items():
-                    temp_length = temp_length + len(scard_group)
-                if temp_length > max_len:
-                    print('this is where self.visible_cards_now is updating: '+ str(self.visible_cards_now))
-                    self.visible_cards_now = v_cards_dict
-                    max_len = temp_length
+        max_len = 0
+        for key, scard_group in self.visible_cards_now.items():
+            max_len = max_len + len(scard_group)
+        self.v_cards = [p.visible_cards for p in self.players]
+        if len(self.v_cards) == 0:
+            self.v_cards = [{}]
+        # v_cards contains a dictionary from each player/client
+        # each dictionary contains all the played cards that player/client is aware of.
+        # set self.visible_cards_now to the dictionary in v_cards with the most cards.
+        #
+        max_len = -1
+        for v_cards_dict in self.v_cards:
+            temp_length = 0
+            for key, scard_group in v_cards_dict.items():
+                temp_length = temp_length + len(scard_group)
+            if temp_length > max_len:
+                self.visible_cards_now = v_cards_dict
+                max_len = temp_length
         return
 
     ######################################################
@@ -199,8 +185,6 @@ class GameServer(Server, ServerState):
 
         if self.rules.Shared_Board:
             # Shared_Board is True: (e.g. Liverpool) -- each player transmits entire board of visible_cards to server.
-            print('debugging, in Send_publicInfo: self.visible_cards_now: ')
-            print(self.visible_cards_now)
             self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players],"visible_cards": [self.visible_cards_now],"hand_status": [p.hand_status for p in self.players]})
         else:
             # Shared_Board is False: (e.g. HandAndFoot) -- each player can only play on their own cards,

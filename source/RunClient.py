@@ -1,6 +1,5 @@
 import sys
 from time import sleep
-# from time import time
 from PodSixNet.Connection import connection, ConnectionListener
 from client.ClientState import ClientState
 from client.Controller import Controller
