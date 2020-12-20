@@ -422,8 +422,9 @@ class Controller(ConnectionListener):
         self.sendPublicInfo() #Let everyone know its your turn.
 
     def Network_buyingOpportunity(self, data):
-        self.buying_opportunity = True
-        self.note = "The {0} is for sale, Do you want to buy it? [y/n]".format(Card.deserialize(data["top_card"]))
+        if  self._state.discard_info[1]  > 0:
+            self.buying_opportunity = True
+            self.note = "The {0} is for sale, Do you want to buy it? [y/n]".format(Card.deserialize(data["top_card"]))
 
     def Network_newCards(self, data):
         card_list = [Card.deserialize(c) for c in data["cards"]]
