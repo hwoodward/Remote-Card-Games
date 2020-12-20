@@ -136,6 +136,8 @@ class GameServer(Server, ServerState):
                 buying_phase = False
             index = (index + 1) % len(self.players)
             icount = icount + 1
+        if buying_phase == True:
+            self.Send_buyingResult('No one')
 
     def checkVisibleCardsReported(self):
         """Insure that no played cards were lost in update to self.visible_cards(only used when Shared_Board = True) """

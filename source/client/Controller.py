@@ -5,7 +5,7 @@ from client.RunManagement import restoreRunAssignment
 from PodSixNet.Connection import connection, ConnectionListener
 
 Turn_Phases = ['inactive', 'draw', 'forcedAction', 'play']
-Forbidden_Names = ['guest','']
+Forbidden_Names = ['guest','','No one']
 
 class Controller(ConnectionListener):
     """ This client connects to a GameServer which will host a cardgame
@@ -465,7 +465,10 @@ class Controller(ConnectionListener):
     def Network_buyingResult(self, data):
         buyer = data["buyer"]
         purchase = Card.deserialize(data["top_card"])
-        self.note = "{0} has purchased {1}".format(buyer, purchase)
+        if buyer == 'No one':
+            self.note = "The {0} has been abandoned to the pile.".format(purchase)
+        else:
+            self.note = "{0} has purchased the {1}.".format(buyer, purchase)
 
     def Network_pickUpAnnouncement(self, data):
         player_name = data["player_name"]
