@@ -45,7 +45,6 @@ class HandView:
         self.wild_cards = []
         self.selected_list = []
         self.round_index = 0
-        self.player_index = 0
         self.round_advance = False
         self.num_players = 1
         # In Liverpool and other Shared_Board games:  prepare cards buttons must be updated each round
@@ -63,7 +62,11 @@ class HandView:
         """This updates the view of the hand, between rounds it displays a message. """
 
         self.visible_scards = visible_scards
-        self.player_index = player_index
+        self.controller._state.player_index = player_index
+        # check if a player has disconnected and need to make adjustments to played_cards variables.
+        if self.num_players > num_players and self.controller._state.rules.Shared_Board:
+            # reset process_cards and played_cards so that server won't update visible_cards with an obsolete version.
+            self.controller.resetProcessedCards(self.visible_scards)
         self.num_players = num_players
         if self.controller._state.round == -1:
             self.mesgBetweenRounds(self.help_text)

@@ -78,6 +78,21 @@ class GameServer(Server, ServerState):
         """
         player_index = self.players.index(player)
         self.players.remove(player)
+        # if Shared_Board then need to update visible_cards_now dictionary.
+        if self.rules.Shared_Board:
+            # rebuild visible_cards_now with entries with key[0] = player_index removed and keys on other entries adjusted.
+            visible_cards_previous = self.visible_cards_now
+            self.visible_cards_now = {}
+            for old_key, card_group in visible_cards_previous.items():
+                if old_key[0] > player_index:
+                    new_key = (old_key[0]-1, old_key[1])
+                    self.visible_cards_now[new_key] = card_group
+                elif old_key[0] < player_index:
+                    new_key = old_key
+                    self.visible_cards_now[new_key] = card_group
+                # else old_key == player_index and you drop it from dictionary of visible_cards
+            for p in self.players:
+                p.visible_cards = self.visible_cards_now
         self.Send_publicInfo()
         #Check for no more players
         if len(self.players) == 0:
@@ -121,10 +136,15 @@ class GameServer(Server, ServerState):
                 buying_phase = False
             index = (index + 1) % len(self.players)
             icount = icount + 1
+        if buying_phase == True:
+            self.Send_buyingResult('No one')
 
     def checkVisibleCardsReported(self):
         """Insure that no played cards were lost in update to self.visible_cards(only used when Shared_Board = True) """
 
+        max_len = 0
+        for key, scard_group in self.visible_cards_now.items():
+            max_len = max_len + len(scard_group)
         self.v_cards = [p.visible_cards for p in self.players]
         if len(self.v_cards) == 0:
             self.v_cards = [{}]
@@ -133,7 +153,6 @@ class GameServer(Server, ServerState):
         # set self.visible_cards_now to the dictionary in v_cards with the most cards.
         #
         max_len = -1
-        self.visible_cards_now = {}
         for v_cards_dict in self.v_cards:
             temp_length = 0
             for key, scard_group in v_cards_dict.items():

@@ -5,7 +5,7 @@ from client.RunManagement import restoreRunAssignment
 from PodSixNet.Connection import connection, ConnectionListener
 
 Turn_Phases = ['inactive', 'draw', 'forcedAction', 'play']
-Forbidden_Names = ['guest','']
+Forbidden_Names = ['guest','','No one']
 
 class Controller(ConnectionListener):
     """ This client connects to a GameServer which will host a cardgame
@@ -222,7 +222,7 @@ class Controller(ConnectionListener):
 
     def sharedBoardPrepAndPlay(self, visible_scards):
         """ Playing cards is a 4 step process:
-         1.  Verify it's your turn (or run risk of using obsolete version of visible_scards to create processed_cards).
+         1.  Verify it's your turn.
          2.  process cards, this will set tempnumbers properly and put them in dictionary controller.processed_cards.
             in the process, some rules of runs are verified (have meld requirement, not playing on other players,
             no repeats of cards in runs, and Aces can't turn corners).
@@ -306,6 +306,16 @@ class Controller(ConnectionListener):
             # have gone through all prepared cards w/o error, will use processed_full_board to update
             # _state.played_cards once all wilds assigned (unassigned wilds found in self.unassigned_wilds_dict)
             self.processed_full_board[k_group] = processed_group
+        return
+
+    def resetProcessedCards(self, visible_scards):
+        """ used in games with Shared_Board True after a player disconnects
+
+        Resets processed_full_board and played_cards to remove disconnected player from board."""
+        numsets = self.Meld_Threshold[self._state.round][0]
+        self.played_cards = restoreRunAssignment(visible_scards[0], self._state.rules.wild_numbers, numsets)
+        self.processed_full_board = self.played_cards
+        self._state.played_cards = self.processed_full_board
         return
 
     def handleEmptyHand(self, isDiscard):
@@ -412,8 +422,9 @@ class Controller(ConnectionListener):
         self.sendPublicInfo() #Let everyone know its your turn.
 
     def Network_buyingOpportunity(self, data):
-        self.buying_opportunity = True
-        self.note = "The {0} is for sale, Do you want to buy it? [y/n]".format(Card.deserialize(data["top_card"]))
+        if  self._state.discard_info[1]  > 0:
+            self.buying_opportunity = True
+            self.note = "The {0} is for sale, Do you want to buy it? [y/n]".format(Card.deserialize(data["top_card"]))
 
     def Network_newCards(self, data):
         card_list = [Card.deserialize(c) for c in data["cards"]]
@@ -454,7 +465,10 @@ class Controller(ConnectionListener):
     def Network_buyingResult(self, data):
         buyer = data["buyer"]
         purchase = Card.deserialize(data["top_card"])
-        self.note = "{0} has purchased {1}".format(buyer, purchase)
+        if buyer == 'No one':
+            self.note = "The {0} has been abandoned to the pile.".format(purchase)
+        else:
+            self.note = "{0} has purchased the {1}.".format(buyer, purchase)
 
     def Network_pickUpAnnouncement(self, data):
         player_name = data["player_name"]

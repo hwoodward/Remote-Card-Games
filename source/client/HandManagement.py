@@ -167,31 +167,6 @@ def ManuallyAssign(hand_view):
         hand_view.num_wilds = len(hand_view.wild_cards)
     return
 
-
-'''
-def wildsHiLo_stepB(hand_view):
-    """ Used in Liverpool and other games with runs to assign wilds.
-
-    Assigning wilds is as automated as possible, so this is only used to determine
-    if wilds are high or low.  There should be at most one wild card in unassigned_wilds.
-    """
-    # hand_view.controller.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
-    key = hand_view.key_list_unassigned_wilds[0]
-    group_info = hand_view.controller.unassigned_wilds_dict[key]
-    processed_group = group_info[0]
-    unassigned_wilds = group_info[2]
-    if len(unassigned_wilds) > 0:
-        textnote = "USE KEY STROKES!! For the " + str(processed_group[1].suit) + " run: "
-        for card in processed_group:
-            textnote = textnote + str(card.number) + ','
-        textnote = textnote + "should the wild be high or low?  type H or L: "
-        hand_view.controller.note = textnote
-        # hand_view.bad_strokes = 0   # if too many bad key-strokes, make wild automatically high.
-        #todo: debug -- when testing bad strokes discovered they were adding wild cards to the run???!!!
-        print('is step B ever called?')
-    return
-'''
-
 def wildsHiLoGetInput(hand_view):
     """ Used in Liverpool and other games with runs to assign wilds.
 

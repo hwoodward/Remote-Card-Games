@@ -1,6 +1,5 @@
 import sys
 from time import sleep
-from time import time
 from PodSixNet.Connection import connection, ConnectionListener
 from client.ClientState import ClientState
 from client.Controller import Controller
@@ -32,7 +31,7 @@ def RunClient():
     if not ruleset == 'Liverpool' and not ruleset == 'HandAndFoot':
         print(ruleset + ' is not supported, enter Liverpool OR HandAndFoot')
         exit()
-    # todo: check that server and client agree -- perhaps get ruleset from server?
+    # todo: check that server and client agree on game being played -- perhaps get ruleset from server?
     print(ruleset)
     connection.DoConnect((host, int(port)))
     clientState = ClientState(ruleset)
@@ -49,7 +48,7 @@ def RunClient():
         gameControl.Pump()
         tableView.Pump()
         tableView.playerByPlayer(current_round)
-        note = "You should connect once you've entered your name. Otherwise it is possible you have the wrong server or port#..."
+        note = "This may take a moment. If it seems too long, then it is possible you have the wrong server or port#..."
         gameboard.render(note)
     playername = gameControl.checkNames(tableView.player_names)
     # games with Shared_Board=True need to insure name on server and client agree.
