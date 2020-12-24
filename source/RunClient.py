@@ -27,10 +27,10 @@ def RunClient():
     host, port = hostinfo.split(":")
     print(host)
     print(port)
-    ruleset = str(input("Enter the ruleset[Liverpool] ") or "Liverpool")
+    ruleset = str(input("Do you want to play HandAndFoot or Liverpool? (HandAndFoot = default)") or "HandAndFoot")
     if not ruleset == 'Liverpool' and not ruleset == 'HandAndFoot':
-        print(ruleset + ' is not supported, enter Liverpool OR HandAndFoot')
-        ruleset = str(input("Enter the ruleset[Liverpool] ") or "Liverpool")
+        print(ruleset + ' is not supported.')
+        ruleset = str(input("Enter Liverpool OR HandAndFoot (<CR> implies HandAndFoot) ") or "HandAndFoot")
         if not ruleset == 'Liverpool' and not ruleset == 'HandAndFoot':
             exit()
     # todo: check that server and client agree on game being played -- perhaps get ruleset from server?
