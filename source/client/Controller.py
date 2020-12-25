@@ -1,4 +1,5 @@
 import random                  # will be used to assign unique names
+from time import sleep
 from common.Card import Card
 from client.RunManagement import processRuns
 from client.RunManagement import restoreRunAssignment
@@ -229,6 +230,7 @@ class Controller(ConnectionListener):
          3. Assign any ambiguous wild cards (they are wilds that end up at the ends of runs).
          4. Double check additional rules, including Liverpool specific rules.  If pass, then play the cards.
          """
+        # Verify it's the player's turn before processing cards, else visible_scards may become obsolete during processing.
         if self._state.turn_phase != Turn_Phases[3]:
             self.note = "You can only play on your turn and only after you draw"
             return
@@ -272,6 +274,7 @@ class Controller(ConnectionListener):
         # check to see if player has previously melded, if not, check if can.
         if (self._state.player_index, 0) not in played_groups:
             self._state.rules.canMeld(self.prepared_cards, self._state.round, self._state.player_index)
+
         # Unlike in HandAndFoot, where self.played_cards was used to check rules,
         # in Liverpool and other shared board games need to consider all of the played cards.
         numsets = self.Meld_Threshold[self._state.round][0]

@@ -13,6 +13,7 @@ class UICardWrapper:
         self.img_clickable = ClickImg(self.img, loc_xy[0], loc_xy[1], self.img.get_width(), self.img.get_height(), 0)
         self.status = 0     # 0 = not selected or prepared, 1 = selected, 2 = prepared (ready for play)
         self.key = [self.sortKey(0), self.sortKey(1), self.sortKey(2), self.sortKey(3), self.sortKey(4)]
+
     @staticmethod
     def getImage(card, card_scaling):
         """Helper to fetch correct image for a card"""

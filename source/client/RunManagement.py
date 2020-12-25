@@ -1,6 +1,17 @@
 from common.Card import Card
 
-# This file contains methods used in processing runs for Liverpool or other Rummy games.
+"""This file contains methods used in processing runs for Liverpool.
+
+Some Liverpool specific stuff:
+it assumes that Aces can be Hi or Low but not both (K,A,2 not allowed).
+Enforces rule that you must have two natural cards between wilds in a run.
+
+In order to preserve backwards compatibility with June 2020 distribution, it assumes that card.tempnumber is
+not passed back and forth between the client and server. This only causes ambiguity in wilds and 
+Aces at the ends of runs.   Method restoreRunAssignment takes care of this by assigning
+wilds and Aces on ends of runs the appropriate tempnumber before processRuns is called.
+To preserve info on whether Ace is assigned hi or low, if Ace is assigned low, then tempnumber is set to -1.
+"""
 
 def processRuns(card_group, wild_numbers):
     """ handle sorting of run, including placement of wilds.  Handles minor rule checking.

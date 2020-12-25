@@ -18,7 +18,6 @@ Pickup_Size = 8
 Discard_Size = 1
 wild_numbers = [0, 2]
 Refresh_Draw_Pile = 'fresh_decks'
-
 Meld_Threshold = [50, 90, 120, 150]
 Number_Rounds = len(Meld_Threshold)  # For convenience
 
