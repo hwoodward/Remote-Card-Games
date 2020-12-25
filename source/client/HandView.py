@@ -45,7 +45,6 @@ class HandView:
         self.wild_cards = []
         self.selected_list = []
         self.round_index = 0
-        self.player_index = 0
         self.round_advance = False
         self.num_players = 1
         # In Liverpool and other Shared_Board games:  prepare cards buttons must be updated each round

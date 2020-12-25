@@ -34,10 +34,6 @@ def WrapHand(hand_view, updated_hand, wrapped_hand):
             if newcard:
                 card_xy = (card_xy[0] + hand_view.hand_scaling[1], card_xy[1])
                 card_wrapped = UICardWrapper(card, card_xy, hand_view.hand_scaling[0])
-                # todo: consider combining keys into single list. Also consider generating keys in constructor.
-                card_wrapped.key = card_wrapped.sortKey(0)
-                card_wrapped.key_LP = [card_wrapped.sortKey(1), card_wrapped.sortKey(2),
-                                       card_wrapped.sortKey(3), card_wrapped.sortKey(4) ]
             updated_wrapped_hand.append(card_wrapped)
         # Should now have all the cards in the updated hand properly wrapped.
         # sort cards by location, so they will display more attractively and so RefreshXY will work properly if called.
@@ -218,7 +214,6 @@ def processWildChoice(hand_view, this_wild, slot_option, processed_group, k_grou
     processed_group.append(this_wild)
     processed_group.sort(key=lambda wc: wc.tempnumber)
     return processed_group
-
 
 
 
