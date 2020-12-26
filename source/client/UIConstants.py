@@ -32,7 +32,8 @@ Table_Hand_Border = Disp_Height * (1 - Hand_Row_Fraction)
 
 # fonts
 pygame.font.init()
-Font_File = os.path.join('bundle_data', 'freesansbold.ttf')
+# Font_File = os.path.join('bundle_data', 'freesansbold.ttf')  << does not include card suit symbols.
+Font_File = os.path.join('bundle_data', 'FreeSans-LrmZ.ttf')
 Small_Text = pygame.font.Font(Font_File, 14)
 Small_Text_Feed = int(14* 1.3)
 Medium_Text = pygame.font.Font(Font_File, 16)

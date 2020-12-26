@@ -10,10 +10,11 @@ class PlayerChannel(Channel):
         """
         self.name = "guest"
         #visible cards and hand status are public info
-        self.visible_cards = {}
+        self.visible_cards = {}  # cards on board, in serialized format.
         self.hand_status = [] #order of information in this is specified by the ruleset
         self.scores = []
         self.ready = False #for consensus transitions
+        self.want_card = None  # for games with Buy_Option = True
         Channel.__init__(self, *args, **kwargs)
 
     def scoreForRound(self, round):
@@ -65,10 +66,16 @@ class PlayerChannel(Channel):
         cards = self._server.drawCards()
         self.Send_newCards(cards)
 
+    def Network_drawWithBuyOption(self, data):
+        self._server.cardBuyingResolution()
+        cards = self._server.drawCards()
+        self.Send_newCards(cards)
+
     def Network_pickUpPile(self, data):
         cards = self._server.pickUpPile()
         self.Send_newCards(cards)
         self._server.Send_discardInfo()
+        self._server.Send_pickUpAnnouncement(self.name, cards[0])
     
     def Network_goOut(self, data):
         self._server.Send_endRound(self.name)
@@ -88,5 +95,14 @@ class PlayerChannel(Channel):
     def Network_publicInfo(self, data):
         """This is refreshed public information data from the client"""
         self.visible_cards = data["visible_cards"]
+        if self._server.rules.Shared_Board:
+            self._server.checkVisibleCardsReported()  # reset _server.visible_cards_now unless cards lost.
         self.hand_status = data["hand_status"]
         self._server.Send_publicInfo()
+
+    ### Actions related to Buying Discards ###
+
+    def Network_buyResponse(self, data):
+        self.want_card = data["want_card"]
+
+

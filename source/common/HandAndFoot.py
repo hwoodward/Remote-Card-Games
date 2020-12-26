@@ -10,16 +10,27 @@ import math
 
 Game_Name = "Hand and Foot"
 
+Shared_Board = False  # you can only play on the sets you meld, not on other players.
+Buy_Option = False  # in Liverpool you can purchase top discard, in HandAndFoot you cannot.
+play_pick_up = True  # must play some cards in order to pick-up the pile.
 Draw_Size = 2
 Pickup_Size = 8
 Discard_Size = 1
-
+wild_numbers = [0, 2]
+Refresh_Draw_Pile = 'fresh_decks'
 Meld_Threshold = [50, 90, 120, 150]
 Number_Rounds = len(Meld_Threshold)  # For convenience
-
 Deal_Size = 11
 Hands_Per_Player = 2
-
+notes = ["You can only pick up the pile at the start of your turn."]
+help_text = ['Welcome to a Hand And Foot!  Meld requirement is: '+  str(Meld_Threshold[0]) + '.',
+                              'To draw click on the deck of cards (upper left).',
+                              'To discard select ONE card & double click on discard button. ',
+                              'To pick up discard prepare 2 matching cards in hand and click on discard pile. ',
+                              "Cumulative score will display beneath player's cards",
+                              'When ready to start playing click on the YES button on the lower right.']
+wild_instructions = 'Use the keyboard to designate your prepared wild cards \r\n '
+wild_instructions = wild_instructions + '(use 0 for 10 and J, Q, or K for facecards).'
 
 def numDecks(numPlayers):
     """Specify how many decks of cards to put in the draw pile"""
@@ -33,7 +44,7 @@ def singleDeck(n):
 
 def isWild(card):
     """returns true if a card is a wild"""
-    if card.number in [0, 2]:
+    if card.number in wild_numbers:
         return True
     else:
         return False
@@ -110,7 +121,7 @@ def canPickupPile(top_card, prepared_cards, played_cards, round_index):
         temp_prepared[key] = [x for x in card_group]
         if key == top_key:
             temp_prepared[key].append(top_card)
-    return canPlay(temp_prepared, played_cards, round_index)
+    return canPlay(temp_prepared, played_cards, round_index), True # Hand And Foot prepared cards are played.
 
 
 def canPlay(prepared_cards, played_cards, round_index):
