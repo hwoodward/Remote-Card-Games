@@ -19,8 +19,8 @@ def RunServer():
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
-        print("Usage:", sys.argv[0], "host:port ruleset")
-        print("e.g.", sys.argv[0], "localhost:31425 HandAndFoot")
+        print("Usage:", sys.argv[0], "host:port ruleset  starting_round")
+        print("e.g.", sys.argv[0], "localhost:31425 HandAndFoot 0")
     else:
         RunServer()
 else:

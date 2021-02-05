@@ -19,16 +19,18 @@ class Controller(ConnectionListener):
         self._state = clientState
         self.prepared_cards = {}     #This is the dict of cards prepared to be played.
         self.processed_full_board = {}  #in games with Shared Board, this is the dict of processed cards.
-        self.setName()
+        # todo: note to reviewer -- moved: self.setName() < do this in RunClient after getting rules(askForGame)
         self.ready = False
         self.note = "Game is beginning."
-        # variables needed for games with Shared_Board == True (i.e. Liverpool):
-        self.Meld_Threshold = self._state.rules.Meld_Threshold
         self.unassigned_wilds_dict = {}
         # variable needed if Buy_Option is True
         self.buying_opportunity = False
 
     ### Player Actions ###
+    def askForGame(self):
+        """Ask the server what game is being played."""
+        connection.Send({"action": "sendNameOfGame"})
+
     def setName(self):
         """Set up a display name and send it to the server"""
 
@@ -274,7 +276,7 @@ class Controller(ConnectionListener):
             self._state.rules.canMeld(self.prepared_cards, self._state.round, self._state.player_index)
         # Unlike in HandAndFoot, where self.played_cards was used to check rules,
         # in Liverpool and other shared board games need to consider all of the played cards.
-        numsets = self.Meld_Threshold[self._state.round][0]
+        numsets = self._state.rules.Meld_Threshold[self._state.round][0]
         self.played_cards = restoreRunAssignment(visible_scards[0], self._state.rules.wild_numbers, numsets)
         combined_cards = self._state.rules.combineCardDicts(self.played_cards, self.prepared_cards)
         self.processed_full_board = {}
@@ -312,7 +314,7 @@ class Controller(ConnectionListener):
         """ used in games with Shared_Board True after a player disconnects
 
         Resets processed_full_board and played_cards to remove disconnected player from board."""
-        numsets = self.Meld_Threshold[self._state.round][0]
+        numsets = self._state.rules.Meld_Threshold[self._state.round][0]
         self.played_cards = restoreRunAssignment(visible_scards[0], self._state.rules.wild_numbers, numsets)
         self.processed_full_board = self.played_cards
         self._state.played_cards = self.processed_full_board
@@ -413,6 +415,14 @@ class Controller(ConnectionListener):
         connection.Close()
 
     ### Gameplay messages ###
+
+    def Network_defineGame(self, data):
+        #todo: is this if statement necessary?
+        if len(data) > 0:
+            self._state.ruleset = data["ruleset"]
+        else:
+            print('in controller, server did not return ruleset')
+
     def Network_startTurn(self, data):
         if self._state.round == -1:
             #Ignore turns when between rounds

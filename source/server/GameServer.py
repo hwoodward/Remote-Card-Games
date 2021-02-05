@@ -15,6 +15,7 @@ class GameServer(Server, ServerState):
         """
         Server.__init__(self, localaddr=localaddr)
         ServerState.__init__(self, ruleset)
+        self.ruleset = ruleset
         self.starting_round = int(startinground)
         self.players = []
         self.in_round = False
@@ -184,14 +185,13 @@ class GameServer(Server, ServerState):
 
         #NOTE: visible_cards needs to be serialized form to be transmitted.
         # On server keep them in serialized form.
-
         if self.rules.Shared_Board:
             # Shared_Board is True: (e.g. Liverpool) -- each player transmits entire board of visible_cards to server.
-            self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players],"visible_cards": [self.visible_cards_now],"hand_status": [p.hand_status for p in self.players]})
+            self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players],"visible_cards": [self.visible_cards_now],"hand_status": [p.hand_status for p in self.players], "ruleset": self.ruleset})
         else:
             # Shared_Board is False: (e.g. HandAndFoot) -- each player can only play on their own cards,
             # so p.visible_cards only contains that player p's fraction of the board.
-            self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
+            self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players], "ruleset": self.ruleset})
 
 
     def Send_pickUpAnnouncement(self, name, top_card):

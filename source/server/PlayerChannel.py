@@ -45,8 +45,12 @@ class PlayerChannel(Channel):
     ### Network callbacks          ###
     ##################################
 
+    def Network_sendNameOfGame(self, data):
+        """Server provides name of game to be played (ruleset)."""
+        self.Send({"action": "defineGame", "ruleset": self._server.ruleset})
+
     def Network_displayName(self, data):
-        """Player submitted their display name"""
+        """Player submitted their display name, send that to everyone."""
         self.name = data['name']
         self._server.Send_publicInfo()
 

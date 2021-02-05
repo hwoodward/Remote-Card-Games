@@ -15,7 +15,6 @@ class TableView(ConnectionListener):
     def __init__(self, display, ruleset):
         self.display = display
         self.ruleset = ruleset
-        print('in Tableview: ruleset '+ self.ruleset)
         self.player_names = []
         self.visible_scards = []        # contains list of serialized cards (from server)
         self.hand_status = []
