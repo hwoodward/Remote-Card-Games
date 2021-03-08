@@ -29,15 +29,16 @@ def CreateButtons(hand_view, num_players=1):
     hand_view.not_ready_color_idx = 6  # color of outline will be: UIC.outline_colors(ready_color_idx)
     hand_view.round_indicator_xy = ((UIC.Disp_Width - 100), (UIC.Disp_Height - 20))
     hand_view.sort_status_btn = Btn.Button(UIC.White, 850, 25, 275, 20, text=' sort by status ')
-    hand_view.sort_suit_al_btn = Btn.Button(UIC.White, 850, 50, 175, 20, text=' by suit (Aces=1) ')
-    hand_view.sort_al_btn = Btn.Button(UIC.White, 850, 75, 175, 20, text=' by  no. (Aces=1) ')
-    hand_view.sort_suit_ah_btn = Btn.Button(UIC.White, 1025, 50, 100, 20, text=' (Aces high)')
-    hand_view.sort_ah_btn = Btn.Button(UIC.White, 1025, 75, 100, 20, text=' (Aces high)')
+    hand_view.sort_suit_al_btn = Btn.Button(UIC.White, 850, 55, 165, 20, text=' by suit (Aces=1) ')
+    hand_view.sort_al_btn = Btn.Button(UIC.White, 850, 85, 165, 20, text=' by  no. (Aces=1) ')
+    hand_view.sort_suit_ah_btn = Btn.Button(UIC.White, 1025, 55, 100, 20, text=' (Aces high)')
+    hand_view.sort_ah_btn = Btn.Button(UIC.White, 1025, 85, 100, 20, text=' (Aces high)')
     hand_view.assign_cards_btns = [[]]  # list of card groups (each group is a set or run) for each player.
     hand_view.clear_prepared_cards_btn = Btn.Button(UIC.White, 320, 53, 225, 25, text='Clear prepared cards')
     hand_view.clear_selected_cards_btn = Btn.Button(UIC.White, 200, 90, 225, 25, text='Clear selected cards')
     hand_view.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 53, 225, 25, text='Play prepared cards')
     hand_view.discard_action_btn = Btn.Button(UIC.Bright_Red, 190, 25, 100, 25, text='discard')
+    hand_view.heart_btn = Btn.Button(UIC.White, 10, (UIC.Disp_Height - 30), 25, 25, text=str(u"\u2665"))
     # do not need discard pile at beginning of game, but do need initialize pickup_pile_sz and _outline
     hand_view.pickup_pile_sz = 0
     hand_view.pickup_pile_outline = UIC.outline_colors[0]
@@ -57,7 +58,7 @@ def newRound(hand_view, sets_runs_tuple):
     hand_view.buttons_per_player = sets_runs_tuple[0] + sets_runs_tuple[1]
     hand_view.assign_cards_btns = [[]]
     w = 75  # width of following buttons
-    h = 25  # height of following buttons
+    h = 20  # height of following buttons
     if hand_view.num_players > 1:
         players_sp_w = UIC.Disp_Width / hand_view.num_players
     else:
@@ -70,14 +71,14 @@ def newRound(hand_view, sets_runs_tuple):
         for setnum in range(sets_runs_tuple[0]):
             # hand_view.assign_cards_btns[idx].append([])
             txt = "set " + str(setnum+1)
-            x = 100 + (players_sp_w*idx)
+            x = 10 + (players_sp_w*idx)
             y = players_sp_top + (players_sp_h*setnum)
             prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
             hand_view.assign_cards_btns[idx].append(prepare_card_btn)
         for runnum in range(sets_runs_tuple[1]):
             txt = "run " + str(runnum+1)
             jdx = sets_runs_tuple[0] + runnum
-            x = 100 + (players_sp_w * idx)
+            x = 10 + (players_sp_w * idx)
             y = players_sp_top + (players_sp_h * jdx)
             prepare_card_btn = Btn.Button(UIC.White, x, y, w, h, text=txt)
             # hand_view.assign_cards_btns[idx][jdx] = prepare_card_btn
@@ -128,6 +129,7 @@ def ButtonDisplay(hand_view):
     hand_view.clear_selected_cards_btn.draw(hand_view.display, hand_view.clear_selected_cards_btn.outline_color)
     hand_view.play_prepared_cards_btn.draw(hand_view.display, hand_view.play_prepared_cards_btn.outline_color)
     hand_view.discard_action_btn.draw(hand_view.display, hand_view.discard_action_btn.outline_color)
+    hand_view.heart_btn.draw(hand_view.display, hand_view.heart_btn.outline_color)
     return
 
 
@@ -142,16 +144,16 @@ def ClickedButton(hand_view, pos):
         else:
             hand_view.controller.draw()              # unless pile is empty (at start of each round)
     elif hand_view.sort_al_btn.isOver(pos):
-        hand_view.hand_info.sort(key=lambda wc: wc.key_LP[1])
+        hand_view.hand_info.sort(key=lambda wc: wc.key[2])
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.sort_ah_btn.isOver(pos):
-        hand_view.hand_info.sort(key=lambda wc: wc.key_LP[0])
+        hand_view.hand_info.sort(key=lambda wc: wc.key[1])
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.sort_suit_al_btn.isOver(pos):
-        hand_view.hand_info.sort(key=lambda wc: wc.key_LP[3])
+        hand_view.hand_info.sort(key=lambda wc: wc.key[4])
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.sort_suit_ah_btn.isOver(pos):
-        hand_view.hand_info.sort(key=lambda wc: wc.key_LP[2])
+        hand_view.hand_info.sort(key=lambda wc: wc.key[3])
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.sort_status_btn.isOver(pos):
         hand_view.hand_info.sort(
@@ -168,6 +170,8 @@ def ClickedButton(hand_view, pos):
     elif hand_view.discard_action_btn.isOver(pos):
         discard_list = hand_view.gatherSelected()
         hand_view.discard_confirm = hand_view.discardConfirmation(hand_view.discard_confirm, discard_list)
+    elif hand_view.heart_btn.isOver(pos):
+        hand_view.controller.note = "Believe in the heart of the cards " + str(u"\u2665")
     # following two buttons only appear at beginning of round, used to notify server ready to begin round.
     elif hand_view.controller._state.round == -1 and hand_view.ready_yes_btn.isOver(pos):
         hand_view.controller.setReady(True)

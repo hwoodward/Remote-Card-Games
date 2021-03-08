@@ -35,6 +35,7 @@ def CreateButtons(hand_view):
     hand_view.clear_selected_cards_btn = Btn.Button(UIC.White, 200, 90, 225, 25, text='Clear selected cards')
     hand_view.play_prepared_cards_btn = Btn.Button(UIC.White, 600, 53, 225, 25, text='Play prepared cards')
     hand_view.discard_action_btn = Btn.Button(UIC.Bright_Red, 190, 25, 100, 25, text='discard')
+    hand_view.heart_btn = Btn.Button(UIC.White, 10, (UIC.Disp_Height - 30), 25, 25, text=str(u"\u2665"))
     # for HandAndFoot do not need discard pile at beginning of game, but do need initialize pickup_pile_sz and _outline
     hand_view.pickup_pile_sz = 0
     hand_view.pickup_pile_outline = UIC.outline_colors[0]
@@ -63,7 +64,7 @@ def ButtonDisplay(hand_view):
         hand_view.ready_yes_btn.draw(hand_view.display, hand_view.ready_yes_btn.outline_color)
         hand_view.ready_no_btn.draw(hand_view.display, hand_view.ready_no_btn.outline_color)
     else:
-        hand_view.labelMedium(str(Meld_Threshold[hand_view.controller._state.round]) + "points to meld",
+        hand_view.labelMedium(str(Meld_Threshold[hand_view.controller._state.round]) + " points to meld",
                               hand_view.round_indicator_xy[0], hand_view.round_indicator_xy[1])
     hand_view.sort_status_btn.draw(hand_view.display, hand_view.sort_status_btn.outline_color)
     hand_view.sort_btn.draw(hand_view.display, hand_view.sort_btn.outline_color)
@@ -72,6 +73,7 @@ def ButtonDisplay(hand_view):
     hand_view.clear_selected_cards_btn.draw(hand_view.display, hand_view.clear_selected_cards_btn.outline_color)
     hand_view.play_prepared_cards_btn.draw(hand_view.display, hand_view.play_prepared_cards_btn.outline_color)
     hand_view.discard_action_btn.draw(hand_view.display, hand_view.discard_action_btn.outline_color)
+    hand_view.heart_btn.draw(hand_view.display, hand_view.heart_btn.outline_color)
     return
 
 
@@ -83,7 +85,7 @@ def ClickedButton(hand_view, pos):
     if hand_view.draw_pile.isOver(pos):
         hand_view.controller.draw()
     elif hand_view.sort_btn.isOver(pos):
-        hand_view.hand_info.sort(key=lambda wc: wc.key)
+        hand_view.hand_info.sort(key=lambda wc: wc.key[0])
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.sort_status_btn.isOver(pos):
         hand_view.hand_info.sort(
@@ -91,7 +93,6 @@ def ClickedButton(hand_view, pos):
         )
         hand_view.hand_info = HandManagement.RefreshXY(hand_view, hand_view.hand_info)
     elif hand_view.prepare_card_btn.isOver(pos):
-        # CodeReview note: Removed some lines that are no longer necessary now that deck is defined and cards are unique.
         hand_view.wrapped_cards_to_prep = hand_view.gatherSelected()
         hand_view.wild_cards = hand_view.controller.automaticallyPrepareCards(hand_view.wrapped_cards_to_prep)
         # wild_cards contains a list of lists.
@@ -119,6 +120,8 @@ def ClickedButton(hand_view, pos):
     elif hand_view.discard_action_btn.isOver(pos):
         discard_list = hand_view.gatherSelected()
         hand_view.discard_confirm = hand_view.discardConfirmation(hand_view.discard_confirm, discard_list)
+    elif hand_view.heart_btn.isOver(pos):
+        hand_view.controller.note = "Believe in the heart of the cards " + str(u"\u2665")
     # following two buttons only appear at beginning of round, used to notify server ready to begin round.
     elif hand_view.controller._state.round == -1 and hand_view.ready_yes_btn.isOver(pos):
         hand_view.controller.setReady(True)

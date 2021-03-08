@@ -19,21 +19,19 @@ Draw_Size = 1
 Pickup_Size = 1
 Discard_Size = 1
 wild_numbers = [0]
+Refresh_Draw_Pile = 'shuffle_discards'
 
 # Liverpool: number of sets and runs required to meld.  Order is important! (code relies on sets being first).
-# first element below is temporary (for testing).
-# todo: on server side enable starting game in later rounds.
 Meld_Threshold = [(2,0), (1,1), (0,2), (3,0), (2,1), (1,2), (0,3)]
 Number_Rounds = len(Meld_Threshold)  # For convenience
 Deal_Size = 11
 Hands_Per_Player = 1
 notes = ["Clicking on pile only works on your turn. If you are eligible to buy a card, then click on y (for yes)."]
-temp_string =str(Meld_Threshold[0]) + '  (= ' +str(Meld_Threshold[0][0])+' sets, ' + str(Meld_Threshold[0][1]) +' runs).'
-help_text = ['Welcome to a Liverpool!  Meld requirement is: '+temp_string,
-                              '# decks = ceil(# players *0.6), To draw click on the deck of cards (upper left).',
-                              'To discard select ONE card & double click on discard button. ',
-                              'To prepare cards click on appropriate Run/Set button (they will appear after you click OK)',
-                              'To pick up discard click on discard pile, to attempt to buy discard type y.',
+help_text = ['Welcome to a Liverpool!  Meld requirement will display when round begins ',
+                              ' (at beginning usually 2 sets, no runs). # decks = ceil(# players *0.6).',
+                              'To draw click on the deck of cards (upper left). To discard select ONE card & double click on discard button. ',
+                              'To prepare cards click on appropriate Run/Set button (buttons will appear after you click OK)',
+                              'To pick up discarded card click on discard pile, to attempt to BUY discard type y.',
                               "Cumulative score will display beneath player's cards.",
                               'When ready to start playing click on the YES button on the lower right.']
 
@@ -98,9 +96,14 @@ def canPlayGroup(key, card_group, this_round):
             raise Exception("Cards in a run must all have the same suit (except wilds).")
     return True
 
-def canMeld(prepared_cards, round_index, player_index):
+def canMeld(prepared_cards, round_index, player_index, hand_length):
     """This insures that all required groups are present, but the legality of the groups is not checked until later. """
     #
+    # last round -- must play all cards
+    if round_index == len(Meld_Threshold) - 1:
+        pc_length = sum([len(run_list) for key, run_list in prepared_cards.items()])
+        if not pc_length == hand_length:
+            raise Exception("Final round you must play ALL your cards to meld.")
     required_groups =  Meld_Threshold[round_index][0] + Meld_Threshold[round_index][1]
     valid_groups = 0
     for key, card_group in prepared_cards.items():

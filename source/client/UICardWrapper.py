@@ -12,16 +12,8 @@ class UICardWrapper:
         self.img = UICardWrapper.getImage(self.card, card_scaling)
         self.img_clickable = ClickImg(self.img, loc_xy[0], loc_xy[1], self.img.get_width(), self.img.get_height(), 0)
         self.status = 0     # 0 = not selected or prepared, 1 = selected, 2 = prepared (ready for play)
-        self.key = 0         #todo: check that H&F still runs with these modifications to key.
-        self.key_LP = []
-        '''
-        moved the following functionality to HandManagement:
-        self.key = UICardWrapper.sortKey(this_card, 0) 
-        self.key_LP = [UICardWrapper.sortKey(this_card, 1),UICardWrapper.sortKey(this_card, 2), \
-                       UICardWrapper.sortKey(this_card, 3),UICardWrapper.sortKey(this_card, 4)]
-        '''
+        self.key = [self.sortKey(0), self.sortKey(1), self.sortKey(2), self.sortKey(3), self.sortKey(4)]
 
-    @staticmethod
     def getImage(card, card_scaling):
         """Helper to fetch correct image for a card"""
         suit_letter = 'N'  # this doesn't distinguish between red & black Jokers
@@ -33,10 +25,7 @@ class UICardWrapper:
         return img
 
     def sortKey(self, sort_option=0):
-        """ Calculate score for sorting cards.
-
-        Calculates value for sorting cards. Option 0 optimized  for Hand & Foot game.
-        """
+        """  Calculates value for sorting cards. Option 0 optimized  for Hand & Foot game.  """
         arank = self.card.number
         asuit = self.card.suit
         key4sorting = arank

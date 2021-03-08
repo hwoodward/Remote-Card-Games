@@ -1,7 +1,5 @@
 import importlib
 from common.Card import Card
-# from client.RunManagement import processRuns
-# from client.RunManagement import restoreRunAssignment
 
 class ClientState:
     """ This class store client state for access by different listeners
@@ -10,24 +8,26 @@ class ClientState:
     It stores what is needed to compute scores and decide on move legality
     """
 
-    def __init__(self, ruleset = None):
+    def __init__(self, ruleset = 'tbd'):
         """Initialize a state tracker for a given client"""
-        if ruleset is not None:
-            rule_module = "common." + ruleset
-        else:
-            #This is the unit test case - we may want to put a dummy ruleset in
-            print("In unittest mode - using HandAndFoot rules")
-            rule_module = "common.HandAndFoot"
+        self.ruleset = ruleset
 
-        self.rules = importlib.import_module(rule_module)
         # Turn phase handled by controller
         self.turn_phase = 'inactive'  # hard coded start phase as 'not my turn'
         self.round = -1  # Start with the 'no current round value'
         self.name = "guest"
-        # Will need to know player index in Liverpool because prepare cards buttons shared, but designated player
-        # has to initiate play in that player's sets and runs.
-        self.player_index = 0 # needed for Liverpool, will update when play cards.
+        self.player_index = 0 # needed for games with Shared_Board, will update when play cards.
         self.reset()  # Start with state cleared for a fresh round
+        self.rule_module = 'tbd'
+
+    def importRules(self, ruleset):
+        if ruleset is not 'test':
+            rule_module = "common." + ruleset
+        else:
+            # This is the unit test case - we may want to put a dummy ruleset in
+            print("In unittest mode - using HandAndFoot rules")
+            rule_module = "common.HandAndFoot"
+        self.rules = importlib.import_module(rule_module)
 
     def getPlayerIndex(self, player_names):
         """This will udpate player index if another player drops out. """
@@ -65,11 +65,11 @@ class ClientState:
         """Clear out round specific state to prepare for next round to start"""
         self.hand_list = []
         self.hand_cards = []
-        #   If self.rules.Shared_Board is False (HandAndFoot) this is dictionary of
-        #   cards played by this client.
+        #   If self.rules.Shared_Board is False (HandAndFoot)
+        #   self.played_cards is dictionary of cards played by this client.
         #   If self.rules.Shared_Board is True (Liverpool)
         #   it is a dictionary containing cards played by all players, hence it is derived from
-        #   data: visible cards, which is processed in method: visible_scards[{...}]
+        #   data: visible_scards.
 
         self.played_cards = {}
         self.went_out = False
@@ -97,7 +97,7 @@ class ClientState:
                 for card in card_group:
                     self.hand_cards.remove(card)
                     self.played_cards.setdefault(key, []).append(card)
-        elif self.rules.Shared_Board:
+        else:
             self.rules.canPlay(processed_full_board, self.round)
             self.played_cards = processed_full_board
             for key, card_group in prepared_cards.items():

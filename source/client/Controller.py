@@ -1,12 +1,11 @@
 import random                  # will be used to assign unique names
-from time import sleep
 from common.Card import Card
 from client.RunManagement import processRuns
 from client.RunManagement import restoreRunAssignment
 from PodSixNet.Connection import connection, ConnectionListener
 
 Turn_Phases = ['inactive', 'draw', 'forcedAction', 'play']
-Forbidden_Names = ['guest','']
+Forbidden_Names = ['guest','','No one']
 
 class Controller(ConnectionListener):
     """ This client connects to a GameServer which will host a cardgame
@@ -20,16 +19,18 @@ class Controller(ConnectionListener):
         self._state = clientState
         self.prepared_cards = {}     #This is the dict of cards prepared to be played.
         self.processed_full_board = {}  #in games with Shared Board, this is the dict of processed cards.
-        self.setName()
+        # todo: note to reviewer -- moved: self.setName() < do this in RunClient after getting rules(askForGame)
         self.ready = False
         self.note = "Game is beginning."
-        # variables needed for games with Shared_Board == True (i.e. Liverpool):
-        self.Meld_Threshold = self._state.rules.Meld_Threshold
         self.unassigned_wilds_dict = {}
         # variable needed if Buy_Option is True
         self.buying_opportunity = False
 
     ### Player Actions ###
+    def askForGame(self):
+        """Ask the server what game is being played."""
+        connection.Send({"action": "sendNameOfGame"})
+
     def setName(self):
         """Set up a display name and send it to the server"""
 
@@ -96,7 +97,7 @@ class Controller(ConnectionListener):
         self._state.turn_phase = Turn_Phases[3]
 
     def drawWithBuyOption(self):
-        """ in cards with buy option use this method instead of draw (above)"""
+        """ in games with buy option use this method instead of draw (above)"""
         if self._state.turn_phase != Turn_Phases[1]:
             self.note = "You can only draw at the start of your turn"
             return
@@ -105,10 +106,6 @@ class Controller(ConnectionListener):
         self._state.turn_phase = Turn_Phases[3]
 
     def wantTopCard(self, want_card):
-        if want_card:
-            print('player signaled wants top card')
-        else:
-            print('player does not want to buy top card')
         self.buying_opportunity = False # can't change your mind.
         self.sendBuyResponse(want_card)  # this is where send response to network, player channel.
 
@@ -130,7 +127,7 @@ class Controller(ConnectionListener):
             connection.Send({"action": "pickUpPile"})
 
     def makeForcedPlay(self, top_card):
-        """Complete the required play for picking up the pile, (used in HandAndFoot but not Liverpool)"""
+        """Complete the required play for picking up the pile, (used for games with play_pick_up true)"""
         self.note = "Performing the play required to pick up the pile."
         #Get key for top_card (we know it can be auto-keyed), and then prepare it
         key = self._state.getValidKeys(top_card)[0]
@@ -195,9 +192,10 @@ class Controller(ConnectionListener):
         self.note = "You have no cards prepared to play"
 
     def play(self):
-        """Send the server the current set of played cards"""
-        # player_index and visible_scards needed for rules checking in games with Shared_Board.
-        #
+        """Send the server the current set of played cards
+
+         player_index and visible_scards needed for rules checking in games with Shared_Board.
+         """
         if self._state.turn_phase != Turn_Phases[3]:
             self.note = "You can only play on your turn after you draw"
             return
@@ -225,15 +223,14 @@ class Controller(ConnectionListener):
                 card.tempnumber = card.number
 
     def sharedBoardPrepAndPlay(self, visible_scards):
-        # Review note: Playing cards is a 4 step process:
-        # 1.  Verify it's your turn (or run risk of using obsolete version of visible_scards to create processed_cards).
-        # 2.  process cards, this will set tempnumbers properly and put them in dictionary controller.processed_cards.
-        #    in the process, some rules of runs are verified (have meld requirement, not playing on other players,
-        #    no repeats of cards in runs, and Aces can't turn corners).
-        # 3. Assign any ambiguous wild cards (they are wilds that end up at the ends of runs).
-        # 4. Double check additional rules, including Liverpool specific rules.  If pass, then play the cards.
-
-        # Verify it's the player's turn before processing cards, else visible_scards may become obsolete during processing.
+        """ Playing cards is a 4 step process:
+         1.  Verify it's your turn.
+         2.  process cards, this will set tempnumbers properly and put them in dictionary controller.processed_cards.
+            in the process, some rules of runs are verified (have meld requirement, not playing on other players,
+            no repeats of cards in runs, and Aces can't turn corners).
+         3. Assign any ambiguous wild cards (they are wilds that end up at the ends of runs).
+         4. Double check additional rules, including Liverpool specific rules.  If pass, then play the cards.
+         """
         if self._state.turn_phase != Turn_Phases[3]:
             self.note = "You can only play on your turn and only after you draw"
             return
@@ -276,25 +273,11 @@ class Controller(ConnectionListener):
                     raise Exception("You are not allowed to begin another player's sets or runs.")
         # check to see if player has previously melded, if not, check if can.
         if (self._state.player_index, 0) not in played_groups:
-            self._state.rules.canMeld(self.prepared_cards, self._state.round, self._state.player_index)
-
-        # Review Notes
-        # todo: move these to documentation Review question -- should I keep them here, too?
+            hl = len(self._state.hand_cards)
+            self._state.rules.canMeld(self.prepared_cards, self._state.round, self._state.player_index, hl)
         # Unlike in HandAndFoot, where self.played_cards was used to check rules,
         # in Liverpool and other shared board games need to consider all of the played cards.
-        # Played cards (in deserialized form) are in visible_scards (in serialized form), which is obtained
-        # from controller.
-        # (Path taken by visible_scards:
-        #          Tableview gets the serialized cards every cycle to keep display up to date,
-        #          In handview.update tableview.visible_scards list is passed to handview.visible_scards
-        #          No need to process this unless playing cards, in which case visible_scards passed
-        #          to controller [and maybe?? to clientState]. When Shared_Board is True, visible_scards contains
-        #          only 1 list item, a dictionary.  Dictionary contains card_groups, and they are deserialized and put
-        #          in dictionary self.played_cards.
-        numsets = self.Meld_Threshold[self._state.round][0]
-        # restoreRunAssignment converts all serialized cards to cards and processes self.played_cards
-        # that are in runs so that positions of Wilds and Aces are maintained.
-        # This could be made obsolete by adding tempnumbers to card serialization.
+        numsets = self._state.rules.Meld_Threshold[self._state.round][0]
         self.played_cards = restoreRunAssignment(visible_scards[0], self._state.rules.wild_numbers, numsets)
         combined_cards = self._state.rules.combineCardDicts(self.played_cards, self.prepared_cards)
         self.processed_full_board = {}
@@ -304,19 +287,38 @@ class Controller(ConnectionListener):
             if k_group[1] >= numsets:
                 processed_group, wild_options, unassigned_wilds = processRuns(card_group, self._state.rules.wild_numbers)
                 if len(unassigned_wilds) > 0:
-                    # wilds is unassigned only when it can be played at either end. Hence there should be only 1.
+                    # wild is unassigned only when it can be played at either end. Hence there should be only 1.
                     if len(unassigned_wilds) > 1:
                         print("How odd --wild is unassigned only when it can be played at either end. Hence there should be only 1.")
                         print(processed_group)
                     else:
                         self.unassigned_wilds_dict[k_group] = [processed_group, wild_options, unassigned_wilds]
             else:
-                #todo: need to sort sets?  get user feedback.
-                processed_group = card_group
+                # Cards are a set.  Code below sorts set by suit. Jokers have no suit, and
+                # if wild won't sort properly with others, so wilds are split off separately.
+                wilds_in_group = []
+                not_wilds = []
+                for card in card_group:
+                    if card.number in  self._state.rules.wild_numbers:
+                        wilds_in_group.append(card)
+                    else:
+                        not_wilds.append(card)
+                not_wilds.sort(key=lambda wc:wc.suit)
+                processed_group = wilds_in_group + not_wilds
             # unlike HandAndFoot, self.played_cards includes cards played by everyone.
             # have gone through all prepared cards w/o error, will use processed_full_board to update
             # _state.played_cards once all wilds assigned (unassigned wilds found in self.unassigned_wilds_dict)
             self.processed_full_board[k_group] = processed_group
+        return
+
+    def resetProcessedCards(self, visible_scards):
+        """ used in games with Shared_Board True after a player disconnects
+
+        Resets processed_full_board and played_cards to remove disconnected player from board."""
+        numsets = self._state.rules.Meld_Threshold[self._state.round][0]
+        self.played_cards = restoreRunAssignment(visible_scards[0], self._state.rules.wild_numbers, numsets)
+        self.processed_full_board = self.played_cards
+        self._state.played_cards = self.processed_full_board
         return
 
     def handleEmptyHand(self, isDiscard):
@@ -414,6 +416,14 @@ class Controller(ConnectionListener):
         connection.Close()
 
     ### Gameplay messages ###
+
+    def Network_defineGame(self, data):
+        #todo: is this if statement necessary?
+        if len(data) > 0:
+            self._state.ruleset = data["ruleset"]
+        else:
+            print('in controller, server did not return ruleset')
+
     def Network_startTurn(self, data):
         if self._state.round == -1:
             #Ignore turns when between rounds
@@ -423,8 +433,9 @@ class Controller(ConnectionListener):
         self.sendPublicInfo() #Let everyone know its your turn.
 
     def Network_buyingOpportunity(self, data):
-        self.buying_opportunity = True
-        self.note = "The {0} is for sale, Do you want to buy it? [y/n]".format(Card.deserialize(data["top_card"]))
+        if  self._state.discard_info[1]  > 0:
+            self.buying_opportunity = True
+            self.note = "The {0} is for sale, Do you want to buy it? [y/n]".format(Card.deserialize(data["top_card"]))
 
     def Network_newCards(self, data):
         card_list = [Card.deserialize(c) for c in data["cards"]]
@@ -433,8 +444,7 @@ class Controller(ConnectionListener):
             #This is the result of a pickup and we have a forced action
             self.makeForcedPlay(card_list[0])
         if not self._state.rules.Buy_Option:
-            # review note -- in Liverpool the note below
-            # overwrites message on who bought card, AND was appearing on board of the person who bought card.
+            # Only in non-Buying games can we assume that your turn begins after receiving any cards.
             self.note = "You can now play cards or discard"
         self.sendPublicInfo() #More cards in hand now, need to update public information
 
@@ -466,4 +476,16 @@ class Controller(ConnectionListener):
     def Network_buyingResult(self, data):
         buyer = data["buyer"]
         purchase = Card.deserialize(data["top_card"])
-        self.note = "{0} has purchased {1}".format(buyer, purchase)
+        if buyer == 'No one':
+            self.note = "The {0} has been abandoned to the pile.".format(purchase)
+        else:
+            self.note = "{0} has purchased the {1}.".format(buyer, purchase)
+
+    def Network_pickUpAnnouncement(self, data):
+        player_name = data["player_name"]
+        top_scard = data["top_card"]
+        top_card = Card.deserialize(top_scard)
+        if self._state.rules.Pickup_Size == 1:
+            self.note =  player_name + ' picked up the ' + str(top_card)
+        else:
+            self.note = player_name + ' picked up the pile on the  ' + str(top_card)

@@ -45,8 +45,12 @@ class PlayerChannel(Channel):
     ### Network callbacks          ###
     ##################################
 
+    def Network_sendNameOfGame(self, data):
+        """Server provides name of game to be played (ruleset)."""
+        self.Send({"action": "defineGame", "ruleset": self._server.ruleset})
+
     def Network_displayName(self, data):
-        """Player submitted their display name"""
+        """Player submitted their display name, send that to everyone."""
         self.name = data['name']
         self._server.Send_publicInfo()
 
@@ -71,11 +75,11 @@ class PlayerChannel(Channel):
         cards = self._server.drawCards()
         self.Send_newCards(cards)
 
-
     def Network_pickUpPile(self, data):
         cards = self._server.pickUpPile()
         self.Send_newCards(cards)
         self._server.Send_discardInfo()
+        self._server.Send_pickUpAnnouncement(self.name, cards[0])
     
     def Network_goOut(self, data):
         self._server.Send_endRound(self.name)
@@ -95,7 +99,8 @@ class PlayerChannel(Channel):
     def Network_publicInfo(self, data):
         """This is refreshed public information data from the client"""
         self.visible_cards = data["visible_cards"]
-
+        if self._server.rules.Shared_Board:
+            self._server.checkVisibleCardsReported()  # reset _server.visible_cards_now unless cards lost.
         self.hand_status = data["hand_status"]
         self._server.Send_publicInfo()
 

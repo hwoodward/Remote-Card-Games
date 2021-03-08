@@ -9,13 +9,6 @@ import client.HandManagement as HandManagement
 from client.UICardWrapper import UICardWrapper
 import client.UIConstants as UIC
 from common.Card import Card
-from common.Liverpool import Deal_Size as Deal_Size_LP
-from common.HandAndFoot import Deal_Size as Deal_Size_HF
-from common.Liverpool import Meld_Threshold as Meld_Threshold_LP
-from common.HandAndFoot import Meld_Threshold as Meld_Threshold_HF
-from common.Liverpool import help_text as help_text_LP
-from common.HandAndFoot import help_text as help_text_HF
-
 
 
 class HandView:
@@ -29,21 +22,17 @@ class HandView:
     Player can arrange their own hand, and prepare to play cards during other players' turns.
     """
     def __init__(self, controller, display, ruleset):
-        self.ruleset = ruleset
-        if ruleset == 'Liverpool':
-            # todo: replace lines below with xxx = controller._state.rules.xxx and omit imports.
-            self.Meld_Threshold = Meld_Threshold_LP
-            self.RuleSetsButtons = RuleSetsButtons_LP
-            self.deal_size = Deal_Size_LP
-            self.buttons_per_player = self.Meld_Threshold[0][0] +  self.Meld_Threshold[0][1]
-            self.help_text = help_text_LP
-        elif ruleset == 'HandAndFoot':
-            self.Meld_Threshold = Meld_Threshold_HF
-            self.RuleSetsButtons = RuleSetsButtons_HF
-            self.deal_size = Deal_Size_HF
-            self.help_text = help_text_HF
         self.controller = controller
         self.display = display
+        self.ruleset = ruleset
+        self.Meld_Threshold = controller._state.rules.Meld_Threshold
+        self.deal_size = controller._state.rules.Deal_Size
+        self.help_text = controller._state.rules.help_text
+        if ruleset == 'Liverpool':
+            self.buttons_per_player = self.Meld_Threshold[0][0] +  self.Meld_Threshold[0][1]
+            self.RuleSetsButtons = RuleSetsButtons_LP
+        elif ruleset == 'HandAndFoot':
+            self.RuleSetsButtons = RuleSetsButtons_HF
         self.hand_scaling = (UIC.scale, UIC.Card_Spacing)
         self.current_hand = []
         self.last_hand = []
@@ -56,7 +45,6 @@ class HandView:
         self.wild_cards = []
         self.selected_list = []
         self.round_index = 0
-        self.player_index = 0
         self.round_advance = False
         self.num_players = 1
         # In Liverpool and other Shared_Board games:  prepare cards buttons must be updated each round
@@ -74,7 +62,11 @@ class HandView:
         """This updates the view of the hand, between rounds it displays a message. """
 
         self.visible_scards = visible_scards
-        self.player_index = player_index
+        self.controller._state.player_index = player_index
+        # check if a player has disconnected and need to make adjustments to played_cards variables.
+        if self.num_players > num_players and self.controller._state.rules.Shared_Board:
+            # reset process_cards and played_cards so that server won't update visible_cards with an obsolete version.
+            self.controller.resetProcessedCards(self.visible_scards)
         self.num_players = num_players
         if self.controller._state.round == -1:
             self.mesgBetweenRounds(self.help_text)
@@ -124,7 +116,7 @@ class HandView:
                 else:
                     # in Shared_Board games, check if there are wilds that need to be updated.
                     # All other events are ignored until play is finished.
-                    HandManagement.wildsHiLo_step2(self)
+                    HandManagement.wildsHiLoGetInput(self)
 
     def nextEvent(self):
         """This submits the next user input to the controller,
@@ -175,8 +167,10 @@ class HandView:
                     if self.controller.buying_opportunity:
                         if self.event.key == pygame.K_y:
                             self.controller.wantTopCard(True)
+                            self.controller.note = 'You have signaled you want to buy the card.'
                         elif self.event.key == pygame.K_n:
                             self.controller.wantTopCard(False)
+                            self.controller.note = 'You have signaled you do not want to buy the card.'
                 if not self.controller._state.rules.Shared_Board and self.num_wilds > 0:
                     HandManagement.ManuallyAssign(self)
 
