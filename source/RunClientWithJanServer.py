@@ -17,6 +17,7 @@ import client.UIConstants
 
 
 def RunClient():
+    # Comment out changes that are not compatible with server currently on host (= getting game from Server)
     if getattr(sys, 'frozen', False):
         os.chdir(sys._MEIPASS)
     """This is the launch point for the client.
@@ -26,7 +27,7 @@ def RunClient():
     (i) player provides host:port info, and connection to server established.
     (ii) clientState initialized 
     (iii) controller initialized
-    (iv) ruleset imported 
+    (iv) ruleset imported        << this is section that I edited for this. Labeled changes: # oldServer.
     (v) player provides name
     (vi) game window created
     (vii) tableView and handView initialized
@@ -34,14 +35,16 @@ def RunClient():
     (ix) main game loop
     """
     # (i) Connect to server:
-    host = str(input("Enter the host [localhost] ") or "localhost")
-    port = str(input("Enter the port[12345] ") or "12345")
+    host = str(input("Enter the host [xxxxx.net] ") or "xxxxx.net")
+    port = str(input("Enter the port[8080] ") or "8080")
     connection.DoConnect((host, int(port)))
     # (ii)-(iv) initialize clientState and gameControl.  Will get name of game from server
     ruleset = "tbd"  # ruleset will be obtained from server. If wish to run in test mode than change "tbd" to "test"
+    # oldServer - added next line and commented out gameControl.askForGame()
+    ruleset = str(input("Enter the game - Liverpool or HandAndFoot [HandAndFoot]") or "HandAndFoot")
     clientState = ClientState(ruleset)
     gameControl = Controller(clientState)
-    gameControl.askForGame()    # Ask server for name of game to be played.
+    # gameControl.askForGame()    # Ask server for name of game to be played.
     while clientState.ruleset == "tbd":
         connection.Pump()
         gameControl.Pump()
@@ -62,7 +65,7 @@ def RunClient():
         tableView.Pump()
         tableView.playerByPlayer(current_round)
         note = "Waiting for all current players to pick legit names. If wait seems too long, " \
-               "then it is possible game has already begun, or you have the wrong server or port#..."
+               "then it is possible you have the wrong server or port#..."
         gameboard.render(note)
         sleep(0.01)
     playername = gameControl.checkNames(tableView.player_names)
@@ -95,7 +98,6 @@ def RunClient():
             player_index = tableView.player_names.index(playername)
             visible_scards = tableView.visible_scards
             handView.update(player_index, len(tableView.player_names), visible_scards)
-            # todo: if player drops then set/run button locations need to be adjusted.
         else:
             handView.update()
         note = gameControl.note

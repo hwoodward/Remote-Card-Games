@@ -235,14 +235,19 @@ class TableView(ConnectionListener):
         bk_grd_rect = screen_loc_info[0]
         y_delta = UIC.Disp_Height / 8
         y_coord = screen_loc_info[1] + (y_delta * 0.8)
-        players_sp_w = bk_grd_rect[2]
+        chars_per_line = int(1.5 * bk_grd_rect[2]/ UIC.Small_Font_Sz )
+        left_margin =  int(bk_grd_rect[0] +  0.03 * bk_grd_rect[2])
         for key in melded_summary:
             if len(melded_summary[key]) > 0:
                 this_buttons_group = str(melded_summary[key])
+                wrapped_text = textwrap.wrap(text=this_buttons_group, width=chars_per_line)
                 ykey = y_coord + (y_delta * key)
-                text_surface, text_rect = self.textObjects(this_buttons_group, UIC.Small_Text, UIC.Black)
-                text_rect.center = ((bk_grd_rect[0] + 0.5 * players_sp_w), (bk_grd_rect[1] + ykey))
-                self.display.blit(text_surface, text_rect)
+                for element in wrapped_text:
+                    text = UIC.Small_Text.render(element, True, UIC.Black)
+                    text_rect = text.get_rect()
+                    text_rect.topleft = (left_margin, bk_grd_rect[1] + ykey)
+                    self.display.blit(text, text_rect)
+                    ykey = ykey + UIC.Small_Text_Feed
 
     def textObjects(self, text, font, color):
         text_surface = font.render(text, True, color)

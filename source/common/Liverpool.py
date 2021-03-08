@@ -96,9 +96,14 @@ def canPlayGroup(key, card_group, this_round):
             raise Exception("Cards in a run must all have the same suit (except wilds).")
     return True
 
-def canMeld(prepared_cards, round_index, player_index):
+def canMeld(prepared_cards, round_index, player_index, hand_length):
     """This insures that all required groups are present, but the legality of the groups is not checked until later. """
     #
+    # last round -- must play all cards
+    if round_index == len(Meld_Threshold) - 1:
+        pc_length = sum([len(run_list) for key, run_list in prepared_cards.items()])
+        if not pc_length == hand_length:
+            raise Exception("Final round you must play ALL your cards to meld.")
     required_groups =  Meld_Threshold[round_index][0] + Meld_Threshold[round_index][1]
     valid_groups = 0
     for key, card_group in prepared_cards.items():

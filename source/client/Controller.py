@@ -273,7 +273,8 @@ class Controller(ConnectionListener):
                     raise Exception("You are not allowed to begin another player's sets or runs.")
         # check to see if player has previously melded, if not, check if can.
         if (self._state.player_index, 0) not in played_groups:
-            self._state.rules.canMeld(self.prepared_cards, self._state.round, self._state.player_index)
+            hl = len(self._state.hand_cards)
+            self._state.rules.canMeld(self.prepared_cards, self._state.round, self._state.player_index, hl)
         # Unlike in HandAndFoot, where self.played_cards was used to check rules,
         # in Liverpool and other shared board games need to consider all of the played cards.
         numsets = self._state.rules.Meld_Threshold[self._state.round][0]

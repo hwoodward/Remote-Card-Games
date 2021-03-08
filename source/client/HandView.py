@@ -167,8 +167,10 @@ class HandView:
                     if self.controller.buying_opportunity:
                         if self.event.key == pygame.K_y:
                             self.controller.wantTopCard(True)
+                            self.controller.note = 'You have signaled you want to buy the card.'
                         elif self.event.key == pygame.K_n:
                             self.controller.wantTopCard(False)
+                            self.controller.note = 'You have signaled you do not want to buy the card.'
                 if not self.controller._state.rules.Shared_Board and self.num_wilds > 0:
                     HandManagement.ManuallyAssign(self)
 
