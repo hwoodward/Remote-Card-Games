@@ -90,8 +90,7 @@ def ButtonDisplay(hand_view):
 
     # at beginning of round of Liverpool (or other shared_board game) create new buttons.
     # Review note - wait until all players hit OK else it crashes if you hit OK and then another player joins,
-    # because then you won't have buttons for that player.  Note if a player leaves mid round then the sets and runs
-    # that disappear are those of the player on the far right.
+    # because then you won't have buttons for that player.
     if hand_view.need_updated_buttons and not hand_view.controller._state.round == -1:
         hand_view.RuleSetsButtons.newRound(hand_view, hand_view.Meld_Threshold[hand_view.round_index])
         hand_view.need_updated_buttons = False

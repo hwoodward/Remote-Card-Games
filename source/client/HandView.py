@@ -63,10 +63,10 @@ class HandView:
 
         self.visible_scards = visible_scards
         self.controller._state.player_index = player_index
-        # check if a player has disconnected and need to make adjustments to played_cards variables.
-        if self.num_players > num_players and self.controller._state.rules.Shared_Board:
-            # reset process_cards and played_cards so that server won't update visible_cards with an obsolete version.
-            self.controller.resetProcessedCards(self.visible_scards)
+        if self.num_players > num_players and self.controller._state.rules.Shared_Board \
+                and not self.need_updated_buttons:
+            # A player has left the game after the round has begun -- make adjustments so game can continue.
+            self.playerLeftGame(num_players)
         self.num_players = num_players
         if self.controller._state.round == -1:
             self.mesgBetweenRounds(self.help_text)
@@ -222,3 +222,19 @@ class HandView:
         text_rect = text_surface.get_rect()
         text_rect.center = (x_offset, y_offset)
         self.display.blit(text_surface, text_rect)
+
+    def playerLeftGame(self, num_players):
+        # a player has disconnected a game with a Shared_Board = True. Must make adjustments to
+        # (i) card group dictionaries, (ii) prepared cards & (iii) buttons locations.
+        self.controller.resetProcessedCards(self.visible_scards)
+        self.controller.clearPreparedCards()  # so that prepared cards won't be mistakenly played on wrong group.
+        self.hand_info = HandManagement.ClearPreparedCardsInHandView(self.hand_info)
+        self.controller.note = "A player has left the game, all prepared cards are automatically cleared."
+        # reset set/run button locations:
+        if num_players > 1:
+            players_sp_w = UIC.Disp_Width / num_players
+        else:
+            players_sp_w = UIC.Disp_Width
+        for idx in range(num_players):
+            for button in self.assign_cards_btns[idx]:
+                button.x = 10 + (players_sp_w * idx)

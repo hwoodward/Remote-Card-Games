@@ -65,7 +65,7 @@ def canPlayGroup(key, card_group, this_round):
     if key[1] < Meld_Threshold[this_round][0]:   # then this is a set.
         # check if this is a valid set.
         if len(card_group) < 3:
-            raise Exception("Too few cards in set - minimum is 1 (will change to 3 later)")
+            raise Exception("Too few cards in set - minimum is 3")
         # check that group contains only wilds and one card_number.
         card_numbers = []
         num_cards = len(card_group)
