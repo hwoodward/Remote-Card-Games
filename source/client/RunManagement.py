@@ -127,7 +127,6 @@ def restoreRunAssignment(visible_scards_dictionary, wild_numbers, numsets):
 
 def isWild(card, wild_numbers):
     """returns true if a card is a wild"""
-
     if card.number in wild_numbers:
         return True
     else:

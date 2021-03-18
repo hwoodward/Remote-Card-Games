@@ -195,7 +195,6 @@ class GameServer(Server, ServerState):
             # so p.visible_cards only contains that player p's fraction of the board.
             self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players], "ruleset": self.ruleset})
 
-
     def Send_pickUpAnnouncement(self, name, top_card):
             self.Send_broadcast({"action": "pickUpAnnouncement", "player_name": name, "top_card": top_card.serialize()})
 

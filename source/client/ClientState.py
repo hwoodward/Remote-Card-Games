@@ -33,6 +33,10 @@ class ClientState:
         """This will udpate player index if another player drops out. """
         self.player_index = player_names.index(self.name)
 
+    def getPlayerIndex(self, player_names):
+        """This will udpate player index if another player drops out. """
+        self.player_index = player_names.index(self.name)
+
     def dealtHands(self, hands):
         """Store the extra hands dealt to player for use after first hand is cleared"""
         self.newCards(hands[0])

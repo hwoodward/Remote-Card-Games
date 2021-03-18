@@ -98,7 +98,7 @@ def canPlayGroup(key, card_group, this_round):
 
 def canMeld(prepared_cards, round_index, player_index, hand_length):
     """This insures that all required groups are present, but the legality of the groups is not checked until later. """
-    #
+
     # last round -- must play all cards
     if round_index == len(Meld_Threshold) - 1:
         pc_length = sum([len(run_list) for key, run_list in prepared_cards.items()])

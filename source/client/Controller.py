@@ -19,7 +19,6 @@ class Controller(ConnectionListener):
         self._state = clientState
         self.prepared_cards = {}     #This is the dict of cards prepared to be played.
         self.processed_full_board = {}  #in games with Shared Board, this is the dict of processed cards.
-        # todo: note to reviewer -- moved: self.setName() < do this in RunClient after getting rules(askForGame)
         self.ready = False
         self.note = "Game is beginning."
         self.unassigned_wilds_dict = {}

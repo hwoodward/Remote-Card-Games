@@ -249,6 +249,7 @@ class TableView(ConnectionListener):
                     self.display.blit(text, text_rect)
                     ykey = ykey + UIC.Small_Text_Feed
 
+
     def textObjects(self, text, font, color):
         text_surface = font.render(text, True, color)
         return text_surface, text_surface.get_rect()

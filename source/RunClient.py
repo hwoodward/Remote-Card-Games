@@ -95,7 +95,6 @@ def RunClient():
             player_index = tableView.player_names.index(playername)
             visible_scards = tableView.visible_scards
             handView.update(player_index, len(tableView.player_names), visible_scards)
-            # todo: if player drops then set/run button locations need to be adjusted.
         else:
             handView.update()
         note = gameControl.note
