@@ -128,8 +128,6 @@ def restoreRunAssignment(visible_scards_dictionary, wild_numbers, numsets):
 def isWild(card, wild_numbers):
     """returns true if a card is a wild"""
 
-    # Review question -- Currently the methods in this file import minimal amount, and assume variables are passed
-    # through and returned. Would it be better to import liverpool ruleset (including wild_numbers and method isWild).
     if card.number in wild_numbers:
         return True
     else:
@@ -176,15 +174,16 @@ def buildBaseRun(temp_run_group, groups_wilds, wild_numbers):
     return card_group, groups_wilds, gap_flag
 
 def acesFreeWilds(card_group, groups_wilds, wild_numbers):
-        if isWild(card_group[0], wild_numbers) and abs(card_group[0].tempnumber) == 1:
-            this_wild = card_group.pop(0)
-            this_wild.tempnumber = this_wild.number
-            groups_wilds.append(this_wild)
-        if isWild(card_group[-1], wild_numbers) and card_group[-1].tempnumber == 14:
-            this_wild = card_group.pop(-1)
-            this_wild.tempnumber = this_wild.number
-            groups_wilds.append(this_wild)
-        return card_group, groups_wilds
+    # If wild cards are in Aces slot, then free slot and move wilds to groups_wilds.
+    if isWild(card_group[0], wild_numbers) and abs(card_group[0].tempnumber) == 1:
+        this_wild = card_group.pop(0)
+        this_wild.tempnumber = this_wild.number
+        groups_wilds.append(this_wild)
+    if isWild(card_group[-1], wild_numbers) and card_group[-1].tempnumber == 14:
+        this_wild = card_group.pop(-1)
+        this_wild.tempnumber = this_wild.number
+        groups_wilds.append(this_wild)
+    return card_group, groups_wilds
 
 def fillGaps(temp_run_group, groups_wilds):
     # fill in any remaining gaps in run with wild cards, or raise exception.
@@ -231,7 +230,6 @@ def lowAceChk(card_group, groups_wilds, wild_numbers):
         return True
     else:
         return False
-
 
 def hiAceChk(card_group, groups_wilds, wild_numbers):
     if card_group[-1].tempnumber == 13:
