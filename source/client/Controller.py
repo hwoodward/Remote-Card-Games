@@ -417,11 +417,11 @@ class Controller(ConnectionListener):
     ### Gameplay messages ###
 
     def Network_defineGame(self, data):
-        #todo: is this if statement necessary?
         if len(data) > 0:
-            self._state.ruleset = data["ruleset"]
+            ruleset = data["ruleset"]
+            self._state.importRules(ruleset)  # Have rec'd ruleset name from server, so import the rules.
         else:
-            print('in controller, server did not return ruleset')
+            raise Exception("Local controller reports that server did not return ruleset.")
 
     def Network_startTurn(self, data):
         if self._state.round == -1:

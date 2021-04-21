@@ -46,7 +46,6 @@ def RunClient():
         connection.Pump()
         gameControl.Pump()
         sleep(0.001)
-    clientState.importRules(clientState.ruleset)   # Have rec'd ruleset name from server, so import the rules.
     #
     gameControl.setName()                        # Ask the player their name, and confirm it is acceptable.
     playername = gameControl.getName()           # Confirm server has player name.

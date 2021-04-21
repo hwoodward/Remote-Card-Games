@@ -11,27 +11,22 @@ class ClientState:
     def __init__(self, ruleset = 'tbd'):
         """Initialize a state tracker for a given client"""
         self.ruleset = ruleset
-
         # Turn phase handled by controller
         self.turn_phase = 'inactive'  # hard coded start phase as 'not my turn'
         self.round = -1  # Start with the 'no current round value'
         self.name = "guest"
         self.player_index = 0 # needed for games with Shared_Board, will update when play cards.
         self.reset()  # Start with state cleared for a fresh round
-        self.rule_module = 'tbd'
 
     def importRules(self, ruleset):
         if ruleset is not 'test':
+            self.ruleset = ruleset
             rule_module = "common." + ruleset
         else:
             # This is the unit test case - we may want to put a dummy ruleset in
             print("In unittest mode - using HandAndFoot rules")
             rule_module = "common.HandAndFoot"
         self.rules = importlib.import_module(rule_module)
-
-    def getPlayerIndex(self, player_names):
-        """This will udpate player index if another player drops out. """
-        self.player_index = player_names.index(self.name)
 
     def getPlayerIndex(self, player_names):
         """This will udpate player index if another player drops out. """

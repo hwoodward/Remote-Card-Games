@@ -189,11 +189,11 @@ class GameServer(Server, ServerState):
         # On server keep them in serialized form.
         if self.rules.Shared_Board:
             # Shared_Board is True: (e.g. Liverpool) -- each player transmits entire board of visible_cards to server.
-            self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players],"visible_cards": [self.visible_cards_now],"hand_status": [p.hand_status for p in self.players], "ruleset": self.ruleset})
+            self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players],"visible_cards": [self.visible_cards_now],"hand_status": [p.hand_status for p in self.players]})
         else:
             # Shared_Board is False: (e.g. HandAndFoot) -- each player can only play on their own cards,
             # so p.visible_cards only contains that player p's fraction of the board.
-            self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players], "ruleset": self.ruleset})
+            self.Send_broadcast({"action": "publicInfo", "player_names": [p.name for p in self.players], "visible_cards": [p.visible_cards for p in self.players], "hand_status": [p.hand_status for p in self.players]})
 
     def Send_pickUpAnnouncement(self, name, top_card):
             self.Send_broadcast({"action": "pickUpAnnouncement", "player_name": name, "top_card": top_card.serialize()})
