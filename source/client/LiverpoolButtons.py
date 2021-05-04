@@ -86,12 +86,13 @@ def newRound(hand_view, sets_runs_tuple):
 
 
 def ButtonDisplay(hand_view):
-    """ This updates draw pile and action buttons. It is called in HandView.update each render cycle. """
+    """ This updates draw pile and action buttons. It is called in HandView.update each render cycle. 
 
-    # at beginning of round of Liverpool (or other shared_board game) create new buttons.
-    # Review note - wait until all players hit OK else it crashes if you hit OK and then another player joins,
-    # because then you won't have buttons for that player.  Note if a player leaves mid round then the sets and runs
-    # that disappear are those of the player on the far right.
+    It also creates customized buttons for each round of Liverpool (might also be eventually used by
+    other shared_board game.  Must wait to create until all players hit OK else you won't have created
+    buttons for players who join afterwards.
+    """
+
     if hand_view.need_updated_buttons and not hand_view.controller._state.round == -1:
         hand_view.RuleSetsButtons.newRound(hand_view, hand_view.Meld_Threshold[hand_view.round_index])
         hand_view.need_updated_buttons = False

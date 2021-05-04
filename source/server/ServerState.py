@@ -45,7 +45,7 @@ class ServerState():
         self.draw_pile = deck
         self.discard_pile = []
         self.num_decks_in_play = num_decks
-        self.rules.Draw_Size = self.Draw_Size_original # Draw_Size may be reset if draw pile runs out.
+        self.rules.Draw_Size = self.Draw_Size_original # Draw_Size may be reset during a round if draw pile runs out.
 
     def drawCards(self):
         """Return the next Draw_Size cards from the draw pile"""
